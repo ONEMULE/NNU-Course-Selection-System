@@ -86,6 +86,25 @@ def safe_message(value: Any, limit: int = 360) -> str:
     return text.replace("\r", " ").replace("\n", " ")[:limit]
 
 
+def request_diagnostic_message(value: Any) -> str:
+    """只输出请求环境的脱敏状态，不输出 URL 查询值、Cookie 或 token。"""
+
+    if not isinstance(value, Mapping):
+        return ""
+    path = as_text(value.get("path")) or "-"
+    referrer_path = as_text(value.get("referrerPath")) or "-"
+    transport = as_text(value.get("transport")) or "-"
+    has_session_token = bool(value.get("hasSessionToken"))
+    has_url_token = bool(value.get("hasUrlToken"))
+    has_jquery = bool(value.get("hasJquery"))
+    return (
+        f"当前页={path}，URL令牌={'有' if has_url_token else '无'}，"
+        f"页面令牌={'有' if has_session_token else '无'}，"
+        f"jQuery={'有' if has_jquery else '无'}，传输={transport}，"
+        f"来源页={referrer_path}"
+    )
+
+
 def as_text(value: Any) -> Optional[str]:
     if value is None:
         return None
@@ -421,19 +440,66 @@ def course_matches(
 FETCH_SCRIPT = """
 async ({path, method, params}) => {
   const token = sessionStorage.getItem("token");
+  const diagnostics = (transport) => ({
+    path: window.location.pathname,
+    referrerPath: document.referrer ? new URL(document.referrer).pathname : "",
+    hasSessionToken: Boolean(sessionStorage.getItem("token")),
+    hasUrlToken: new URL(window.location.href).searchParams.has("token"),
+    hasJquery: typeof window.jQuery === "function",
+    transport
+  });
   if (!token) {
-    return {status: 0, text: "missing-session"};
+    return {
+      status: 0,
+      text: "missing-session",
+      diagnostics: diagnostics("none")
+    };
   }
+  const values = params || {};
+
+  // NNU 自己的前端使用 jQuery XHR；优先沿用同一传输方式，
+  // 避免服务端根据 Fetch Metadata/请求头差异拒绝原生 fetch。
+  if (typeof window.jQuery === "function") {
+    const url = new URL(path, window.location.origin).toString();
+    return await new Promise((resolve) => {
+      window.jQuery.ajax({
+        url,
+        type: method || "GET",
+        data: values,
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "token": token
+        },
+        dataType: "text",
+        success: (data, _textStatus, xhr) => {
+          resolve({
+            status: xhr.status || 200,
+            text: String(data || ""),
+            diagnostics: diagnostics("jquery")
+          });
+        },
+        error: (xhr) => {
+          resolve({
+            status: xhr.status || 0,
+            text: String(xhr.responseText || ""),
+            diagnostics: diagnostics("jquery")
+          });
+        }
+      });
+    });
+  }
+
   const url = new URL(path, window.location.origin);
   const options = {
     method: method || "GET",
+    mode: "same-origin",
     credentials: "include",
     headers: {
+      "Accept": "application/json, text/javascript, */*; q=0.01",
       "X-Requested-With": "XMLHttpRequest",
       "token": token
     }
   };
-  const values = params || {};
   if ((method || "GET").toUpperCase() === "GET") {
     for (const [key, value] of Object.entries(values)) {
       if (value !== null && value !== undefined) {
@@ -448,7 +514,11 @@ async ({path, method, params}) => {
     ).toString();
   }
   const response = await fetch(url.toString(), options);
-  return {status: response.status, text: await response.text()};
+  return {
+    status: response.status,
+    text: await response.text(),
+    diagnostics: diagnostics("fetch")
+  };
 }
 """
 
@@ -478,7 +548,8 @@ class BrowserApi:
         raw_text = result.get("text", "")
         if status in {401, 403}:
             raise SessionExpiredError(
-                f"服务端拒绝请求（HTTP {status}，接口 {path}）"
+                f"服务端拒绝请求（HTTP {status}，接口 {path}；"
+                f"{request_diagnostic_message(result.get('diagnostics'))}）"
             )
         if status == 0:
             raise SessionExpiredError("浏览器页面没有可用登录态，请重新登录")
@@ -1412,6 +1483,18 @@ async def async_main(args: argparse.Namespace) -> int:
                 return 0
             await asyncio.sleep(args.interval)
             session_context = await browser_session.read_context()
+    except SessionExpiredError as exc:
+        print(f"[错误] {safe_message(exc)}", file=sys.stderr)
+        if page is not None and sys.stdin.isatty():
+            try:
+                await asyncio.to_thread(
+                    input,
+                    "[提示] 浏览器已保留用于检查登录状态；"
+                    "按回车后关闭浏览器并退出：",
+                )
+            except (EOFError, KeyboardInterrupt):
+                pass
+        return 10
     except AutomationError as exc:
         print(f"[错误] {safe_message(exc)}", file=sys.stderr)
         return 10
