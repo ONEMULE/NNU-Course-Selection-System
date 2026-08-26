@@ -12,7 +12,7 @@
 * 不自动重试 volunteer.do，避免网络不确定时重复提交。
 
 该工具依赖 Playwright，但不会修改第三方源码目录，也不会尝试绕过验证码或
-人机认证。浏览器 profile 默认放在用户目录下，避免把登录态写进仓库。
+人机认证。每次启动都使用全新的临时浏览器会话，不复用上次的登录态。
 """
 
 from __future__ import annotations
@@ -623,10 +623,9 @@ class BrowserSession:
 
 
 async def open_visible_browser(
-    profile_dir: Path,
     timeout_seconds: int,
 ) -> tuple[Any, Any, Any]:
-    """启动独立可见浏览器；返回 (playwright, context, page)。"""
+    """启动全新可见浏览器；返回 (playwright, context, page)。"""
 
     try:
         from playwright.async_api import async_playwright
@@ -637,25 +636,28 @@ async def open_visible_browser(
             "，再运行：python -m playwright install chromium"
         ) from exc
 
-    profile_dir = profile_dir.expanduser().resolve()
-    profile_dir.mkdir(parents=True, exist_ok=True)
     playwright = await async_playwright().start()
     try:
-        context = await playwright.chromium.launch_persistent_context(
-            user_data_dir=str(profile_dir),
-            headless=False,
-        )
-        page = next(
-            (
-                item
-                for item in context.pages
-                if "xsxk.nnu.edu.cn" in (item.url or "")
-            ),
-            None,
-        )
-        if page is None:
-            page = context.pages[0] if context.pages else await context.new_page()
+        # 不使用 persistent context，确保每次启动都没有 Cookie、
+        # sessionStorage 或上一次运行留下的登录态。
+        browser = await playwright.chromium.launch(headless=False)
+        context = await browser.new_context()
+        page = await context.new_page()
+        try:
+            await page.goto(
+                ENTRY_URL,
+                wait_until="domcontentloaded",
+                timeout=60_000,
+            )
+        except Exception as exc:
+            print(f"[提示] 登录入口加载提示：{safe_message(exc)}")
 
+        session = BrowserSession(page)
+        print(
+            "[等待] 本次启动必须由本人在可见浏览器中手动登录并完成"
+            "人机认证；脚本不会读取或填写密码。"
+        )
+        await session.wait_until_ready(timeout_seconds=timeout_seconds)
         try:
             await page.goto(
                 GRAB_URL,
@@ -663,39 +665,8 @@ async def open_visible_browser(
                 timeout=60_000,
             )
         except Exception as exc:
-            print(f"[提示] 选课页加载提示：{safe_message(exc)}")
-
-        session = BrowserSession(page)
-        ready = False
-        try:
-            await session.wait_until_ready(timeout_seconds=min(timeout_seconds, 8))
-            ready = True
-        except AutomationError:
-            ready = False
-
-        if not ready:
-            print(
-                "[等待] 请在打开的可见浏览器中完成登录和人机认证；"
-                "脚本不会读取或填写密码。"
-            )
-            try:
-                await page.goto(
-                    ENTRY_URL,
-                    wait_until="domcontentloaded",
-                    timeout=60_000,
-                )
-            except Exception as exc:
-                print(f"[提示] 登录入口加载提示：{safe_message(exc)}")
-            await session.wait_until_ready(timeout_seconds=timeout_seconds)
-            try:
-                await page.goto(
-                    GRAB_URL,
-                    wait_until="domcontentloaded",
-                    timeout=60_000,
-                )
-            except Exception as exc:
-                print(f"[提示] 选课页返回提示：{safe_message(exc)}")
-            await session.wait_until_ready(timeout_seconds=timeout_seconds)
+            print(f"[提示] 选课页返回提示：{safe_message(exc)}")
+        await session.wait_until_ready(timeout_seconds=timeout_seconds)
         return playwright, context, page
     except Exception:
         await playwright.stop()
@@ -1095,11 +1066,6 @@ def build_parser() -> argparse.ArgumentParser:
         description="NNU 博雅课：只查询仙林/仙林新北，默认只读"
     )
     parser.add_argument(
-        "--profile-dir",
-        default=str(Path.home() / ".nnu-boya-course-profile"),
-        help="Playwright 独立浏览器 profile 目录",
-    )
-    parser.add_argument(
         "--watch",
         action="store_true",
         help="没有目标时持续轮询；默认间隔 30 秒",
@@ -1179,7 +1145,6 @@ async def async_main(args: argparse.Namespace) -> int:
     playwright = context = page = None
     try:
         playwright, context, page = await open_visible_browser(
-            Path(args.profile_dir),
             args.timeout,
         )
         browser_session = BrowserSession(page)
