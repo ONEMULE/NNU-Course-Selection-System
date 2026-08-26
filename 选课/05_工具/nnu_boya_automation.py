@@ -42,6 +42,7 @@ GRAB_URL = f"{BASE_URL}/*default/grablessons.do"
 API_PREFIX = "/sys/xsxkapp"
 
 PUBLIC_COURSE_PATH = f"{API_PREFIX}/elective/publicCourse.do"
+SELECTED_COURSE_PATH = f"{API_PREFIX}/elective/courseResult.do"
 TEST_COURSE_PATH = f"{API_PREFIX}/elective/testCourse.do"
 BATCH_OPEN_PATH = f"{API_PREFIX}/elective/batchisopen.do"
 DETAIL_PATH = f"{API_PREFIX}/publicinfo/queryjxb.do"
@@ -53,6 +54,8 @@ CAMPUS = {
     "2": "仙林校区",
     "4": "仙林新北",
 }
+
+AUTO_TARGET_COUNT = 4
 
 TOKEN_PATTERN = re.compile(
     r"(?i)([\"']?token[\"']?\s*[=:]\s*[\"']?)[^&\s,}\"']+"
@@ -254,6 +257,7 @@ class Course:
     is_conflict: Any
     conflict_desc: str
     is_full: Any
+    is_choose: Any
     capacity_suffix: str
     has_test: Any
     need_book: Any
@@ -318,6 +322,7 @@ class Course:
             )
             or "",
             is_full=first_value(item, "isFull"),
+            is_choose=first_value(item, "isChoose"),
             capacity_suffix=as_text(
                 first_value(item, "capacitySuffix")
             )
@@ -337,6 +342,8 @@ class Course:
         if parse_flag(self.is_conflict) is not False:
             return False
         if parse_flag(self.is_full) is not False:
+            return False
+        if parse_flag(self.is_choose) is True:
             return False
         if self.class_capacity is not None:
             for count in (self.first_volunteer, self.selected):
@@ -362,6 +369,7 @@ class Course:
             "numberOfSelected": self.selected,
             "isConflict": self.is_conflict,
             "isFull": self.is_full,
+            "isChoose": self.is_choose,
             "conflictDesc": self.conflict_desc,
             "hasTest": self.has_test,
             "needBook": self.need_book,
@@ -783,6 +791,35 @@ async def run_query_cycle(
     return results, all_courses
 
 
+async def query_selected_course_count(
+    api: BrowserApi,
+    context: SessionContext,
+) -> int:
+    """按 NNU 页面口径统计当前轮次已选的非实验课程数量。"""
+
+    response = await api.get(
+        SELECTED_COURSE_PATH,
+        {
+            "studentCode": context.student_code,
+            "electiveBatchCode": context.batch_code,
+            "timestamp": str(int(datetime.now().timestamp() * 1000)),
+        },
+    )
+    if as_text(response.get("code")) != "1":
+        raise AutomationError(
+            "已选课程数量查询失败："
+            f"{safe_message(response.get('msg')) or '未知原因'}"
+        )
+    data_list = response.get("dataList") or []
+    if not isinstance(data_list, list):
+        raise AutomationError("courseResult.do 的 dataList 不是数组")
+    return sum(
+        1
+        for item in data_list
+        if isinstance(item, Mapping) and as_text(item.get("isTest")) != "1"
+    )
+
+
 def test_option_is_safe(item: Mapping[str, Any]) -> bool:
     """复刻页面对实验教学班的冲突/限制/容量判断。"""
 
@@ -1103,8 +1140,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--auto-select",
         action="store_true",
         help=(
-            "配合 --watch 使用：只轮询仙林，发现第一门“不冲突+未满”"
-            "候选后受控提交"
+            "配合 --watch/--yes 使用：只轮询仙林，直到已选非实验课程达到 4 门；"
+            "期间发现安全候选就自动提交"
         ),
     )
     parser.add_argument(
@@ -1147,6 +1184,10 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
         parser.error("--auto-select 不接受 --course-id、--course-number 或 --course-name")
     if args.auto_select and args.test_teaching_class_id:
         parser.error("--auto-select 不接受固定的 --test-teaching-class-id")
+    if args.auto_select and not args.yes:
+        parser.error("--auto-select 必须同时指定 --yes 才会自动提交")
+    if args.auto_select and args.need_book is None:
+        parser.error("--auto-select 必须明确指定 --need-book 0 或 1")
     if args.yes and not (args.submit or args.auto_select):
         parser.error("--yes 只能与 --submit 或 --auto-select 一起使用")
     if args.watch and args.interval < 10:
@@ -1178,6 +1219,22 @@ async def async_main(args: argparse.Namespace) -> int:
         campus_codes = ("2",) if args.auto_select else ("2", "4")
 
         while True:
+            if args.auto_select:
+                selected_count = await query_selected_course_count(
+                    api,
+                    session_context,
+                )
+                print(
+                    f"[进度] 当前已选非实验课程：{selected_count}/"
+                    f"{AUTO_TARGET_COUNT}"
+                )
+                if selected_count >= AUTO_TARGET_COUNT:
+                    print(
+                        f"[完成] 已选课程数量已达到 {AUTO_TARGET_COUNT} 门，"
+                        "停止自动选课"
+                    )
+                    return 0
+
             results, courses = await run_query_cycle(
                 api,
                 session_context,
@@ -1237,7 +1294,7 @@ async def async_main(args: argparse.Namespace) -> int:
                         need_book=args.need_book,
                         test_teaching_class_id=None,
                     )
-                    return await submit_course(
+                    submit_result = await submit_course(
                         api,
                         context_for_submit,
                         fresh_course,
@@ -1245,6 +1302,23 @@ async def async_main(args: argparse.Namespace) -> int:
                         test_teaching_class_id=selected_test_id,
                         yes=args.yes,
                     )
+                    if submit_result != 0:
+                        return submit_result
+                    session_context = await browser_session.read_context()
+                    selected_count = await query_selected_course_count(
+                        api,
+                        session_context,
+                    )
+                    print(
+                        f"[进度] 本次操作后已选非实验课程：{selected_count}/"
+                        f"{AUTO_TARGET_COUNT}"
+                    )
+                    if selected_count >= AUTO_TARGET_COUNT:
+                        print(
+                            f"[完成] 已选课程数量已达到 {AUTO_TARGET_COUNT} 门，"
+                            "停止自动选课"
+                        )
+                        return 0
                 else:
                     print(
                         "[等待] 仙林本轮没有可安全提交的候选，继续轮询"

@@ -133,7 +133,9 @@ class NnuBoyaAutomationTests(unittest.TestCase):
 
     def test_auto_select_requires_watch_and_has_no_course_selector(self) -> None:
         parser = MODULE.build_parser()
-        args = parser.parse_args(["--watch", "--auto-select", "--yes"])
+        args = parser.parse_args(
+            ["--watch", "--auto-select", "--yes", "--need-book", "0"]
+        )
         MODULE.validate_args(parser, args)
 
         with self.assertRaises(SystemExit):
@@ -179,6 +181,36 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertEqual(courses, [])
         self.assertEqual(len(api.calls), 1)
         self.assertIn('"campus":"2"', api.calls[0][1]["querySetting"])
+
+    def test_selected_course_count_excludes_test_courses(self) -> None:
+        class FakeApi:
+            async def get(self, path, params):
+                self.path = path
+                self.params = params
+                return {
+                    "code": "1",
+                    "dataList": [
+                        {"isTest": "0"},
+                        {"isTest": "1"},
+                        {},
+                    ],
+                }
+
+        api = FakeApi()
+        context = MODULE.SessionContext(
+            student_code="student",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="XGXK",
+        )
+        count = asyncio.run(
+            MODULE.query_selected_course_count(api, context)
+        )
+        self.assertEqual(count, 2)
+        self.assertEqual(api.path, MODULE.SELECTED_COURSE_PATH)
 
 
 if __name__ == "__main__":
