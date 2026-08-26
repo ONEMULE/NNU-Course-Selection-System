@@ -583,20 +583,38 @@ class BrowserSession:
         if current.current_campus_code == campus_code:
             return current
 
-        switcher = self.page.locator("#changeCampus")
-        if await switcher.count() == 0:
+        switcher = None
+        option_selectors: tuple[str, ...] = ()
+        for switch_selector, campus_selector in (
+            ("#changeCampus:visible", ".campusList"),
+            (".home-change-campus:visible", ".campusListHome"),
+        ):
+            candidate = self.page.locator(switch_selector)
+            if await candidate.count() > 0:
+                switcher = candidate.first
+                option_selectors = (campus_selector,)
+                break
+
+        if switcher is None:
             raise UnsafeSelectionError(
                 "页面没有可用的校区切换控件，拒绝跨校区直接提交"
             )
         await switcher.click()
-        option = self.page.locator(
-            f".campusList[code='{campus_code}']"
-        )
-        if await option.count() == 0:
+
+        option = None
+        for campus_selector in option_selectors:
+            candidate = self.page.locator(
+                f"{campus_selector}[code='{campus_code}']:visible"
+            )
+            if await candidate.count() > 0:
+                option = candidate.first
+                break
+
+        if option is None:
             raise UnsafeSelectionError(
                 f"页面校区菜单中没有 {CAMPUS[campus_code]}（{campus_code}）"
             )
-        await option.first.click()
+        await option.click()
         await self.page.wait_for_timeout(1200)
         updated = await self.read_context()
         if updated.current_campus_code != campus_code:
