@@ -1,0 +1,42 @@
+{
+    "manifest_version": 3,
+    "name": "XDU Course Helper",
+    "version": "1.0.0",
+    "permissions": ["sidePanel", "storage", "tabs", "scripting", "activeTab"],
+    "optional_host_permissions": ["https://*/*", "http://*/*"],
+    "host_permissions": [
+        "https://yjsxk.xidian.edu.cn/*"
+    ],
+    "action": {
+        "default_title": "打开选课助手"
+    },
+    "side_panel": {
+        "default_path": "index.html"
+    },
+    "content_scripts": [
+        {
+            "matches": ["https://yjsxk.xidian.edu.cn/yjsxkapp/sys/xsxkapp/course.html"],
+            "js": ["src/content/bridge.js"],
+            "run_at": "document_start"
+        },
+        {
+            "matches": ["https://yjsxk.xidian.edu.cn/yjsxkapp/sys/xsxkapp/course.html"],
+            "js": ["src/content/index.js"],
+            "world": "MAIN",
+            "run_at": "document_end"
+        },
+        {
+            "matches": [
+                "https://yjsxk.xidian.edu.cn/yjsxkapp/sys/xsxkapp/course.html",
+                "https://yjsxk.xidian.edu.cn/yjsxkapp/sys/xsxkapp/index.html"
+            ],
+            "js": ["src/content/early-hook.js"],
+            "world": "MAIN",
+            "run_at": "document_start"
+        }
+    ],
+    "background": {
+        "service_worker": "src/background/index.js",
+        "type": "module"
+    }
+}

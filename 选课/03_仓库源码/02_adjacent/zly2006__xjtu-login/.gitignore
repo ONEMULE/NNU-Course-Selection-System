@@ -1,0 +1,5 @@
+/target
+*.iml
+/.env
+.DS_Store
+!/.idea/dictionaries

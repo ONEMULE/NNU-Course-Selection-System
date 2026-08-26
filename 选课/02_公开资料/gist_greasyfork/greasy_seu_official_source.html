@@ -1,0 +1,1206 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>东南大学抢课助手正式版 - Source code</title>
+  <meta name="description" value="Source code for 东南大学抢课助手正式版">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <script src="/vite/assets/application-Do-C1Ssw.js" crossorigin="" type="module"></script><link rel="stylesheet" crossorigin="" href="/vite/assets/application-BUQg-itE.css" />
+    <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="xcgGDGOkjY8k-cRooG9UCHL3EUGxrdX8nY3_TeIi_tQaiBbLKG6JqAwaUSsmdl2jy0l2f79STtD_bM_CaKcuwg" />
+    <meta name="clckd" content="bf6242cc3039bff31a7815dff8ee247b" />
+    <meta name="lhverifycode" content="32dc01246faccb7f5b3cad5016dd5033" />
+  <link rel="canonical" href="https://greasyfork.org/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+  <link rel="icon" href="/vite/assets/blacklogo16-DftkYuVe.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap" media="print" onload="this.media='all'; this.onload=null;">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap"></noscript>
+
+    <link rel="alternate" hreflang="x-default" href="/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ar" href="/ar/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="be" href="/be/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="bg" href="/bg/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ckb" href="/ckb/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="cs" href="/cs/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="da" href="/da/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="de" href="/de/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="el" href="/el/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="en" href="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="eo" href="/eo/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="es" href="/es/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="es-419" href="/es-419/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="fi" href="/fi/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="fil" href="/fil/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="fr" href="/fr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="fr-CA" href="/fr-CA/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="he" href="/he/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="hr" href="/hr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="hu" href="/hu/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="id" href="/id/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="it" href="/it/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ja" href="/ja/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ka" href="/ka/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ko" href="/ko/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="mr" href="/mr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="nb" href="/nb/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="nl" href="/nl/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="pl" href="/pl/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="pt" href="/pt/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="pt-BR" href="/pt-BR/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ro" href="/ro/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ru" href="/ru/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="sk" href="/sk/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="sr" href="/sr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="sv" href="/sv/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="th" href="/th/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="tr" href="/tr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="uk" href="/uk/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="ug" href="/ug/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="vi" href="/vi/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="zh-CN" href="/zh-CN/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+      <link rel="alternate" hreflang="zh-TW" href="/zh-TW/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+
+
+  <link rel="search" href="/en/opensearch.xml" type="application/opensearchdescription+xml" title="Greasy Fork search" hreflang="en">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NMRNRYW7C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7NMRNRYW7C', {
+        'ad_method': 'ga',
+        'ad_method_variant': '',
+        'action': 'scripts/show_code'
+      });
+    </script>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2247465624637408"
+            crossorigin="anonymous"></script>
+
+    <meta name="twitter:card" content="summary">
+  <meta property="og:title" content="东南大学抢课助手正式版">
+  <meta property="og:url" content="https://greasyfork.org/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88">
+  <meta property="og:description" content="听说你抢不到课">
+      <meta property="og:image" content="https://greasyfork.s3.us-east-2.amazonaws.com/y2hrun6diyckro2ni3tr5dn1cntj">
+
+</head>
+<body>
+
+  <header id="main-header">
+    <div class="width-constraint">
+      <div id="site-name">
+        <a href="/en"><img alt="" width="96" height="96" src="/vite/assets/blacklogo96-CxYTSM_T.png" /></a>
+        <div id="site-name-text">
+          <h1><a href="/en">Greasy Fork</a></h1>
+        </div>
+      </div>
+      <div id="site-nav">
+        <div id="nav-user-info">
+            <span class="sign-in-link"><a rel="nofollow" href="/en/users/sign_in?return_to=%2Fen%2Fscripts%2F427237-%25E4%25B8%259C%25E5%258D%2597%25E5%25A4%25A7%25E5%25AD%25A6%25E6%258A%25A2%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%25E6%25AD%25A3%25E5%25BC%258F%25E7%2589%2588%2Fcode">Sign in</a></span>
+
+                      <form class="language-selector" action="/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ar">
+                      Arabic (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="be">
+                      Belarusian (be)
+                    </option>
+                    <option data-language-url="/nb/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="nb">
+                      Bokmål (nb)
+                    </option>
+                    <option data-language-url="/bg/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="bg">
+                      Bulgarian (bg)
+                    </option>
+                    <option data-language-url="/ckb/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ckb">
+                      Central Kurdish (ckb)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="zh-CN">
+                      Chinese (China) (zh-CN)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="zh-TW">
+                      Chinese (Taiwan) (zh-TW)
+                    </option>
+                    <option data-language-url="/hr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="hr">
+                      Croatian (hr)
+                    </option>
+                    <option data-language-url="/cs/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="cs">
+                      Czech (cs)
+                    </option>
+                    <option data-language-url="/da/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="da">
+                      Danish (da)
+                    </option>
+                    <option data-language-url="/nl/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="nl">
+                      Dutch (nl)
+                    </option>
+                    <option data-language-url="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="en" selected>
+                      English (en)
+                    </option>
+                    <option data-language-url="/eo/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="eo">
+                      Esperanto (eo)
+                    </option>
+                    <option data-language-url="/fil/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/fi/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fi">
+                      Finnish (fi)
+                    </option>
+                    <option data-language-url="/fr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fr">
+                      French (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fr-CA">
+                      French (Canada) (fr-CA)
+                    </option>
+                    <option data-language-url="/ka/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ka">
+                      Georgian (ka)
+                    </option>
+                    <option data-language-url="/de/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="de">
+                      German (de)
+                    </option>
+                    <option data-language-url="/el/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="el">
+                      Greek (el)
+                    </option>
+                    <option data-language-url="/he/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="he">
+                      Hebrew (he)
+                    </option>
+                    <option data-language-url="/hu/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="hu">
+                      Hungarian (hu)
+                    </option>
+                    <option data-language-url="/id/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="id">
+                      Indonesian (id)
+                    </option>
+                    <option data-language-url="/it/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="it">
+                      Italian (it)
+                    </option>
+                    <option data-language-url="/ja/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ja">
+                      Japanese (ja)
+                    </option>
+                    <option data-language-url="/ko/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ko">
+                      Korean (ko)
+                    </option>
+                    <option data-language-url="/mr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="mr">
+                      Marathi (mr)
+                    </option>
+                    <option data-language-url="/pl/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="pl">
+                      Polish (pl)
+                    </option>
+                    <option data-language-url="/pt/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="pt">
+                      Portuguese (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="pt-BR">
+                      Portuguese (Brazil) (pt-BR)
+                    </option>
+                    <option data-language-url="/ro/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ro">
+                      Romanian (ro)
+                    </option>
+                    <option data-language-url="/ru/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ru">
+                      Russian (ru)
+                    </option>
+                    <option data-language-url="/sr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="sr">
+                      Serbian (sr)
+                    </option>
+                    <option data-language-url="/sk/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="sk">
+                      Slovak (sk)
+                    </option>
+                    <option data-language-url="/es/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="es">
+                      Spanish (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="es-419">
+                      Spanish (es-419)
+                    </option>
+                    <option data-language-url="/sv/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="sv">
+                      Swedish (sv)
+                    </option>
+                    <option data-language-url="/th/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="th">
+                      Thai (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="tr">
+                      Turkish (tr)
+                    </option>
+                    <option data-language-url="/ug/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ug">
+                      Uighur (ug)
+                    </option>
+                    <option data-language-url="/uk/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="uk">
+                      Ukrainian (uk)
+                    </option>
+                    <option data-language-url="/vi/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="vi">
+                      Vietnamese (vi)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+
+        </div>
+        <nav>
+          <li class="scripts-index-link"><a href="/en/scripts">Scripts</a></li>
+            <li class="forum-link"><a href="/en/discussions">Forum</a></li>
+          <li class="help-link"><a href="/en/help">Help</a></li>
+          <li class="with-submenu">
+            <a href="#" onclick="return false">More</a>
+            <nav>
+              <li><a href="/en/search">Advanced search</a></li>
+              <li><a href="/en/users">User list</a></li>
+              <li><a href="/en/scripts/libraries">Libraries</a></li>
+              <li><a href="/en/moderator_actions">Moderator log</a></li>
+            </nav>
+          </li>
+        </nav>
+      </div>
+
+      <div id="mobile-nav">
+        <div class="mobile-nav-opener">☰</div>
+        <nav class="collapsed">
+          <li class="scripts-index-link"><a href="/en/scripts">Scripts</a></li>
+          <li class="forum-link"><a href="/en/discussions">Forum</a></li>
+          <li class="help-link"><a href="/en/help">Help</a></li>
+          <li><a href="/en/search">Advanced search</a></li>
+          <li><a href="/en/users">User list</a></li>
+          <li><a href="/en/scripts/libraries">Libraries</a></li>
+          <li><a href="/en/moderator_actions">Moderator log</a></li>
+            <li class="multi-link-nav">
+              <span class="sign-in-link"><a rel="nofollow" href="/en/users/sign_in?return_to=%2Fen%2Fscripts%2F427237-%25E4%25B8%259C%25E5%258D%2597%25E5%25A4%25A7%25E5%25AD%25A6%25E6%258A%25A2%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%25E6%25AD%25A3%25E5%25BC%258F%25E7%2589%2588%2Fcode">Sign in</a></span>
+            </li>
+          <li>            <form class="language-selector" action="/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ar">
+                      Arabic (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="be">
+                      Belarusian (be)
+                    </option>
+                    <option data-language-url="/nb/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="nb">
+                      Bokmål (nb)
+                    </option>
+                    <option data-language-url="/bg/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="bg">
+                      Bulgarian (bg)
+                    </option>
+                    <option data-language-url="/ckb/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ckb">
+                      Central Kurdish (ckb)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="zh-CN">
+                      Chinese (China) (zh-CN)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="zh-TW">
+                      Chinese (Taiwan) (zh-TW)
+                    </option>
+                    <option data-language-url="/hr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="hr">
+                      Croatian (hr)
+                    </option>
+                    <option data-language-url="/cs/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="cs">
+                      Czech (cs)
+                    </option>
+                    <option data-language-url="/da/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="da">
+                      Danish (da)
+                    </option>
+                    <option data-language-url="/nl/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="nl">
+                      Dutch (nl)
+                    </option>
+                    <option data-language-url="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="en" selected>
+                      English (en)
+                    </option>
+                    <option data-language-url="/eo/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="eo">
+                      Esperanto (eo)
+                    </option>
+                    <option data-language-url="/fil/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/fi/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fi">
+                      Finnish (fi)
+                    </option>
+                    <option data-language-url="/fr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fr">
+                      French (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="fr-CA">
+                      French (Canada) (fr-CA)
+                    </option>
+                    <option data-language-url="/ka/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ka">
+                      Georgian (ka)
+                    </option>
+                    <option data-language-url="/de/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="de">
+                      German (de)
+                    </option>
+                    <option data-language-url="/el/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="el">
+                      Greek (el)
+                    </option>
+                    <option data-language-url="/he/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="he">
+                      Hebrew (he)
+                    </option>
+                    <option data-language-url="/hu/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="hu">
+                      Hungarian (hu)
+                    </option>
+                    <option data-language-url="/id/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="id">
+                      Indonesian (id)
+                    </option>
+                    <option data-language-url="/it/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="it">
+                      Italian (it)
+                    </option>
+                    <option data-language-url="/ja/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ja">
+                      Japanese (ja)
+                    </option>
+                    <option data-language-url="/ko/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ko">
+                      Korean (ko)
+                    </option>
+                    <option data-language-url="/mr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="mr">
+                      Marathi (mr)
+                    </option>
+                    <option data-language-url="/pl/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="pl">
+                      Polish (pl)
+                    </option>
+                    <option data-language-url="/pt/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="pt">
+                      Portuguese (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="pt-BR">
+                      Portuguese (Brazil) (pt-BR)
+                    </option>
+                    <option data-language-url="/ro/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ro">
+                      Romanian (ro)
+                    </option>
+                    <option data-language-url="/ru/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ru">
+                      Russian (ru)
+                    </option>
+                    <option data-language-url="/sr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="sr">
+                      Serbian (sr)
+                    </option>
+                    <option data-language-url="/sk/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="sk">
+                      Slovak (sk)
+                    </option>
+                    <option data-language-url="/es/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="es">
+                      Spanish (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="es-419">
+                      Spanish (es-419)
+                    </option>
+                    <option data-language-url="/sv/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="sv">
+                      Swedish (sv)
+                    </option>
+                    <option data-language-url="/th/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="th">
+                      Thai (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="tr">
+                      Turkish (tr)
+                    </option>
+                    <option data-language-url="/ug/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="ug">
+                      Uighur (ug)
+                    </option>
+                    <option data-language-url="/uk/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="uk">
+                      Ukrainian (uk)
+                    </option>
+                    <option data-language-url="/vi/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code" value="vi">
+                      Vietnamese (vi)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+</li>
+        </nav>
+      </div>
+
+      <script>
+        /* submit is handled by js if enabled */
+        document.querySelectorAll(".language-selector-submit").forEach((lss) => { lss.style.display = "none" })
+      </script>
+    </div>
+  </header>
+
+  <div class="width-constraint">
+
+      <section id="script-info">
+    <ul id="script-links" class="tabs">
+      <li><a href="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88"><span>Info</span></a></li>
+      <li class="current" aria-current="page"><span>Code</span></li>
+      <li><a href="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/versions"><span>History</span></a></li>
+      <li><a href="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/feedback"><span>Feedback (12)</span></a></li>
+      <li><a href="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/stats"><span>Stats</span></a></li>
+    </ul>
+    <header>
+      <h2>东南大学抢课助手正式版</h2>
+      <p id="script-description" class="script-description">听说你抢不到课</p>
+    </header>
+    <div id="script-content">
+      
+
+      <div id="install-area">
+          
+<a class="install-link" data-install-format="js" data-ping-url="/scripts/427237/install-ping" data-post-install-url="https://greasyfork.org/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/post-install" data-ip-address="67.209.183.176" data-script-id="427237" data-ping-key="ec8f6f51ad6710cd84d96f00c40131075ea954a6" data-is-previous-version="false" data-previous-version-warning="This is not the latest version of this script. If you install it, you will never be updated to a newer version. Install anyway?" rel="nofollow" data-script-name="东南大学抢课助手正式版" data-script-namespace="http://tampermonkey.net/" data-script-version="1.0.2" data-update-label="Update to version 1.0.2" data-downgrade-label="Downgrade to version 1.0.2" data-reinstall-label="Reinstall version 1.0.2" href="https://update.greasyfork.org/scripts/427237/%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88.user.js">Install this script</a><a class="install-help-link" title="How to install" rel="nofollow" href="/en/help/installing-user-scripts">?</a>
+      </div>
+
+
+
+<dialog id="installation-instructions-modal-js" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      How to install
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      You will need to install an extension such as <a target="tampermonkey" href="https://addons.mozilla.org/firefox/addon/tampermonkey/">Tampermonkey</a>, <a target="greasemonkey" href="https://addons.mozilla.org/firefox/addon/greasemonkey/">Greasemonkey</a> or <a target="violentmonkey" href="https://addons.mozilla.org/firefox/addon/violentmonkey/">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      You will need to install an extension such as <a target="tampermonkey" href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a> or <a target="violentmonkey" href="https://chrome.google.com/webstore/detail/violent-monkey/jinjaccalgkegednnccohejagnlnfdag">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      You will need to install an extension such as <a target="tampermonkey" href="https://addons.opera.com/extensions/details/tampermonkey-beta/">Tampermonkey</a> or <a target="violentmonkey" href="https://violentmonkey.github.io/get-it/">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      You will need to install an extension such as <a target="tampermonkey" href="https://www.tampermonkey.net/?browser=safari">Tampermonkey</a> or <a target="Userscripts" href="https://apps.apple.com/app/userscripts/id1463298887">Userscripts</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      You will need to install an extension such as <a target="tampermonkey" href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd">Tampermonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      You will need to install a user script manager extension to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">(I already have a user script manager, let me install it!)</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      OK
+    </button>
+  </footer>
+</dialog>
+
+<dialog id="installation-instructions-modal-css" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      How to install
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      You will need to install an extension such as <a target="stylus" href="https://addons.mozilla.org/firefox/addon/styl-us/">Stylus</a> to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      You will need to install an extension such as <a target="stylus" href="https://chrome.google.com/webstore/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne">Stylus</a> to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      You will need to install an extension such as <a target="stylus" href="https://addons.opera.com/extensions/details/stylus/">Stylus</a> to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      You will need to install a user style manager extension to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      You will need to install a user style manager extension to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      You will need to install a user style manager extension to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">(I already have a user style manager, let me install it!)</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      OK
+    </button>
+  </footer>
+</dialog>
+
+
+
+<div id="script-feedback-suggestion">
+    <a rel="nofollow" href="/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/feedback#post-discussion">Ask a question, post a review</a>, or <a rel="nofollow" href="/en/reports/new?item_class=script&amp;item_id=427237">report the script</a>.
+</div>
+
+
+
+  <div class="ad ad-ga" id="script-show-code-ad">
+    <div class="ad-content">
+        <ins class="adsbygoogle"
+             style="display:block; text-align:center;"
+             data-ad-layout="in-article"
+             data-ad-format="fluid"
+             data-ad-client="ca-pub-2247465624637408"
+             data-ad-slot="2579817802"></ins>
+        <script>
+          (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    </div>
+  </div>
+
+    <div class="ad ad-ea" id="script-show-code-ad-fallback" style="display:none;">
+  <div class="ad-content">
+    <div id="script-show-code-ea_image_fallback-fallback" class="flat ethical-ads adaptive" data-ea-publisher="greasyfork" data-ea-type="image" data-ea-manual="true"></div>
+  </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
+
+<div>
+  <input type="checkbox" id="wrap-lines" checked value="1"><label for="wrap-lines" class="checkbox-label">Wrap lines</label>
+</div>
+<div class="code-container">
+  <pre class="prettyprint linenums wrap lang-js">// ==UserScript==
+// @name        东南大学抢课助手正式版
+// @namespace   http://tampermonkey.net/
+// @version     1.0.2
+// @description 听说你抢不到课
+// @author      realhuhu
+// @license     MIT
+// @match       http://newxk.urp.seu.edu.cn/xsxk/elective/grablessons?*
+// @run-at      document-loaded
+// @icon        https://huhu-1304907527.cos.ap-nanjing.myqcloud.com/share/qkzs
+// ==/UserScript==
+
+(function () {
+  //版本
+  let version = [1, 0, 2]
+
+  //请求
+  let request = axios.create();
+
+  //提示
+  let tip = grablessonsVue.$message
+
+  //设置
+  let settings = {
+    auto: false
+  }
+
+  //所选课程
+  let enrollDict = {};
+
+  //挂载的顶层组件
+  let app = document.getElementById(&quot;xsxkapp&quot;);
+
+  //组件生成
+  (self =&gt; {
+    //生成组件
+    self.mount = () =&gt; {
+      self.createTag()
+      self.createPanel()
+      self.createMask()
+    }
+
+    //生成节点
+    self.createNode = ({tagName, text, HTML, obj, ev, children}) =&gt; {
+      let node = document.createElement(tagName)
+      if (obj) {
+        for (let key of Object.keys(obj)) {
+          node.setAttribute(key, obj[key])
+        }
+      }
+      if (text) {
+        node.innerText = text
+      }
+      if (HTML) {
+        node.innerHTML = HTML
+      }
+      if (ev) {
+        for (let key of Object.keys(ev)) {
+          node.addEventListener(key, ev[key])
+        }
+      }
+      if (children) {
+        children.map(x =&gt; node.appendChild(x))
+      }
+      return node
+    }
+
+    //生成打开和关闭面板的按钮
+    self.createTag = () =&gt; {
+      let node = self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          &quot;class&quot;: &quot;slideMenu&quot;,
+          &quot;style&quot;: `
+              position: fixed; 
+              top: 250px;
+              left:30px;width: 
+              40px;z-index: 1314;
+          `
+        },
+        children: [self.createNode(
+          {
+            tagName: &quot;div&quot;,
+            obj: {
+              &quot;class&quot;: &quot;centre-btn item el-icon-date&quot;,
+              &quot;style&quot;: `background-color: #2b2b2b`
+            },
+            ev: {
+              &quot;mousedown&quot;: e =&gt; {
+                methods.drag(e, node)
+              }
+            }
+          })]
+      })
+      app.appendChild(node)
+    }
+
+    //生成面板
+    self.createPanel = () =&gt; {
+      app.appendChild(self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          &quot;id&quot;: &quot;panel&quot;,
+          &quot;style&quot;: `
+              position: fixed;
+              right: 0;
+              top:0 ;
+              z-index: 520;
+              width: 350px; 
+              height: 100%;
+              background-color: rgba(61,72,105,0.8);
+              display: none
+          `
+        },
+        children: [
+          self.createNode({tagName: &quot;hr&quot;}),
+          self.createNode({
+            tagName: &quot;h1&quot;,
+            text: &quot;东大抢课脚本&quot;,
+            obj: {
+              &quot;style&quot;: &quot;color: #c7e6e6; text-align: center&quot;,
+            }
+          }),
+          self.createNode({tagName: &quot;hr&quot;}),
+          self.createNode({
+            tagName: &quot;input&quot;,
+            obj: {
+              &quot;id&quot;: &quot;input-box&quot;,
+              &quot;class&quot;: &quot;el-input__inner&quot;,
+              &quot;style&quot;: `
+                  width: 96%;
+                  margin-left: 2%;
+                  height: 30px
+              `,
+              &quot;placeholder&quot;: &quot;输入课程代码(不区分大小写)，按回车确定&quot;
+            },
+            ev: {
+              &quot;keydown&quot;: methods.enter
+            }
+          }),
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              &quot;id&quot;: &quot;list-wrap&quot;,
+              &quot;style&quot;: `
+                  overflow: auto;
+                  margin: 10px;
+                  border:1px solid white;
+                  height: 50%
+              `
+            }
+          }),
+          self.createNode({
+            tagName: &quot;button&quot;,
+            obj: {
+              &quot;id&quot;: &quot;enroll-button&quot;,
+              &quot;class&quot;: &quot;el-button el-button--primary el-button--small is-round&quot;,
+              &quot;style&quot;: `
+                  margin: 20px;
+                  position: absolute;
+                  right:2%;
+                  bottom:25%
+              `
+            },
+            text: &quot;一键抢课&quot;,
+            ev: {
+              &quot;click&quot;: () =&gt; {
+                methods.enroll()
+              }
+            }
+          }),
+          self.createNode({
+            tagName: &quot;button&quot;,
+            obj: {
+              &quot;id&quot;: &quot;enroll-button&quot;,
+              &quot;class&quot;: &quot;el-button el-button--default el-button--small is-round&quot;,
+              &quot;style&quot;: `
+                  margin: 20px;
+                  position: absolute;
+                  right:2%;
+                  bottom:20%
+              `
+            },
+            text: &quot;高级设置&quot;,
+            ev: {
+              &quot;click&quot;: () =&gt; {
+                document.getElementById(&quot;mask&quot;).style.display = &quot;block&quot;
+                self.createPopUp(&quot;高级设置&quot;, self.createAdvancedPop())
+              }
+            }
+          }),
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              &quot;style&quot;: `
+                      margin: 20px;
+                      position: absolute;
+                      right:2%;
+                      bottom:10%;
+                      color: white;
+                      float: right
+                  `
+            },
+            text: &quot;ver&quot; + version.join(&quot;.&quot;)
+          }),
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              &quot;id&quot;: &quot;update-tip&quot;,
+              &quot;style&quot;: `
+                      margin: 20px;
+                      position: absolute;
+                      right:2%;
+                      bottom:5%;
+                      color: red;
+                      float: right;
+                      cursor: pointer;
+                      display:none
+                  `
+            },
+            text: &quot;有新版本，点击更新。更新后请重新进入选课页面&quot;,
+            ev: {
+              &quot;click&quot;: () =&gt; {
+                window.open(&quot;https://greasyfork.org/scripts/427237&quot;)
+              }
+            }
+          })
+        ]
+      }))
+      self.reloadList()
+    }
+
+    //生成遮罩
+    self.createMask = () =&gt; {
+      let node = self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          &quot;id&quot;: &quot;mask&quot;,
+          &quot;style&quot;: `
+              position: fixed;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              z-index: 2002;
+              background-color: rgba(66, 66, 66, 0.6);
+              display: none
+          `
+        },
+        ev: {
+          &quot;click&quot;: () =&gt; {
+            node.style.display = &quot;none&quot;
+            app.removeChild(document.getElementsByClassName(&quot;temp&quot;)[0])
+          }
+        }
+      })
+      app.appendChild(node)
+    }
+
+    //生成抢课表格
+    self.reloadList = () =&gt; {
+      let list_wrap = document.querySelector(&quot;#panel #list-wrap&quot;)
+      list_wrap.innerHTML = &quot;&quot;
+      if (JSON.stringify(enrollDict) === &#39;{}&#39;) {
+        list_wrap.innerHTML = &quot;&lt;h3 style=&#39;text-align: center;color:lightblue;margin-top: 50%&#39;&gt;还未选择课程&lt;/h3&gt;&quot;
+      } else {
+        list_wrap.appendChild(self.createNode({
+          tagName: &quot;table&quot;,
+          obj: {
+            width: &quot;100%&quot;,
+            border: &quot;1&quot;,
+            style: `
+                background-color: rgba(0,0,0,0);
+                color: lightblue
+            `
+          },
+          children: [self.createNode({
+            tagName: &quot;tr&quot;,
+            obj: {
+              style: `
+                    height: 30px;
+                    background-color: #255e95
+                `
+            },
+            HTML: `
+                &lt;th style=&quot;text-align:center;width: 55%&quot;&gt;课程&lt;/th&gt;
+                &lt;th style=&quot;text-align:center;width: 15%&quot;&gt;教师&lt;/th&gt;
+                &lt;th style=&quot;text-align:center;width: 30%&quot;&gt;操作&lt;/th&gt;
+              `
+          }),
+            ...Object.keys(enrollDict).filter(key =&gt; enrollDict[key].courseBatch === grablessonsVue.lcParam.currentBatch.code).map(key =&gt; {
+              return self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `height: 30px`
+                },
+                children: [
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: {
+                      style: `text-align: center`
+                    },
+                    text: enrollDict[key].courseName
+                  }),
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: {
+                      style: `text-align: center`
+                    },
+                    text: enrollDict[key].teacherName
+                  }),
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: {
+                      style: `text-align: center`
+                    },
+                    children: [
+                      self.createNode({
+                        tagName: &quot;button&quot;,
+                        text: &quot;删除&quot;,
+                        obj: {
+                          &quot;style&quot;: `
+                            color: red; 
+                            background: transparent; 
+                            border: 1px solid red;
+                            border-radius: 6px; 
+                            text-align: center;
+                            cursor: pointer;
+                            text-decoration: none;
+                            margin-right: 2px
+                          `
+                        },
+                        ev: {
+                          &quot;click&quot;: () =&gt; {
+                            delete enrollDict[key]
+                            methods.saveCourse()
+                            tip({
+                              type: &quot;success&quot;,
+                              message: &quot;已删除&quot;,
+                              duration: 1000
+                            })
+                            self.reloadList()
+                          }
+                        }
+                      }),
+                      self.createNode({
+                        tagName: &quot;button&quot;,
+                        text: &quot;更多&quot;,
+                        obj: {
+                          &quot;style&quot;: `
+                            color: orange; 
+                            background: transparent; 
+                            border: 1px solid orange;
+                            border-radius: 6px; 
+                            text-align: center;
+                            cursor: pointer;
+                            text-decoration: none;
+                            margin-left: 2px
+                          `
+                        },
+                        ev: {
+                          &quot;click&quot;: () =&gt; {
+                            document.getElementById(&quot;mask&quot;).style.display = &quot;block&quot;
+                            self.createPopUp(&quot;更多操作&quot;, self.createCourseDetailPop(enrollDict[key]))
+                          }
+                        }
+                      })
+                    ]
+                  })
+                ]
+              })
+            })]
+
+        }))
+      }
+    }
+
+    //生成弹出窗
+    self.createPopUp = (title, node, width, height) =&gt; app.appendChild(self.createNode({
+      tagName: &quot;div&quot;,
+      obj: {
+        &quot;class&quot;: &quot;temp&quot;,
+        &quot;style&quot;: `
+              position: fixed;
+              left: ${width ? 50 - 0.5 * width : 30}%;
+              top: ${height ? 50 - 0.5 * height : 30}%;
+              width: ${width || 40}%;
+              height: ${height || 40}%;
+              z-index: 2021;
+              background-color: white;
+              border-radius: 30px
+          `
+      },
+      children: [
+        self.createNode({
+          tagName: &quot;h1&quot;,
+          obj: {
+            &quot;style&quot;: `
+                  margin: 20px 0;
+                  width: 100%;
+                  text-align: center;
+              `
+          },
+          text: title
+        }),
+        node,
+        self.createNode({
+          tagName: &quot;button&quot;,
+          obj: {
+            &quot;class&quot;: &quot;el-button el-button--default el-button--large is-round&quot;,
+            &quot;style&quot;: `
+                  margin: 20px;
+                  position: absolute;
+                  right:10%;
+                  bottom:0
+              `
+          },
+          text: &quot;确定&quot;,
+          ev: {
+            &quot;click&quot;: () =&gt; {
+              document.getElementById(&quot;mask&quot;).style.display = &quot;none&quot;
+              app.removeChild(document.getElementsByClassName(&quot;temp&quot;)[0])
+            }
+          }
+        })
+      ]
+    }))
+
+    //生成课程详情页
+    self.createCourseDetailPop = course =&gt; self.createNode({
+      tagName: &quot;div&quot;,
+      obj: {
+        &quot;style&quot;: `margin:30px`
+      },
+    })
+
+    //生成高级操作
+    self.createAdvancedPop = () =&gt; self.createNode({
+      tagName: &quot;div&quot;,
+      obj: {
+        &quot;style&quot;: `
+            margin:50px
+        `
+      },
+      children: [
+        self.createNode({
+          tagName: &quot;div&quot;,
+          children: [
+            self.createNode({
+              tagName: &quot;input&quot;,
+              obj: {
+                &quot;id&quot;: &quot;auto&quot;,
+                &quot;type&quot;: &quot;checkbox&quot;,
+                &quot;value&quot;: &quot;settings.auto&quot;
+              }
+            }),
+            self.createNode({
+              tagName: &quot;label&quot;,
+              obj: {
+                &quot;for&quot;: &quot;auto&quot;
+              },
+              text: &quot;自动抢课（开发中）&quot;
+            })
+          ]
+        })
+      ]
+    })
+
+  })(window.Components = window.Components || {})
+
+  let methods = {
+    //初始化数据
+    init() {
+      methods.checkVersion()
+      let raw = JSON.parse(localStorage.getItem(&quot;huhu&quot;))
+      if (raw) {
+        settings = raw.settings
+        if (settings.jwt === sessionStorage.token) {
+          enrollDict = raw.enrollDict
+        } else if (JSON.stringify(raw.enrollDict) !== &quot;{}&quot;) {
+          tip({
+            type: &quot;warning&quot;,
+            message: &quot;登录信息发生变动，已清空抢课列表&quot;,
+            duration: 1000
+          })
+          enrollDict = {}
+          settings.jwt = sessionStorage.token
+          methods.saveCourse()
+        }
+      } else {
+        settings.jwt = sessionStorage.token
+      }
+      window.Components.reloadList()
+    },
+    checkVersion() {
+      request.get(&quot;https://api.seutools.com/enroll/&quot;, {
+        transformRequest: [(data, headers) =&gt; {
+          delete headers.Authorization
+          delete headers.batchId
+          return data
+        }]
+      }).then(res =&gt; {
+        if (res.data.version.split(&quot;.&quot;).map(x =&gt; parseInt(x)) &gt; version) {
+          document.getElementById(&quot;update-tip&quot;).style.display = &quot;block&quot;
+        }
+      })
+    },
+    //保存数据
+    saveCourse() {
+      localStorage.setItem(&quot;huhu&quot;, JSON.stringify({enrollDict, settings}))
+    },
+    //处理按钮拖动与点击
+    drag(e, node) {
+      let is_move = false
+      let x = e.pageX - node.offsetLeft;
+      let y = e.pageY - node.offsetTop;
+      document.onmousemove = function (e) {
+        node.style.left = e.pageX - x + &#39;px&#39;;
+        node.style.top = e.pageY - y + &#39;px&#39;;
+        is_move = true
+      }
+      document.onmouseup = function () {
+        document.onmousemove = document.onmouseup = null;
+        if (!is_move) {
+          let panel = document.getElementById(&quot;panel&quot;)
+          panel.style.display === &quot;block&quot; ? panel.style.display = &quot;none&quot; : panel.style.display = &quot;block&quot;
+        }
+        is_move = false
+      }
+    },
+    //处理输入框实践
+    enter(e) {
+      let evt = window.event || e;
+      if (evt.keyCode === 13) {
+        let currentType = grablessonsVue.teachingClassType
+        let currentCourseList = grablessonsVue.courseList
+        let node = document.getElementById(&quot;input-box&quot;)
+        let code = node.value.toUpperCase()
+        if (!code) return
+        if (enrollDict[code]) {
+          tip({
+            type: &quot;warning&quot;,
+            message: &quot;已经添加过了&quot;,
+            duration: 1000
+          })
+          return
+        }
+        let courseCode = code.substring(0, 8)
+        let teacherCode = code.substring(8)
+
+        let courseFlag = false, teacherFlag = false
+        for (let course of currentCourseList) {
+          if (course.KCH === courseCode) {
+            courseFlag = true
+            if (grablessonsVue.teachingClassType !== &#39;XGKC&#39;) {
+              for (let teacher of course.tcList) {
+                if (teacher.KXH === teacherCode) {
+                  enrollDict[code] = {
+                    courseBatch: grablessonsVue.lcParam.currentBatch.code,
+                    courseCode: teacher.JXBID,
+                    courseType: currentType,
+                    courseName: course.KCM,
+                    teacherName: teacher.SKJS,
+                    secretVal: teacher.secretVal,
+                  }
+                  teacherFlag = true;
+                }
+              }
+            } else {
+              if (course.KXH === teacherCode) {
+                enrollDict[code] = {
+                  courseBatch: grablessonsVue.lcParam.currentBatch.code,
+                  courseCode: course.JXBID,
+                  courseType: currentType,
+                  courseName: course.KCM,
+                  teacherName: course.SKJS,
+                  secretVal: course.secretVal,
+                }
+                teacherFlag = true
+              }
+            }
+          }
+        }
+        if (!courseFlag) {
+          tip({
+            type: &quot;warning&quot;,
+            message: &quot;没有查找到课程，请检查课程代码&quot;,
+            duration: 1000
+          })
+        } else if (!teacherFlag) {
+          tip({
+            type: &quot;warning&quot;,
+            message: &quot;没有查找到该教师，请检查教师号&quot;,
+            duration: 1000
+          })
+        } else {
+          tip({
+            type: &quot;success&quot;,
+            message: &quot;添加成功&quot;,
+            duration: 1000
+          })
+          node.value = &quot;&quot;
+          window.Components.reloadList()
+          methods.saveCourse()
+        }
+
+      }
+    },
+    //一键抢课
+    enroll() {
+      let key_list = Object.keys(enrollDict).filter(key =&gt; enrollDict[key].courseBatch === grablessonsVue.lcParam.currentBatch.code)
+      if (!key_list.length) {
+        tip({
+          type: &quot;warning&quot;,
+          message: &quot;还没有输入课程&quot;,
+          duration: 1000
+        })
+      }
+      axios.all(key_list.map(key =&gt; request({
+        url: &quot;/elective/clazz/add&quot;,
+        method: &quot;POST&quot;,
+        headers: {
+          &#39;batchId&#39;: enrollDict[key].courseBatch,
+          &#39;content-type&#39;: &#39;application/x-www-form-urlencoded&#39;
+        },
+        data: Qs.stringify({
+          clazzType: enrollDict[key].courseType,
+          clazzId: enrollDict[key].courseCode,
+          secretVal: enrollDict[key].secretVal
+        })
+      }).then(res =&gt; {
+        let type = res.data.code === 100 ? &quot;success&quot; : &quot;warning&quot;
+        tip({
+          type,
+          message: enrollDict[key].courseName + &quot;:&quot; + res.data.msg,
+          duration: 1000
+        })
+      })))
+    }
+  }
+  window.Components.mount();
+  methods.init()
+})();</pre>
+</div>
+
+    </div>
+  </section>
+
+  </div>
+
+    <script>
+      (function (d) {
+      window.rum = {key: '29razx6j'};
+      var script = d.createElement('script');
+      script.src = 'https://cdn.perfops.net/rom3/rom3.min.js';
+      script.type = 'text/javascript';
+      script.defer = true;
+      script.async = true;
+      d.getElementsByTagName('head')[0].appendChild(script);
+      })(document);
+    </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"3b2c78865ea34bf4ad258da879f720f8","r":1}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31208dbd8eb191b',t:'MTc4NzczODg5OQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+

@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <style>
+    :root {
+      --primary: #634798;
+      --primary-strong: #523a80;
+      --primary-soft: #f0ebfa;
+      --bg: #f5f6fb;
+      --surface: #ffffff;
+      --surface-muted: #f8f9fc;
+      --border: #e4e7ef;
+      --text: #1f2430;
+      --muted: #6b7280;
+      --faint: #9aa3b2;
+      --success: #14804a;
+      --success-soft: #e8f6ef;
+      --warning: #9a6700;
+      --warning-soft: #fff5d6;
+      --danger: #b42318;
+      --danger-soft: #fde7e5;
+      --info: #2563eb;
+      --info-soft: #eaf1ff;
+      --radius: 8px;
+      --shadow: 0 12px 28px rgba(24, 28, 41, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 360px;
+      min-height: 480px;
+      margin: 0;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid rgba(99, 71, 152, 0.3);
+      outline-offset: 2px;
+    }
+
+    .shell {
+      padding: 12px;
+    }
+
+    .topbar {
+      padding: 14px;
+      color: #fff;
+      background: #2d2938;
+      border-radius: 0 0 12px 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .brand-row,
+    .tab-list,
+    .status-grid,
+    .section-head,
+    .setting-row,
+    .field-head,
+    .action-row,
+    .log-head,
+    .course-meta,
+    .grab-summary {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand-row {
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .brand-subtitle {
+      margin-top: 3px;
+      color: rgba(255, 255, 255, 0.74);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .version-badge {
+      flex: 0 0 auto;
+      padding: 3px 8px;
+      border: 1px solid rgba(255, 255, 255, 0.32);
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.94);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-grid {
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .status-grid .pill:last-child {
+      display: none;
+    }
+
+    .pill {
+      min-height: 23px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      font-size: 11px;
+      line-height: 1;
+    }
+
+    .pill .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .tabs-card {
+      margin-top: 12px;
+      padding: 4px;
+      border-radius: 10px;
+      background: #eceff6;
+      border: 1px solid var(--border);
+    }
+
+    .tab-list {
+      gap: 4px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      height: 34px;
+      border-radius: 7px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(28, 32, 44, 0.08);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .card {
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: 0 1px 2px rgba(23, 30, 47, 0.04);
+    }
+
+    .status-card {
+      border-color: rgba(99, 71, 152, 0.22);
+      background: linear-gradient(135deg, #fff 0%, #faf8ff 100%);
+    }
+
+    .status-main {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .status-title {
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .status-copy {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 7px;
+      margin-top: 11px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .feature-line {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .feature-check {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      color: var(--success);
+      background: var(--success-soft);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    details.card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    details.card > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-height: 50px;
+      padding: 12px;
+      cursor: pointer;
+      list-style: none;
+    }
+
+    details.card > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.card > summary::after {
+      content: "›";
+      color: var(--faint);
+      font-size: 19px;
+      line-height: 1;
+      transition: transform 0.16s ease;
+    }
+
+    details.card[open] > summary::after {
+      transform: rotate(90deg);
+    }
+
+    .details-content {
+      padding: 0 12px 12px;
+    }
+
+    .account-summary {
+      min-width: 0;
+    }
+
+    .account-summary .section-note {
+      margin: 3px 0 0;
+    }
+
+    .section-head {
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 750;
+      color: var(--text);
+    }
+
+    .section-note {
+      margin-top: -3px;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 21px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .badge.success {
+      color: var(--success);
+      background: var(--success-soft);
+    }
+
+    .badge.warning {
+      color: var(--warning);
+      background: var(--warning-soft);
+    }
+
+    .badge.danger {
+      color: var(--danger);
+      background: var(--danger-soft);
+    }
+
+    .badge.info {
+      color: var(--info);
+      background: var(--info-soft);
+    }
+
+    .field {
+      margin-top: 10px;
+    }
+
+    .field:first-child {
+      margin-top: 0;
+    }
+
+    .field-head {
+      justify-content: space-between;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface-muted);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      height: 38px;
+      padding: 0 10px;
+    }
+
+    input.with-action {
+      padding-right: 55px;
+    }
+
+    textarea {
+      min-height: 92px;
+      max-height: 150px;
+      resize: vertical;
+      padding: 9px 10px;
+      line-height: 1.5;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: rgba(99, 71, 152, 0.65);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(99, 71, 152, 0.12);
+    }
+
+    .ghost-input-btn {
+      position: absolute;
+      right: 5px;
+      top: 5px;
+      height: 28px;
+      padding: 0 8px;
+      border-radius: 6px;
+      color: var(--primary);
+      background: transparent;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ghost-input-btn:hover {
+      background: var(--primary-soft);
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .danger-btn {
+      height: 36px;
+      border-radius: 7px;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 750;
+      transition: transform 0.12s ease, background 0.16s ease, border-color 0.16s ease;
+    }
+
+    .primary-btn:active,
+    .secondary-btn:active,
+    .danger-btn:active {
+      transform: translateY(1px);
+    }
+
+    .primary-btn {
+      color: #fff;
+      background: var(--primary);
+    }
+
+    .primary-btn:hover:not(:disabled) {
+      background: var(--primary-strong);
+    }
+
+    .secondary-btn {
+      color: var(--primary);
+      background: #fff;
+      border: 1px solid rgba(99, 71, 152, 0.22);
+    }
+
+    .secondary-btn:hover:not(:disabled) {
+      background: var(--primary-soft);
+      border-color: rgba(99, 71, 152, 0.35);
+    }
+
+    .danger-btn {
+      color: #fff;
+      background: var(--danger);
+    }
+
+    .danger-btn:hover:not(:disabled) {
+      background: #941b12;
+    }
+
+    .action-row {
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .action-row button {
+      flex: 1;
+    }
+
+    .setting-row {
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 42px;
+      padding: 9px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .setting-row.emphasis {
+      margin: 0 -12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(99, 71, 152, 0.17);
+      border-radius: 8px;
+      background: #fbf9ff;
+    }
+
+    .setting-row:first-child {
+      border-top: 0;
+      padding-top: 0;
+    }
+
+    .ocr-preview {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 64px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      background: var(--surface-muted);
+    }
+
+    .ocr-preview-code {
+      color: var(--text);
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 20px;
+      font-weight: 750;
+      line-height: 1.1;
+      letter-spacing: 0;
+    }
+
+    .ocr-preview-code.empty {
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .ocr-preview-meta,
+    .ocr-preview-details {
+      overflow-wrap: anywhere;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
+
+    .ocr-preview-meta {
+      margin-top: 4px;
+    }
+
+    .ocr-preview-details {
+      display: none;
+      grid-column: 1 / -1;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 10px;
+    }
+
+    .ocr-preview-details.has-content {
+      display: block;
+    }
+
+    .setting-title {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .setting-desc {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .switch {
+      position: relative;
+      flex: 0 0 auto;
+      width: 38px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #c5cad6;
+      transition: background 0.18s ease;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.24);
+      transition: transform 0.18s ease;
+    }
+
+    .switch input:checked + .slider {
+      background: var(--primary);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(16px);
+    }
+
+    .course-meta {
+      justify-content: space-between;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .interval-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .interval-option {
+      height: 31px;
+      border-radius: 7px;
+      color: var(--muted);
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .interval-option.active {
+      color: var(--primary);
+      border-color: rgba(99, 71, 152, 0.42);
+      background: var(--primary-soft);
+    }
+
+    .hidden-select {
+      display: none;
+    }
+
+    .grab-summary {
+      justify-content: space-between;
+      gap: 8px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .summary-main {
+      color: var(--text);
+      font-weight: 750;
+    }
+
+    .summary-sub {
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .log-card {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .log-head {
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .log-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tiny-btn {
+      height: 24px;
+      padding: 0 8px;
+      border-radius: 6px;
+      color: var(--muted);
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .tiny-btn:hover {
+      color: var(--primary);
+      background: var(--primary-soft);
+      border-color: rgba(99, 71, 152, 0.24);
+    }
+
+    #grabStatus {
+      min-height: 130px;
+      max-height: 190px;
+      overflow-y: auto;
+      padding: 10px 12px;
+      background: #121624;
+      color: #dce2f0;
+      font-family: Consolas, "SFMono-Regular", monospace;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .log-line {
+      margin: 0 0 5px;
+      word-break: break-word;
+    }
+
+    .log-line.success {
+      color: #7de0a6;
+    }
+
+    .log-line.warn {
+      color: #f7d774;
+    }
+
+    .log-line.error {
+      color: #ff8b86;
+    }
+
+    .empty-log {
+      color: #778195;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .sticky-action {
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      padding: 12px 0 2px;
+      background: linear-gradient(to bottom, rgba(245, 246, 251, 0), var(--bg) 34%);
+    }
+
+    .secondary-link {
+      color: var(--primary);
+      background: transparent;
+      font-size: 11px;
+      font-weight: 750;
+    }
+
+    .dev-tools {
+      border-style: dashed;
+    }
+
+    body[data-build="release"] [data-dev-only] {
+      display: none !important;
+    }
+
+    .footer-actions button {
+      flex: 1;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 12px;
+      z-index: 10;
+      min-width: 150px;
+      max-width: 300px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      color: #fff;
+      background: rgba(28, 32, 44, 0.94);
+      box-shadow: var(--shadow);
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0;
+      transform: translate(-50%, 10px);
+      pointer-events: none;
+      transition: opacity 0.16s ease, transform 0.16s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  </style>
+</head>
+
+<body data-build="dev">
+  <div class="topbar">
+    <div class="brand-row">
+      <div>
+        <div class="brand-title">NJU Login Pro</div>
+        <div class="brand-subtitle">本地智能识别 · 自动登录 · 选课监控</div>
+      </div>
+      <span class="version-badge" id="versionBadge">v...</span>
+    </div>
+    <div class="status-grid">
+      <span class="pill" id="loginStatePill"><span class="dot"></span><span>读取设置中</span></span>
+      <span class="pill" id="grabStatePill"><span class="dot"></span><span>选课未运行</span></span>
+    </div>
+  </div>
+
+  <div class="shell">
+    <div class="tabs-card">
+      <div class="tab-list" role="tablist">
+        <button class="tab-btn active" id="loginTab" data-tab="login" role="tab" aria-controls="tab-login" aria-selected="true">登录助手</button>
+        <button class="tab-btn" id="grabTab" data-tab="grab" role="tab" aria-controls="tab-grab" aria-selected="false">选课监控</button>
+      </div>
+    </div>
+
+    <div class="tab-panel active" id="tab-login" role="tabpanel" aria-labelledby="loginTab">
+      <div class="card status-card">
+        <div class="status-main">
+          <div>
+            <div class="status-title" id="loginStatusTitle">自动登录准备中</div>
+            <div class="status-copy" id="loginStatusSub">配置账号后，认证页与选课页都会自动登录。</div>
+          </div>
+          <span class="badge info" id="loginStatusBadge">读取中</span>
+        </div>
+        <div class="feature-list">
+          <div class="feature-line"><span class="feature-check">✓</span><span>本地智能识别默认开启，低置信时自动回退 OCR。</span></div>
+          <div class="feature-line"><span class="feature-check">✓</span><span>验证码图片和账号只在浏览器本地处理。</span></div>
+        </div>
+      </div>
+
+      <details class="card account-card" id="accountCard" open>
+        <summary>
+          <div class="account-summary">
+            <div class="section-title">账号</div>
+            <div class="section-note" id="accountSummary">首次使用时配置，之后可随时修改。</div>
+          </div>
+          <span class="badge warning" id="credentialBadge">未配置</span>
+        </summary>
+        <div class="details-content">
+        <div class="field">
+          <label class="field-head" for="username">学号 / 工号</label>
+          <input type="text" id="username" autocomplete="username" placeholder="请输入学号或工号">
+        </div>
+        <div class="field">
+          <label class="field-head" for="password">密码</label>
+          <div class="input-wrap">
+            <input class="with-action" type="password" id="password" autocomplete="current-password" placeholder="仅保存在浏览器本地">
+            <button class="ghost-input-btn" id="togglePassword" type="button">显示</button>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="primary-btn" id="saveBtn" disabled>已保存</button>
+        </div>
+        </div>
+      </details>
+
+      <div class="card">
+        <div class="section-head">
+          <div>
+            <div class="section-title">自动登录</div>
+            <div class="section-note">两种登录独立控制；正常使用时保持开启即可。</div>
+          </div>
+          <span class="badge info" id="loginModeBadge">自动登录</span>
+        </div>
+        <div class="setting-row emphasis">
+          <div>
+            <div class="setting-title">统一认证自动登录</div>
+            <div class="setting-desc">自动填写、识别验证码并提交统一认证页。</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="isEnabled" aria-label="统一认证自动登录"><span class="slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-title">选课系统自动登录</div>
+            <div class="setting-desc">自动识别点击验证码、按顺序点击并提交。</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="clickCaptchaAutoLogin" aria-label="选课系统自动登录"><span class="slider"></span></label>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="secondary-btn" id="authPageBtn" type="button">打开认证页</button>
+        <button class="secondary-link" id="githubBtn" type="button">项目主页</button>
+      </div>
+
+      <details class="card dev-tools" data-dev-only>
+        <summary><div class="section-title">开发诊断</div></summary>
+        <div class="details-content">
+          <div class="setting-row">
+            <div>
+              <div class="setting-title">强制填充账号</div>
+              <div class="setting-desc">认证页面脚本覆盖输入框时启用。</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="forceFill" aria-label="强制填充账号"><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-title">启用点击验证码识别</div>
+              <div class="setting-desc">在选课页持续识别并标出点击顺序。</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="clickCaptchaSolverEnabled" aria-label="启用点击验证码识别"><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-title">自动点击并提交</div>
+              <div class="setting-desc">关闭后只标出识别顺序，不会点击或提交。</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="clickCaptchaAutoClick" aria-label="自动点击并提交"><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <div>
+              <div class="setting-title">统一认证自动提交（调试）</div>
+              <div class="setting-desc">关闭后仅自动填写，不提交认证页。</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="autoClick" aria-label="统一认证自动提交"><span class="slider"></span></label>
+          </div>
+          <div class="action-row">
+            <button class="secondary-btn" id="runClickCaptchaSolverBtn" type="button" disabled>重新识别当前验证码</button>
+            <button class="secondary-btn" id="clearClickCaptchaSolverBtn" type="button" disabled>清除标点</button>
+          </div>
+        </div>
+      </details>
+    </div>
+
+    <div class="tab-panel" id="tab-grab" role="tabpanel" aria-labelledby="grabTab">
+      <div class="card">
+        <div class="section-head">
+          <div class="section-title">选课监控</div>
+          <span class="badge warning" id="grabBadge">未连接</span>
+        </div>
+        <div class="grab-summary">
+          <div>
+            <div class="summary-main" id="grabSummaryTitle">等待连接选课页面</div>
+            <div class="summary-sub" id="grabSummarySub">打开选课系统后可同步监控状态。</div>
+          </div>
+          <span class="badge info" id="grabRoundBadge">0 轮</span>
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <span>目标课程名称</span>
+            <span id="courseCount">0 门</span>
+          </div>
+          <textarea id="courseNames" placeholder="每行一个课程名，支持模糊匹配"></textarea>
+          <div class="course-meta">
+            <span>建议填写能唯一定位课程的关键词。</span>
+            <button class="tiny-btn" id="openGrabPageBtn" type="button">打开选课页</button>
+          </div>
+        </div>
+        <div class="field">
+          <div class="field-head">
+            <span>刷新间隔</span>
+            <span id="intervalLabel">3s</span>
+          </div>
+          <select class="hidden-select" id="grabInterval" aria-label="刷新间隔">
+            <option value="1000">1s</option>
+            <option value="2000">2s</option>
+            <option value="3000" selected>3s</option>
+            <option value="5000">5s</option>
+            <option value="10000">10s</option>
+            <option value="30000">30s</option>
+          </select>
+          <div class="interval-grid" id="intervalGrid">
+            <button class="interval-option" data-value="1000" type="button">1s</button>
+            <button class="interval-option" data-value="2000" type="button">2s</button>
+            <button class="interval-option active" data-value="3000" type="button">3s</button>
+            <button class="interval-option" data-value="5000" type="button">5s</button>
+            <button class="interval-option" data-value="10000" type="button">10s</button>
+            <button class="interval-option" data-value="30000" type="button">30s</button>
+          </div>
+        </div>
+        <div class="sticky-action">
+        <div class="action-row" style="margin-top:0">
+          <button class="primary-btn" id="grabBtn" disabled>开始监控</button>
+        </div>
+        </div>
+      </div>
+
+      <details class="card dev-tools" data-dev-only>
+        <summary><div class="section-title">点击验证码采样</div><span class="badge warning" id="clickCaptchaCaptureBadge">未连接</span></summary>
+        <div class="details-content">
+        <div class="grab-summary">
+          <div>
+            <div class="summary-main" id="clickCaptchaCaptureTitle">仅记录手动点击</div>
+            <div class="summary-sub" id="clickCaptchaCaptureSub">完成当前验证码要求的点击后自动保存并继续采样。</div>
+          </div>
+          <span class="badge info" id="clickCaptchaSampleCount">0 条</span>
+        </div>
+        <div class="section-note">采样只保存在当前浏览器；遇到三字验证码会自动刷新为四字，不会自动点击或上传图片。</div>
+        <div class="action-row">
+          <button class="primary-btn" id="clickCaptchaCaptureBtn" type="button" disabled>开始采样</button>
+          <button class="secondary-btn" id="exportClickCaptchaBtn" type="button" disabled>导出</button>
+        </div>
+        <div class="course-meta">
+          <span>验证码失败时可删除最近一条。</span>
+          <div style="display:flex;gap:6px">
+            <button class="tiny-btn" id="discardClickCaptchaBtn" type="button" disabled>删除最近</button>
+            <button class="tiny-btn" id="resetClickCaptchaBtn" type="button" style="color:var(--danger);border-color:rgba(180,35,24,.22)">重置全部</button>
+          </div>
+        </div>
+        </div>
+      </details>
+
+      <details class="card log-card">
+        <summary class="log-head">
+          <div class="section-title">运行日志</div>
+        </summary>
+        <div class="log-actions" style="padding:10px 12px 0">
+          <button class="tiny-btn" id="copyLogBtn" type="button">复制</button>
+          <button class="tiny-btn" id="clearLogBtn" type="button">清空</button>
+        </div>
+        <div id="grabStatus">
+          <div class="empty-log">等待启动...</div>
+        </div>
+      </details>
+    </div>
+
+    <details class="card captcha-tools" id="captchaTools" hidden>
+      <summary>
+        <div>
+          <div class="section-title" id="currentCaptchaTitle">验证码测试</div>
+          <div class="section-note" id="currentCaptchaNote">按需查看或重新识别当前页面验证码。</div>
+        </div>
+        <span class="badge warning" id="currentCaptchaBadge">未连接</span>
+      </summary>
+      <div class="details-content">
+        <div class="ocr-preview">
+          <div>
+            <div class="ocr-preview-code empty" id="ocrPreviewCode">等待打开页面</div>
+            <div class="ocr-preview-meta" id="ocrPreviewMeta">请在统一认证页或选课页面打开面板。</div>
+          </div>
+          <button class="secondary-btn" id="recognizeAgainBtn" type="button">重新识别</button>
+          <div class="ocr-preview-details" id="ocrPreviewDetails"></div>
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="popup.js"></script>
+</body>
+
+</html>

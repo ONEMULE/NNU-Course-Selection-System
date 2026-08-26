@@ -1,0 +1,39 @@
+# 排除构建相关文件和目录
+build/
+dist/
+resources/
+build.py
+# JNU_CourseSnatcher.spec 是手维护的打包配置，纳入版本库（故不忽略 *.spec）
+
+# 排除其他文档文件（但保留项目README）
+readme.md
+README.txt
+readme.txt
+
+# 排除Chrome浏览器文件（太大）
+chrome/
+chromedriver.exe
+
+# 排除Python缓存文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# 排除IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 排除AI助手配置与测试缓存
+.claude/
+.cursor/
+.pytest_cache/
+
+# 排除日志文件
+*.log
+
+# 排除临时文件
+*.tmp
+*.temp 

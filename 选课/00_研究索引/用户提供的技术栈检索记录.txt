@@ -1,0 +1,886 @@
+可以。你上传的两张图已经足够把技术栈锁得很窄，不需要再靠“NNU/NJNU 抢课”这种模糊关键词碰运气。
+
+从图里可以直接提取出这些**高辨识度指纹**：
+
+* `https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do`
+* 产品版权：**江苏金智教育信息股份有限公司**
+* `© 2016`
+* `苏ICP备10204514号`
+* 登录形态：学号 + 密码 + 图形验证码
+* 首页显示：**选课轮次、倒计时、选课模式、选课策略**
+* NNU 当前显示的是“正选 / 选课模式”“可选可退 / 选课策略”
+* 南师大官方操作说明也明确确认入口是 `xsxk.nnu.edu.cn`，并明确“预选=志愿模式，正选=抢课模式”“选课策略=可选可退”。
+
+最关键的是：这不是南师大自己独立开发的页面，而是**金智教育 Wisedu `xsxkapp` 产品族**。北京理工大学官方选课指南中的登录页几乎与你截图是同一个模板：同样的蓝色区域、轮次、倒计时、选课模式/策略、右侧 LOGIN + 学号/密码/验证码，而且地址同样是 `/xsxkapp/sys/xsxkapp/*default/index.do`。([BIT Exam Center][1]) 东南大学官方旧版指南也明确使用同一路径和同一页面结构。([Mathematics College][2])
+
+所以我进一步按照下面这些指纹做了 GitHub 全局代码检索：
+
+`xsxkapp`
+`grablessons.do`
+`student/4/vcode.do`
+`student/vcode/image.do`
+`student/check/login.do`
+`recommendedCourse.do`
+`publicCourse.do`
+`programCourse.do`
+`volunteer.do`
+`studentstatus.do`
+`xkxf.do`
+`electiveBatchCode`
+
+结果比直接搜“南京师范大学抢课”丰富得多。
+
+# 第一层：直接针对南京师范大学 NNU 的公开项目
+
+这是与你当前系统关系最直接的一组。
+
+| 项目                                 | 内容           | 与 NNU 关系 |
+| ---------------------------------- | ------------ | -------: |
+| `guh0613/ehall-backend`            | NNU 教务接口后端   |    ★★★★★ |
+| `XingHeYuZhuan/shiguang_warehouse` | NJNU 金智教务适配器 |    ★★★★★ |
+| `ruysdv/auto-query-score-system`   | 南师大成绩自动查询    |     ★★★★ |
+| `imcuttle/njnu-quick-get-score`    | 老南师大教务自动化    |      ★★★ |
+
+### 1. `guh0613/ehall-backend`
+
+这是目前**直接命中 `xsxk.nnu.edu.cn` 的最重要项目**。
+
+[guh0613/ehall-backend](https://github.com/guh0613/ehall-backend?utm_source=chatgpt.com)
+
+GitHub 精确搜索：
+
+`xsxk.nnu.edu.cn`
+
+目前直接命中的就是它。
+
+代码中明确配置南师大的：
+
+* `authserver.nnu.edu.cn`
+* `ehall.nnu.edu.cn`
+* `ehallapp.nnu.edu.cn`
+* `xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp`
+
+也就是说它已经摸清了 NNU 的统一认证、ehall 和选课应用之间的关系。
+
+---
+
+### 2. `XingHeYuZhuan/shiguang_warehouse`
+
+[shiguang_warehouse](https://github.com/XingHeYuZhuan/shiguang_warehouse?utm_source=chatgpt.com)
+
+这是“拾光课程表”高校适配仓库，而且截至 **2026-08-26 当天仍有 push**，43 stars、112 forks。
+
+其中有专门的：
+
+`resources/NJNU/njnu.js`
+
+针对：
+
+**南京师范大学金智教务**
+
+它不是抢课器，但对于理解南师大的 Session、教务 API、`ehallapp.nnu.edu.cn/jwapp` 等特别有价值。
+
+---
+
+### 3. `imcuttle/njnu-quick-get-score`
+
+[njnu-quick-get-score](https://github.com/imcuttle/njnu-quick-get-score?utm_source=chatgpt.com)
+
+仓库描述直接是：
+
+> 南京师范大学 教务系统快速查分
+
+属于旧系统考古资料，2016 创建、2022 仍有提交。
+
+它对于当前 `xsxkapp` 本身价值有限，但能追踪南师大教务自动化的发展历史。
+
+---
+
+# 第二层：**与你截图这套系统 API 最接近**的仓库
+
+下面这些才是本次检索真正的重点。
+
+我不是根据仓库名字判断，而是通过 GitHub **代码级搜索**确认它们实际包含：
+
+`/xsxkapp/sys/xsxkapp/`
+
+或者更进一步：
+
+`/elective/volunteer.do`
+
+GitHub 全局检索直接返回了深圳大学、云南大学、南京大学、东南大学、暨南大学、西安交大、北理工等大量实现。
+
+## 最值得看的 15 个
+
+| 排名 | 项目                                         | 学校   | 状态              | 与 NNU 技术接近度 |
+| -: | ------------------------------------------ | ---- | --------------- | ----------: |
+|  1 | `HansZ8/BIT-XK-WISEDU`                     | 北京理工 | Python          |       ★★★★★ |
+|  2 | `tonglinggejimo/Course-Monitor-Grabber`    | 中国传媒 | 2026            |       ★★★★★ |
+|  3 | `davidwushi1145/YNU-xk_spider_Refactoring` | 云南大学 | **2026-07 更新**  |       ★★★★★ |
+|  4 | `YHalo-wyh/YNU-xk_spider-Pro`              | 云南大学 | **2026-07 更新**  |       ★★★★★ |
+|  5 | `GreenTeodoro839/NJU-xk-helper`            | 南京大学 | **2026-08 更新**  |       ★★★★★ |
+|  6 | `mbmcmzh/JNU_CourseSnatcher`               | 暨南大学 | **2026-06 更新**  |       ★★★★★ |
+|  7 | `Weeye-hua/SZU-Course-Help`                | 深圳大学 | **2026-07 新项目** |       ★★★★★ |
+|  8 | `starwingcc/YNU-xk_spider`                 | 云南大学 | 2026 有更新        |       ★★★★★ |
+|  9 | `TheFunny233/NJUClassGrabber`              | 南京大学 | 2025/26         |       ★★★★★ |
+| 10 | `Mr-enthalpy/NJU-auto-class-rush`          | 南京大学 | 2026            |       ★★★★★ |
+| 11 | `Lewin671/YourLesson`                      | 深圳大学 | Python          |       ★★★★☆ |
+| 12 | `ANDYWANGTIANTIAN/SZU_AutoCourseSelecter`  | 深圳大学 | Python          |       ★★★★☆ |
+| 13 | `neiro-o/seuGrabber`                       | 东南大学 | PHP             |       ★★★★☆ |
+| 14 | `AriaPokotengYe/SEU-NewSystem-catcher`     | 东南大学 | Python          |       ★★★★☆ |
+| 15 | `sa-y0nara/jnu-course-helper`              | 暨南大学 | 油猴 JS           |       ★★★★☆ |
+
+---
+
+# 1. `HansZ8/BIT-XK-WISEDU`
+
+这个名字已经把答案写出来了：
+
+**BIT-XK-WISEDU**
+
+[HansZ8/BIT-XK-WISEDU](https://github.com/HansZ8/BIT-XK-WISEDU?utm_source=chatgpt.com)
+
+仓库 Python 编写。
+
+它实际使用：
+
+```text
+/xsxkapp/sys/xsxkapp/student/4/vcode.do
+/xsxkapp/sys/xsxkapp/student/vcode/image.do
+/xsxkapp/sys/xsxkapp/student/check/login.do
+
+/xsxkapp/sys/xsxkapp/elective/recommendedCourse.do
+/xsxkapp/sys/xsxkapp/elective/publicCourse.do
+/xsxkapp/sys/xsxkapp/elective/volunteer.do
+```
+
+并处理：
+
+```text
+studentCode
+electiveBatchCode
+teachingClassId
+teachingClassType
+token
+Cookie
+```
+
+**为什么我把它排第一？**
+
+因为你 NNU 截图的登录页和北京理工大学官方选课指南里的截图几乎是一套模板，BIT 官方现在的地址也同样是：
+
+`xk.bit.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do`
+
+([BIT Exam Center][1])
+
+所以它是“厂商相同 + 产品相同 + 登录页相同 + API family 相同”的强匹配。
+
+---
+
+# 2. `tonglinggejimo/Course-Monitor-Grabber`
+
+[Course-Monitor-Grabber](https://github.com/tonglinggejimo/Course-Monitor-Grabber?utm_source=chatgpt.com)
+
+2026 年创建，仓库自己描述：
+
+> 自动化抢课 + 自动化课余量监控抢课脚本
+
+它针对中国传媒大学：
+
+```text
+https://xsxk.cuc.edu.cn/xsxkapp/sys/xsxkapp
+```
+
+直接定义：
+
+```text
+LOGIN_URL = .../student/check/login.do
+VCODE_URL = .../student/4/vcode.do
+VCODE_IMG_URL = .../student/vcode/image.do
+GRAB_URL = .../elective/volunteer.do
+```
+
+同时有：
+
+* 图形验证码
+* 登录 Session
+* token
+* 课程列表
+* 余量监控
+* 选课提交
+
+在“页面登录方式”这一层，它与你上传的 NNU 图尤其像。
+
+---
+
+# 3. `davidwushi1145/YNU-xk_spider_Refactoring`
+
+这是我最推荐读代码结构的一份。
+
+[YNU-xk_spider_Refactoring](https://github.com/davidwushi1145/YNU-xk_spider_Refactoring?utm_source=chatgpt.com)
+
+仓库描述：
+
+> 云南大学选课脚本重构版，提供余课提醒服务，实现了自动选课
+
+并且 **2026-07-10 还有 push**。
+
+作者直接把 API 抽象成：
+
+```text
+public_course()
+program_course()
+volunteer()
+course_result()
+```
+
+对应：
+
+```text
+/xsxkapp/sys/xsxkapp/elective/publicCourse.do
+/xsxkapp/sys/xsxkapp/elective/programCourse.do
+/xsxkapp/sys/xsxkapp/elective/volunteer.do
+/xsxkapp/sys/xsxkapp/elective/courseResult.do
+```
+
+对于研究金智系统 API，这是目前代码组织最清晰的项目之一。
+
+---
+
+# 4. `YHalo-wyh/YNU-xk_spider-Pro`
+
+[YNU-xk_spider-Pro](https://github.com/YHalo-wyh/YNU-xk_spider-Pro?utm_source=chatgpt.com)
+
+这是更激进的现代版。
+
+2026-01 创建，2026-07-16 有 push，作者描述：
+
+> 纯 API 发包 + 可视化 UI，自动抢课，同时保留余课提醒。
+
+非常适合观察一个完整桌面化 `xsxkapp` 客户端如何组织。
+
+---
+
+# 5. `GreenTeodoro839/NJU-xk-helper`
+
+[NJU-xk-helper](https://github.com/GreenTeodoro839/NJU-xk-helper?utm_source=chatgpt.com)
+
+截至 **2026-08-25** 还有 push。
+
+它的：
+
+`xk_quick.py`
+
+直接定义：
+
+```text
+TARGET_URL =
+https://xk.nju.edu.cn/xsxkapp/sys/xsxkapp/elective/volunteer.do
+```
+
+同时研究了：
+
+* Session cache
+* token
+* Cookie
+* 选课批次
+* 提交后的处理状态
+* QoS / 网络繁忙
+* 结果轮询
+
+从“2026 年当前金智系统”的角度，这个价值很高。
+
+---
+
+# 6. `mbmcmzh/JNU_CourseSnatcher`
+
+注意这里 **JNU = 暨南大学**。
+
+[JNU_CourseSnatcher](https://github.com/mbmcmzh/JNU_CourseSnatcher?utm_source=chatgpt.com)
+
+2024-12 创建，**2026-06-11 还有 push**，29 stars、7 forks，仓库描述就是：
+
+> 暨南大学抢课脚本
+
+代码搜索同时命中：
+
+* `volunteer.do`
+
+* `xkxf.do`
+
+值得重点放进资料库。
+
+---
+
+# 7. `TheFunny233/NJUClassGrabber`
+
+[NJUClassGrabber](https://github.com/TheFunny233/NJUClassGrabber?utm_source=chatgpt.com)
+
+2025-08 创建，描述：
+
+> 南京大学在线选课辅助脚本
+
+14 stars。
+
+同时精确命中：
+
+`student/4/vcode.do`
+
+以及：
+
+`volunteer.do`
+
+---
+
+# 8. `Mr-enthalpy/NJU-auto-class-rush`
+
+[NJU-auto-class-rush](https://github.com/Mr-enthalpy/NJU-auto-class-rush?utm_source=chatgpt.com)
+
+描述就是：
+
+> 自动化的南大抢课脚本
+
+2026-03 还有 push。
+
+代码直接命中：
+
+`student/4/vcode.do`
+
+和：
+
+`elective/volunteer.do`
+
+---
+
+# 9. `GreenTeodoro839/NJUxklogin`
+
+这个不是抢课器，而是专门把 `xsxkapp` 登录抽成 Python Library。
+
+[NJUxklogin](https://github.com/GreenTeodoro839/NJUxklogin?utm_source=chatgpt.com)
+
+创建于 2026-02，仓库描述：
+
+> NJU选课平台登录Python库
+
+里面明确包含：
+
+`student/4/vcode.do`
+
+等认证逻辑。
+
+如果将来只是研究 NNU 登录协议，这种独立认证库比大型项目更容易读。
+
+---
+
+# 10. `Weeye-hua/SZU-Course-Help`
+
+[SZU-Course-Help](https://github.com/Weeye-hua/SZU-Course-Help?utm_source=chatgpt.com)
+
+非常新：
+
+**2026-07-16 创建。**
+
+Python，16 stars。
+
+GitHub 搜索同时命中：
+
+```text
+student/4/vcode.do
+recommendedCourse.do
+volunteer.do
+grablessons.do
+```
+
+属于现代版实现。
+
+---
+
+# 11. `starwingcc/YNU-xk_spider`
+
+[YNU-xk_spider](https://github.com/starwingcc/YNU-xk_spider?utm_source=chatgpt.com)
+
+70 stars、21 forks，2026-02 仍有 push，描述：
+
+> 选课爬虫，提供余课提醒服务，同时支持自动抢课
+
+它代码里明确展示了金智这套典型数据结构：
+
+```text
+studentCode
+electiveBatchCode
+teachingClassID
+teachingClassType
+classCapacity
+numberOfFirstVolunteer
+```
+
+以及：
+
+```text
+publicCourse.do
+programCourse.do
+volunteer.do
+```
+
+---
+
+# 12. `ANDYWANGTIANTIAN/SZU_AutoCourseSelecter`
+
+[SZU_AutoCourseSelecter](https://github.com/ANDYWANGTIANTIAN/SZU_AutoCourseSelecter?utm_source=chatgpt.com)
+
+描述：
+
+> 深圳大学本科选课系统选课软件
+
+Python、25 stars。
+
+代码搜索可以直接找到：
+
+* `v1/login.py`
+* `v1/getCourse.py`
+* `v1/course_do.py`
+
+而 `course_do.py` 直接命中 `volunteer.do`。
+
+---
+
+# 13. `Lewin671/YourLesson`
+
+[YourLesson](https://github.com/Lewin671/YourLesson?utm_source=chatgpt.com)
+
+GitHub 全局检索中多个关键接口都直接命中它：
+
+* `login.py`
+
+* `downloads.py`
+
+* `choose_course.py`
+
+并同时命中：
+
+`student/4/vcode.do`
+
+`recommendedCourse.do`
+
+`volunteer.do`
+
+属于比较完整的深圳大学实现。
+
+---
+
+# 14. 东南大学这一支非常重要
+
+因为东南大学的官方选课系统历史上明确使用：
+
+```text
+newxk.urp.seu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do
+```
+
+([JWC SEU][3])
+
+这与 NNU 截图路径完全同构。
+
+### `neiro-o/seuGrabber`
+
+[seuGrabber](https://github.com/neiro-o/seuGrabber?utm_source=chatgpt.com)
+
+仓库描述：
+
+> 东南大学新版（2018）选课系统抢课程序
+
+而 README 明确写自己面对的地址就是：
+
+`newxk.urp.seu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do`
+
+([GitHub][4])
+
+代码目录甚至包含：
+
+```text
+api/selectCourse.php
+api/cancelCourse.php
+api/selProgramCourse.php
+api/curlist.php
+api/requests.php
+```
+
+GitHub 代码检索均命中 `volunteer.do`。
+
+---
+
+### `AriaPokotengYe/SEU-NewSystem-catcher`
+
+[SEU-NewSystem-catcher](https://github.com/AriaPokotengYe/SEU-NewSystem-catcher?utm_source=chatgpt.com)
+
+描述：
+
+> 针对2018年起东南大学新更换的选课系统所写的刷课软件
+
+55 stars。
+
+同样同时命中：
+
+`student/4/vcode.do`
+
+`recommendedCourse.do`
+
+`volunteer.do`
+
+`grablessons.do`
+
+---
+
+# 第三层：我通过你的截图进一步挖出的其他同栈项目
+
+以下项目不一定需要逐个研究，但我建议都存下来。
+
+GitHub 对 `xsxkapp`、`volunteer.do`、`recommendedCourse.do` 等关键词的代码检索直接返回这些仓库。
+
+### 深圳大学
+
+* `guiyi886/szu_grab_course`
+* `chimaoshu/SZU_rush_for_lessons`
+* `xzzvsxd/szu_grab_course_for_yjs`
+* `MattDong123/tools4szu` → `gra-autocourse/autocourse.py`
+
+[guiyi886/szu_grab_course](https://github.com/guiyi886/szu_grab_course?utm_source=chatgpt.com)
+[chimaoshu/SZU_rush_for_lessons](https://github.com/chimaoshu/SZU_rush_for_lessons?utm_source=chatgpt.com)
+[xzzvsxd/szu_grab_course_for_yjs](https://github.com/xzzvsxd/szu_grab_course_for_yjs?utm_source=chatgpt.com)
+[MattDong123/tools4szu](https://github.com/MattDong123/tools4szu?utm_source=chatgpt.com)
+
+这些在 `xsxkapp` 全局搜索里都有明确代码命中。
+
+---
+
+### 南京大学
+
+除了前面的几个，还有：
+
+* `BryanHeBY/NJU_NEW_EAS_GRABER`
+* `yyngfive/new-course-system`
+* `WheretoSleepinNJU/NJU-Class-Shedule-Flutter`
+* `Mellow-Winds/NJU-Hub`
+* `treehey/AutoCaptcha`
+
+[NJU_NEW_EAS_GRABER](https://github.com/BryanHeBY/NJU_NEW_EAS_GRABER?utm_source=chatgpt.com)
+[new-course-system](https://github.com/yyngfive/new-course-system?utm_source=chatgpt.com)
+[NJU-Class-Shedule-Flutter](https://github.com/WheretoSleepinNJU/NJU-Class-Shedule-Flutter?utm_source=chatgpt.com)
+[NJU-Hub](https://github.com/Mellow-Winds/NJU-Hub?utm_source=chatgpt.com)
+[AutoCaptcha](https://github.com/treehey/AutoCaptcha?utm_source=chatgpt.com)
+
+`NJU-Class-Shedule-Flutter` 截至 **2026-08-22 仍在 push**，86 stars、19 forks。
+
+`NJU-Hub` 截至 **2026-08-24 仍在 push**。
+
+它的脚本明确判断：
+
+```text
+xk.nju.edu.cn/xsxkapp
+ehallapp.nju.edu.cn/jwapp/sys/wdkb
+```
+
+这和 NNU：
+
+```text
+xsxk.nnu.edu.cn/xsxkapp
+ehallapp.nnu.edu.cn/jwapp
+```
+
+非常值得做结构对比。
+
+---
+
+### 暨南大学
+
+* `mbmcmzh/JNU_CourseSnatcher`
+* `sa-y0nara/jnu-course-helper`
+* `cells114514/JNU-`
+
+[jnu-course-helper](https://github.com/sa-y0nara/jnu-course-helper?utm_source=chatgpt.com)
+[cells114514/JNU-](https://github.com/cells114514/JNU-?utm_source=chatgpt.com)
+
+其中 `jnu-course-helper` 是油猴脚本，18 stars。
+
+它的 `JNU.user.js` 直接拦截浏览器：
+
+```text
+fetch
+XMLHttpRequest
+```
+
+并关注：
+
+`/xsxkapp/sys/xsxkapp/elective/volunteer.do`
+
+这个架构非常值得关注，因为它不是从头模拟所有请求，而是观察网站自己产生的选课操作。
+
+---
+
+### 中国传媒大学
+
+除了 `Course-Monitor-Grabber`：
+
+* `WenHe233/CUC-Courses`
+
+[CUC-Courses](https://github.com/WenHe233/CUC-Courses?utm_source=chatgpt.com)
+
+Python 项目。
+
+`xsxk.py` 同样直接命中：
+
+`volunteer.do`
+
+以及：
+
+`grablessons.do`
+
+---
+
+### 北京理工大学
+
+除了 `BIT-XK-WISEDU`：
+
+* `RyanShaw3/MyScripts` → `Fuck-BITcourse`
+* `YDX-2147483647/BIT-enhanced`
+* GreasyFork `北理工-实验选课助手`
+
+[RyanShaw3/MyScripts](https://github.com/RyanShaw3/MyScripts?utm_source=chatgpt.com)
+[BIT-enhanced](https://github.com/YDX-2147483647/BIT-enhanced?utm_source=chatgpt.com)
+
+GitHub 检索明确找到：
+
+`Fuck-BITcourse 1.0 beta.py`
+
+`Fuck-BITcourse 1.1 beta.py`
+
+以及：
+
+`TamperMonkey/BIT-选课.user.js`
+
+GreasyFork 目前还能找到一份针对：
+
+```text
+https://xk.bit.edu.cn/xsxkapp/sys/xsxkapp/*
+```
+
+的“北理工-实验选课助手”。([Greasy Fork][5])
+
+---
+
+### 西安交通大学
+
+这里的生态也比较大：
+
+* `Hz162/XJTU-Course-Genius`
+* `xjtu-wang/XJTU-Toolbox`
+* `Othixx/xjtucourse`
+* `zly2006/xjtu-course`
+* `zly2006/xjtu-login`
+* `another-le/xjtu-tools`
+* `Bocchi-Hero/xjtu-seat-monitor`
+
+[XJTU-Course-Genius](https://github.com/Hz162/XJTU-Course-Genius?utm_source=chatgpt.com)
+[XJTU-Toolbox](https://github.com/xjtu-wang/XJTU-Toolbox?utm_source=chatgpt.com)
+[xjtucourse](https://github.com/Othixx/xjtucourse?utm_source=chatgpt.com)
+[xjtu-course](https://github.com/zly2006/xjtu-course?utm_source=chatgpt.com)
+[xjtu-login](https://github.com/zly2006/xjtu-login?utm_source=chatgpt.com)
+[xjtu-tools](https://github.com/another-le/xjtu-tools?utm_source=chatgpt.com)
+[xjtu-seat-monitor](https://github.com/Bocchi-Hero/xjtu-seat-monitor?utm_source=chatgpt.com)
+
+例如 `xkxf.do` 搜索会直接返回：
+
+* `zly2006/xjtu-course`
+* `Hz162/XJTU-Course-Genius`
+
+`recommendedCourse.do` 又会命中：
+
+* `another-le/xjtu-tools`
+
+* `Bocchi-Hero/xjtu-seat-monitor`
+
+---
+
+### 其他代码考古项目
+
+还有：
+
+* `KW10-2/Gadgets` → `CoursePyGar`
+* `jimieguang/qiangke`
+* `Dytchem/Machine-Learning-with-Python` → `crawler/xkfw`
+* `lvttt/xdu-course-helper`
+* `fe1w0/DailyClock_XDU_version`
+* `HeraldStudio/herald-webservice`
+
+[KW10-2/Gadgets](https://github.com/KW10-2/Gadgets?utm_source=chatgpt.com)
+[jimieguang/qiangke](https://github.com/jimieguang/qiangke?utm_source=chatgpt.com)
+[Dytchem/Machine-Learning-with-Python](https://github.com/Dytchem/Machine-Learning-with-Python?utm_source=chatgpt.com)
+[xdu-course-helper](https://github.com/lvttt/xdu-course-helper?utm_source=chatgpt.com)
+[DailyClock_XDU_version](https://github.com/fe1w0/DailyClock_XDU_version?utm_source=chatgpt.com)
+[HeraldStudio/herald-webservice](https://github.com/HeraldStudio/herald-webservice?utm_source=chatgpt.com)
+
+`HeraldStudio/herald-webservice` 是东南大学“小猴偷米”WebService，44 stars。
+
+---
+
+# 第四层：GitHub Gist 也不能漏掉
+
+## `nik-nul/xk helper`
+
+这个我认为应该特别收录。
+
+[xk helper Gist](https://gist.github.com/nik-nul/9ef1d51dc2ea6b8e58d7980b3eab52ba?utm_source=chatgpt.com)
+
+2026-01 仍有活动。
+
+它把 `xsxkapp` 工作流拆得非常清楚，包括：
+
+```text
+student/4/vcode.do
+student/vcode/image.do
+student/check/login.do
+student/xkxf.do
+elective/volunteer.do
+elective/studentstatus.do
+```
+
+([Gist][6])
+
+这一份非常适合用来理解**各接口之间的调用顺序和数据模型**。
+
+---
+
+# 第五层：GreasyFork / 油猴生态
+
+基于你的截图，我也专门查了浏览器脚本。
+
+## 南京大学
+
+### NJU | 南大 | 南京大学选课助手
+
+目前版本：
+
+**v1.21.5**
+
+匹配：
+
+```text
+https://xk.nju.edu.cn/xsxkapp/*
+https://ehallapp.nju.edu.cn/jwapp/sys/wdkb/*
+```
+
+功能：
+
+* 一键课程收藏
+* 课程冲突预警
+* 秒点选中
+* 抽签概率预测
+* 跨校区预警
+
+([Greasy Fork][7])
+
+[GreasyFork：NJU 选课助手](https://greasyfork.org/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code?utm_source=chatgpt.com)
+
+---
+
+## 东南大学
+
+我找到了至少四条公开脚本线：
+
+* 东南大学抢课助手正式版
+* 东南大学抢课助手修改版
+* 东南大学抢课助手改版（终极版）2025.9
+* 东南大学选课助手升级版
+
+原版明确挂载：
+
+```javascript
+document.getElementById("xsxkapp")
+```
+
+([Greasy Fork][8])
+
+2025.9 的终极版仍然围绕同一系统页面工作。([Greasy Fork][9])
+
+升级版也是 `xsxkapp` DOM 模型。([Greasy Fork][10])
+
+---
+
+# 第六层：同一金智产品族的研究生版 `yjsxkapp`
+
+这不是 NNU 当前本科页面的完全相同版本，但也应该收入资料池，因为后端设计高度相关。
+
+例如：
+
+* 上海科技大学
+* 东南大学研究生
+* 上海交大研究生
+* 华东政法大学
+
+公开官方资料均出现：
+
+```text
+/yjsxkapp/sys/xsxkapp/
+```
+
+上海科技大学官方手册给的是：
+
+`graduate-course.shanghaitech.edu.cn/yjsxkapp/sys/xsxkapp/*default/index.do`。([ShanghaiTech Information Services][11])
+
+东南大学研究生当前也使用：
+
+`yjsxk.urp.seu.edu.cn/yjsxkapp/sys/xsxkapp/index.html`。([Graduate School][12])
+
+华东政法大学的金智操作手册甚至明确写：
+
+> 版权所有 © 江苏金智教育信息股份有限公司
+
+([ECUPL][13])
+
+所以可以基本确定你截图对应的是一个非常标准的**金智教育高校选课产品家族**，而不是南师大独有技术。
+
+---
+
+# 我目前整理出的“总项目池”
+
+如果只保留真正和你的截图技术指纹有关系的项目，而去掉普通高校选课脚本、不同厂商项目和误匹配，我目前确认到的公开资源至少包括：
+
+**NNU / NJNU：4 个；直接 `xsxkapp` 自动化/抢课/API 项目约 30 个；前端增强、登录、课表/API 辅助项目约 8 个；GreasyFork 同栈脚本至少 6 条；Gist 若干。**
+
+核心 GitHub 池可以整理为：
+
+`guh0613/ehall-backend`、`XingHeYuZhuan/shiguang_warehouse`、`imcuttle/njnu-quick-get-score`、`HansZ8/BIT-XK-WISEDU`、`tonglinggejimo/Course-Monitor-Grabber`、`davidwushi1145/YNU-xk_spider_Refactoring`、`YHalo-wyh/YNU-xk_spider-Pro`、`starwingcc/YNU-xk_spider`、`KrowFeather/Prism`、`GreenTeodoro839/NJU-xk-helper`、`GreenTeodoro839/NJUxklogin`、`TheFunny233/NJUClassGrabber`、`Mr-enthalpy/NJU-auto-class-rush`、`BryanHeBY/NJU_NEW_EAS_GRABER`、`Mellow-Winds/NJU-Hub`、`WheretoSleepinNJU/NJU-Class-Shedule-Flutter`、`treehey/AutoCaptcha`、`yyngfive/new-course-system`、`mbmcmzh/JNU_CourseSnatcher`、`sa-y0nara/jnu-course-helper`、`cells114514/JNU-`、`Lewin671/YourLesson`、`ANDYWANGTIANTIAN/SZU_AutoCourseSelecter`、`Weeye-hua/SZU-Course-Help`、`guiyi886/szu_grab_course`、`chimaoshu/SZU_rush_for_lessons`、`xzzvsxd/szu_grab_course_for_yjs`、`MattDong123/tools4szu`、`neiro-o/seuGrabber`、`AriaPokotengYe/SEU-NewSystem-catcher`、`WenHe233/CUC-Courses`、`jimieguang/qiangke`、`Hz162/XJTU-Course-Genius`、`xjtu-wang/XJTU-Toolbox`、`Othixx/xjtucourse`、`zly2006/xjtu-course`、`zly2006/xjtu-login`、`another-le/xjtu-tools`、`Bocchi-Hero/xjtu-seat-monitor`、`KW10-2/Gadgets`、`Dytchem/Machine-Learning-with-Python`。
+
+这已经不是“找几个相似仓库”，而是基本把**公开 GitHub 索引中这代金智 `xsxkapp` 的主要学生开发生态**挖出来了。
+
+但我不会声称这是互联网意义上的绝对“全部”：删除仓库、私有仓库、未被 GitHub 代码索引的 fork、QQ群/论坛附件、本地流传脚本和搜索引擎未收录 Gitee 项目无法保证覆盖。**在当前可公开检索、可验证的 GitHub/Gist/GreasyFork 范围内，这已经是一份相当完整的集合。**
+
+下一步最有价值的不是继续无差别搜，而是我可以把这 **40+ 个项目逐个做代码层面的横向比对**，提取每一个项目使用的 `base URL / login endpoint / captcha / token / batch / course query / selection / result / encryption`，然后做成一张表，最终判断：**哪一个项目与 2026 年 NNU 截图里的系统版本最接近、哪些模块可能是同版本代码、哪些明显已经过时。**这会比单纯仓库清单有用得多。
+
+[1]: https://jxzx.bit.edu.cn/docs/2025-01/b605beb791ed4966a223232af0b5dcd8.pdf?utm_source=chatgpt.com "1 登录选课系统
+
+登录入口地址： http://xk.bit.edu.cn/xsxkapp/sys"
+[2]: https://math.seu.edu.cn/_upload/article/files/6c/65/77d76dd1499bb0f6d0b7b49907d3/8ee083a6-575d-4831-90de-df882b8be6a2.pdf?utm_source=chatgpt.com "三、选课系统操作指南
+
+\## 选课登录
+
+1、用鼠标双击谷歌/360 浏览器，运行浏览器。  
+2、"
+[3]: https://jwc.seu.edu.cn/_upload/article/files/aa/bb/ea23d6554c0daa9682c7da5daed0/b79e787c-5c62-488c-9c2e-94df6570fdfd.pdf?utm_source=chatgpt.com "东南大学2018 级本科生选课指南"
+[4]: https://github.com/neiro-o/seuGrabber?utm_source=chatgpt.com "GitHub - neiro-o/seuGrabber: 东南大学新版（2018）选课系统抢课程序=。= · GitHub"
+[5]: https://greasyfork.org/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code?utm_source=chatgpt.com "北理工-实验选课助手 - 源代码"
+[6]: https://gist.github.com/nik-nul/9ef1d51dc2ea6b8e58d7980b3eab52ba?utm_source=chatgpt.com "xk helper · GitHub"
+[7]: https://greasyfork.org/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code?utm_source=chatgpt.com "NJU|南大|南京大学选课助手 - Source code"
+[8]: https://greasyfork.org/en/scripts/427237-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%AD%A3%E5%BC%8F%E7%89%88/code?utm_source=chatgpt.com "东南大学抢课助手正式版 - Source code"
+[9]: https://greasyfork.org/en/scripts/548995-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E6%8A%A2%E8%AF%BE%E5%8A%A9%E6%89%8B%E6%94%B9%E7%89%88-%E7%BB%88%E6%9E%81%E7%89%88-2025-9%E6%9B%B4%E6%96%B0/code?utm_source=chatgpt.com "东南大学抢课助手改版(终极版)-2025.9更新 - Source code"
+[10]: https://greasyfork.org/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code?utm_source=chatgpt.com "东南大学选课助手升级版 - Codice sorgente"
+[11]: https://it.shanghaitech.edu.cn/_upload/article/files/bc/27/119643c240a0aeb5b54147d51b08/5c98f64b-9449-42c7-81db-2d86fabdfe52.pdf?utm_source=chatgpt.com "上海科技大学 
+ 
+研究生管理系统学生端手册  
+ 
+ 
+ 
+上海科技大学 
+研究生管理系统 
+学生"
+[12]: https://seugs.seu.edu.cn/_upload/article/files/34/45/c442b996456aabc544e88ee90b00/122fec3c-c2d0-44f6-a7e0-2c6c9e0cada7.pdf?utm_source=chatgpt.com "研究生网上选课系统操作说明"
+[13]: https://gs.ecupl.edu.cn/_upload/article/files/7d/0e/2b6c08eb46abbb743ab47b38c015/e6416081-4fe1-4eb2-bdb3-95f3ed84b480.pdf?utm_source=chatgpt.com "| 学校名称： 系统名称： | 华东政法大学 研究生管理信息系统 --- | --- | --- | 学校名称： 文件名称： | 华东政法大学 系统操作手册"

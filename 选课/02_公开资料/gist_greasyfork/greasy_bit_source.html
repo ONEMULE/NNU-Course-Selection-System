@@ -1,0 +1,606 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <title>北理工-实验选课助手 - 源代码</title>
+  <meta name="description" value="Source code for 北理工-实验选课助手">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <script src="/vite/assets/application-Do-C1Ssw.js" crossorigin="" type="module"></script><link rel="stylesheet" crossorigin="" href="/vite/assets/application-BUQg-itE.css" />
+    <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="R1TyVDYrUlApEfpaglknf01Gz9TbNoqqdlHIRu-BcP_bs4HhM8XU-9uFi_MYkuH8OkRofsJyZPbHpbxZtslq_Q" />
+    <meta name="clckd" content="bf6242cc3039bff31a7815dff8ee247b" />
+    <meta name="lhverifycode" content="32dc01246faccb7f5b3cad5016dd5033" />
+  <link rel="canonical" href="https://greasyfork.org/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+  <link rel="icon" href="/vite/assets/blacklogo16-DftkYuVe.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap" media="print" onload="this.media='all'; this.onload=null;">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap"></noscript>
+
+    <link rel="alternate" hreflang="x-default" href="/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ar" href="/ar/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="be" href="/be/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="bg" href="/bg/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ckb" href="/ckb/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="cs" href="/cs/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="da" href="/da/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="de" href="/de/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="el" href="/el/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="en" href="/en/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="eo" href="/eo/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="es" href="/es/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="es-419" href="/es-419/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fi" href="/fi/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fil" href="/fil/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fr" href="/fr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fr-CA" href="/fr-CA/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="he" href="/he/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="hr" href="/hr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="hu" href="/hu/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="id" href="/id/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="it" href="/it/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ja" href="/ja/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ka" href="/ka/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ko" href="/ko/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="mr" href="/mr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="nb" href="/nb/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="nl" href="/nl/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="pl" href="/pl/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="pt" href="/pt/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="pt-BR" href="/pt-BR/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ro" href="/ro/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ru" href="/ru/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="sk" href="/sk/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="sr" href="/sr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="sv" href="/sv/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="th" href="/th/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="tr" href="/tr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="uk" href="/uk/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ug" href="/ug/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="vi" href="/vi/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="zh-CN" href="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="zh-TW" href="/zh-TW/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+
+
+  <link rel="search" href="/zh-CN/opensearch.xml" type="application/opensearchdescription+xml" title="Greasy Fork 搜索" hreflang="zh-CN">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NMRNRYW7C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7NMRNRYW7C', {
+        'ad_method': 'ea',
+        'ad_method_variant': 'zh-CN',
+        'action': 'scripts/show_code'
+      });
+    </script>
+
+    <script async src="https://media.ethicalads.io/media/client/ethicalads.min.js" onerror="if (typeof gtag !== 'undefined') { gtag('event', 'EthicalAds placement', { 'ea_campaign_type': '(error)' })};switchToEaFallback()"></script>
+
+    <meta name="twitter:card" content="summary">
+  <meta property="og:title" content="北理工-实验选课助手">
+  <meta property="og:url" content="https://greasyfork.org/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B">
+  <meta property="og:description" content="bit 实验选课平台一点前端优化">
+
+</head>
+<body>
+
+  <header id="main-header">
+    <div class="width-constraint">
+      <div id="site-name">
+        <a href="/zh-CN"><img alt="" width="96" height="96" src="/vite/assets/blacklogo96-CxYTSM_T.png" /></a>
+        <div id="site-name-text">
+          <h1><a href="/zh-CN">Greasy Fork</a></h1>
+        </div>
+      </div>
+      <div id="site-nav">
+        <div id="nav-user-info">
+            <span class="sign-in-link"><a rel="nofollow" href="/zh-CN/users/sign_in?return_to=%2Fzh-CN%2Fscripts%2F555729-%25E5%258C%2597%25E7%2590%2586%25E5%25B7%25A5-%25E5%25AE%259E%25E9%25AA%258C%25E9%2580%2589%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%2Fcode">登录</a></span>
+
+                      <form class="language-selector" action="/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ar">
+                      阿拉伯语 (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="be">
+                      白俄罗斯语 (be)
+                    </option>
+                    <option data-language-url="/bg/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="bg">
+                      保加利亚语 (bg)
+                    </option>
+                    <option data-language-url="/pl/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pl">
+                      波兰语 (pl)
+                    </option>
+                    <option data-language-url="/ko/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ko">
+                      朝鲜语 (ko)
+                    </option>
+                    <option data-language-url="/da/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="da">
+                      丹麦语 (da)
+                    </option>
+                    <option data-language-url="/de/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="de">
+                      德语 (de)
+                    </option>
+                    <option data-language-url="/ru/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ru">
+                      俄语 (ru)
+                    </option>
+                    <option data-language-url="/fr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr">
+                      法语 (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr-CA">
+                      法语 (加拿大) (fr-CA)
+                    </option>
+                    <option data-language-url="/fi/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fi">
+                      芬兰语 (fi)
+                    </option>
+                    <option data-language-url="/ka/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ka">
+                      格鲁吉亚语 (ka)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-TW">
+                      汉语 (台湾) (zh-TW)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-CN" selected>
+                      汉语 (中国) (zh-CN)
+                    </option>
+                    <option data-language-url="/nl/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nl">
+                      荷兰语 (nl)
+                    </option>
+                    <option data-language-url="/cs/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="cs">
+                      捷克语 (cs)
+                    </option>
+                    <option data-language-url="/hr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hr">
+                      克罗地亚语 (hr)
+                    </option>
+                    <option data-language-url="/ro/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ro">
+                      罗马尼亚语 (ro)
+                    </option>
+                    <option data-language-url="/mr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="mr">
+                      马拉提语 (mr)
+                    </option>
+                    <option data-language-url="/nb/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nb">
+                      挪威布克莫尔语 (nb)
+                    </option>
+                    <option data-language-url="/pt/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt">
+                      葡萄牙语 (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt-BR">
+                      葡萄牙语 (巴西) (pt-BR)
+                    </option>
+                    <option data-language-url="/ja/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ja">
+                      日语 (ja)
+                    </option>
+                    <option data-language-url="/sv/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sv">
+                      瑞典语 (sv)
+                    </option>
+                    <option data-language-url="/sr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sr">
+                      塞尔维亚语 (sr)
+                    </option>
+                    <option data-language-url="/eo/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="eo">
+                      世界语 (eo)
+                    </option>
+                    <option data-language-url="/sk/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sk">
+                      斯洛伐克语 (sk)
+                    </option>
+                    <option data-language-url="/th/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="th">
+                      泰语 (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="tr">
+                      土耳其语 (tr)
+                    </option>
+                    <option data-language-url="/ug/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ug">
+                      维吾尔语 (ug)
+                    </option>
+                    <option data-language-url="/uk/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="uk">
+                      乌克兰语 (uk)
+                    </option>
+                    <option data-language-url="/es/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es">
+                      西班牙语 (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es-419">
+                      西班牙语 (es-419)
+                    </option>
+                    <option data-language-url="/he/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="he">
+                      希伯来语 (he)
+                    </option>
+                    <option data-language-url="/el/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="el">
+                      现代希腊语 (el)
+                    </option>
+                    <option data-language-url="/hu/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hu">
+                      匈牙利语 (hu)
+                    </option>
+                    <option data-language-url="/it/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="it">
+                      意大利语 (it)
+                    </option>
+                    <option data-language-url="/id/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="id">
+                      印尼语 (id)
+                    </option>
+                    <option data-language-url="/en/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="en">
+                      英语 (en)
+                    </option>
+                    <option data-language-url="/vi/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="vi">
+                      越南语 (vi)
+                    </option>
+                    <option data-language-url="/fil/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/ckb/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ckb">
+                      کوردیی ناوەندی (ckb)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+
+        </div>
+        <nav>
+          <li class="scripts-index-link"><a href="/zh-CN/scripts">脚本</a></li>
+            <li class="forum-link"><a href="/zh-CN/discussions">论坛</a></li>
+          <li class="help-link"><a href="/zh-CN/help">帮助</a></li>
+          <li class="with-submenu">
+            <a href="#" onclick="return false">更多</a>
+            <nav>
+              <li><a href="/zh-CN/search">高级搜索</a></li>
+              <li><a href="/zh-CN/users">用户列表</a></li>
+              <li><a href="/zh-CN/scripts/libraries">库</a></li>
+              <li><a href="/zh-CN/moderator_actions">管理日志</a></li>
+            </nav>
+          </li>
+        </nav>
+      </div>
+
+      <div id="mobile-nav">
+        <div class="mobile-nav-opener">☰</div>
+        <nav class="collapsed">
+          <li class="scripts-index-link"><a href="/zh-CN/scripts">脚本</a></li>
+          <li class="forum-link"><a href="/zh-CN/discussions">论坛</a></li>
+          <li class="help-link"><a href="/zh-CN/help">帮助</a></li>
+          <li><a href="/zh-CN/search">高级搜索</a></li>
+          <li><a href="/zh-CN/users">用户列表</a></li>
+          <li><a href="/zh-CN/scripts/libraries">库</a></li>
+          <li><a href="/zh-CN/moderator_actions">管理日志</a></li>
+            <li class="multi-link-nav">
+              <span class="sign-in-link"><a rel="nofollow" href="/zh-CN/users/sign_in?return_to=%2Fzh-CN%2Fscripts%2F555729-%25E5%258C%2597%25E7%2590%2586%25E5%25B7%25A5-%25E5%25AE%259E%25E9%25AA%258C%25E9%2580%2589%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%2Fcode">登录</a></span>
+            </li>
+          <li>            <form class="language-selector" action="/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ar">
+                      阿拉伯语 (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="be">
+                      白俄罗斯语 (be)
+                    </option>
+                    <option data-language-url="/bg/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="bg">
+                      保加利亚语 (bg)
+                    </option>
+                    <option data-language-url="/pl/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pl">
+                      波兰语 (pl)
+                    </option>
+                    <option data-language-url="/ko/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ko">
+                      朝鲜语 (ko)
+                    </option>
+                    <option data-language-url="/da/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="da">
+                      丹麦语 (da)
+                    </option>
+                    <option data-language-url="/de/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="de">
+                      德语 (de)
+                    </option>
+                    <option data-language-url="/ru/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ru">
+                      俄语 (ru)
+                    </option>
+                    <option data-language-url="/fr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr">
+                      法语 (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr-CA">
+                      法语 (加拿大) (fr-CA)
+                    </option>
+                    <option data-language-url="/fi/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fi">
+                      芬兰语 (fi)
+                    </option>
+                    <option data-language-url="/ka/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ka">
+                      格鲁吉亚语 (ka)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-TW">
+                      汉语 (台湾) (zh-TW)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-CN" selected>
+                      汉语 (中国) (zh-CN)
+                    </option>
+                    <option data-language-url="/nl/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nl">
+                      荷兰语 (nl)
+                    </option>
+                    <option data-language-url="/cs/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="cs">
+                      捷克语 (cs)
+                    </option>
+                    <option data-language-url="/hr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hr">
+                      克罗地亚语 (hr)
+                    </option>
+                    <option data-language-url="/ro/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ro">
+                      罗马尼亚语 (ro)
+                    </option>
+                    <option data-language-url="/mr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="mr">
+                      马拉提语 (mr)
+                    </option>
+                    <option data-language-url="/nb/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nb">
+                      挪威布克莫尔语 (nb)
+                    </option>
+                    <option data-language-url="/pt/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt">
+                      葡萄牙语 (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt-BR">
+                      葡萄牙语 (巴西) (pt-BR)
+                    </option>
+                    <option data-language-url="/ja/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ja">
+                      日语 (ja)
+                    </option>
+                    <option data-language-url="/sv/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sv">
+                      瑞典语 (sv)
+                    </option>
+                    <option data-language-url="/sr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sr">
+                      塞尔维亚语 (sr)
+                    </option>
+                    <option data-language-url="/eo/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="eo">
+                      世界语 (eo)
+                    </option>
+                    <option data-language-url="/sk/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sk">
+                      斯洛伐克语 (sk)
+                    </option>
+                    <option data-language-url="/th/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="th">
+                      泰语 (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="tr">
+                      土耳其语 (tr)
+                    </option>
+                    <option data-language-url="/ug/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ug">
+                      维吾尔语 (ug)
+                    </option>
+                    <option data-language-url="/uk/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="uk">
+                      乌克兰语 (uk)
+                    </option>
+                    <option data-language-url="/es/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es">
+                      西班牙语 (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es-419">
+                      西班牙语 (es-419)
+                    </option>
+                    <option data-language-url="/he/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="he">
+                      希伯来语 (he)
+                    </option>
+                    <option data-language-url="/el/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="el">
+                      现代希腊语 (el)
+                    </option>
+                    <option data-language-url="/hu/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hu">
+                      匈牙利语 (hu)
+                    </option>
+                    <option data-language-url="/it/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="it">
+                      意大利语 (it)
+                    </option>
+                    <option data-language-url="/id/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="id">
+                      印尼语 (id)
+                    </option>
+                    <option data-language-url="/en/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="en">
+                      英语 (en)
+                    </option>
+                    <option data-language-url="/vi/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="vi">
+                      越南语 (vi)
+                    </option>
+                    <option data-language-url="/fil/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/ckb/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ckb">
+                      کوردیی ناوەندی (ckb)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+</li>
+        </nav>
+      </div>
+
+      <script>
+        /* submit is handled by js if enabled */
+        document.querySelectorAll(".language-selector-submit").forEach((lss) => { lss.style.display = "none" })
+      </script>
+    </div>
+  </header>
+
+  <div class="width-constraint">
+      <p class="notice"><b><a href="/en/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">Greasy Fork is available in English.</a></b></p>
+
+      <section id="script-info">
+    <ul id="script-links" class="tabs">
+      <li><a href="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B"><span>信息</span></a></li>
+      <li class="current" aria-current="page"><span>代码</span></li>
+      <li><a href="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/versions"><span>历史</span></a></li>
+      <li><a href="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/feedback"><span>反馈（0）</span></a></li>
+      <li><a href="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/stats"><span>统计</span></a></li>
+    </ul>
+    <header>
+      <h2>北理工-实验选课助手</h2>
+      <p id="script-description" class="script-description">bit 实验选课平台一点前端优化</p>
+    </header>
+    <div id="script-content">
+      
+
+      <div id="install-area">
+          
+<a class="install-link" data-install-format="js" data-ping-url="/scripts/555729/install-ping" data-post-install-url="https://greasyfork.org/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/post-install" data-ip-address="67.209.183.176" data-script-id="555729" data-ping-key="ec8f6f51ad6710cd84d96f00c40131075ea954a6" data-is-previous-version="false" data-previous-version-warning="这不是此脚本的最新版本。如果您选择安装，您将永远不会收到新版本的更新。仍要安装吗？" rel="nofollow" data-script-name="北理工-实验选课助手" data-script-namespace="http://tampermonkey.net/" data-script-version="2025-11-13" data-update-label="更新到 2025-11-13 版本" data-downgrade-label="降级到 2025-11-13 版本" data-reinstall-label="重新安装 2025-11-13 版本" href="https://update.greasyfork.org/scripts/555729/%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B.user.js">安装此脚本</a><a class="install-help-link" title="如何安装" rel="nofollow" href="/zh-CN/help/installing-user-scripts">?</a>
+      </div>
+
+
+
+<dialog id="installation-instructions-modal-js" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      如何安装
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      您需要先安装一款用户脚本管理器扩展，例如 <a target="tampermonkey" href="https://addons.mozilla.org/firefox/addon/tampermonkey/">Tampermonkey 篡改猴</a>、<a target="greasemonkey" href="https://addons.mozilla.org/firefox/addon/greasemonkey/">Greasemonkey 油猴子</a> 或 <a target="violentmonkey" href="https://addons.mozilla.org/firefox/addon/violentmonkey/">Violentmonkey 暴力猴</a>，才能安装此脚本。
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      You will need to install an extension such as <a target="tampermonkey" href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a> or <a target="violentmonkey" href="https://chrome.google.com/webstore/detail/violent-monkey/jinjaccalgkegednnccohejagnlnfdag">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      您需要先安装一款用户脚本管理器扩展，例如 <a target="tampermonkey" href="https://addons.opera.com/extensions/details/tampermonkey-beta/">Tampermonkey 篡改猴</a> 或 <a target="violentmonkey" href="https://violentmonkey.github.io/get-it/">Violentmonkey 暴力猴</a>，才能安装此脚本。
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      您需要先安装一款用户脚本管理器扩展，例如 <a target="tampermonkey" href="https://www.tampermonkey.net/?browser=safari">Tampermonkey 篡改猴</a> 或 <a target="Userscripts" href="https://apps.apple.com/app/userscripts/id1463298887">Userscripts</a> ，才能安装此脚本。
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      您需要先安装一款用户脚本管理器扩展，例如 <a target="tampermonkey" href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd">Tampermonkey 篡改猴</a>，才能安装此脚本。
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      您需要先安装一款用户脚本管理器扩展后才能安装此脚本。
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">（我已经安装了用户脚本管理器，让我安装！）</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      确定
+    </button>
+  </footer>
+</dialog>
+
+<dialog id="installation-instructions-modal-css" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      如何安装
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      您需要先安装一款用户样式管理器扩展，比如 <a target="stylus" href="https://addons.mozilla.org/firefox/addon/styl-us/">Stylus</a>，才能安装此样式。
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      您需要先安装一款用户样式管理器扩展，比如 <a target="stylus" href="https://chrome.google.com/webstore/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne">Stylus</a>，才能安装此样式。
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      您需要先安装一款用户样式管理器扩展，比如 <a target="stylus" href="https://addons.opera.com/extensions/details/stylus/">Stylus</a>，才能安装此样式。
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      您需要先安装一款用户样式管理器扩展后才能安装此样式。
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      您需要先安装一款用户样式管理器扩展后才能安装此样式。
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      您需要先安装一款用户样式管理器扩展后才能安装此样式。
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">（我已经安装了用户样式管理器，让我安装！）</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      确定
+    </button>
+  </footer>
+</dialog>
+
+
+
+<div id="script-feedback-suggestion">
+    <a rel="nofollow" href="/zh-CN/scripts/555729-%E5%8C%97%E7%90%86%E5%B7%A5-%E5%AE%9E%E9%AA%8C%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/feedback#post-discussion">提问、发表评价</a>或者<a rel="nofollow" href="/zh-CN/reports/new?item_class=script&amp;item_id=555729">举报此脚本</a>。
+</div>
+
+
+
+  <div class="ad ad-ea" id="script-show-code-ad">
+    <div class="ad-content">
+        <div id="script-show-code-ea_image_zh-CN" class="flat ethical-ads adaptive" data-ea-publisher="greasyfork" data-ea-type="image" data-ea-priority="1"></div>
+        <div id="script-show-code-ea_large_zh-CN" class="flat ethical-ads adaptive" data-ea-publisher="greasyfork" data-ea-type="logo-large-v1" data-ea-priority="10"></div>
+    </div>
+  </div>
+
+
+
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
+
+<div>
+  <input type="checkbox" id="wrap-lines" checked value="1"><label for="wrap-lines" class="checkbox-label">换行</label>
+</div>
+<div class="code-container">
+  <pre class="prettyprint linenums wrap lang-js">// ==UserScript==
+// @name         北理工-实验选课助手
+// @namespace    http://tampermonkey.net/
+// @version      2025-11-13
+// @description  bit 实验选课平台一点前端优化
+// @author       You
+// @match        https://xk.bit.edu.cn/xsxkapp/sys/xsxkapp/*
+// @icon         https://www.google.com/s2/favicons?sz=64&amp;domain=bit.edu.cn
+// @grant        none
+// @license      MIT
+// ==/UserScript==
+
+(function() {
+    &#39;use strict&#39;;
+    // 更改pageSize以显示更多选课
+    pageSize = 1000;
+    let hideInvalidExperimentFlag = true;
+    // 自动隐藏无法操作课程
+    $(&quot;#expCvCourse&quot;).on(&quot;click&quot;,&quot;.program-item,.mission-success-tip-restart-option&quot;, ()=&gt;{
+        $(&quot;.mission-success-tip-restart-option&quot;).remove();
+        let waitLoopCount = 0;
+        const waitExpListUpdate = setInterval(()=&gt;{
+            let removedBlocks = 0;
+            $(&quot;.group-item&quot;).each((index,block)=&gt;{
+                if(block.firstElementChild.firstElementChild.classList.contains(&#39;cv-hide&#39;)){
+                    if(block.style.display != &#39;none&#39;){
+                        block.style.display = &#39;none&#39;; removedBlocks++;
+                    }
+                }
+            });
+            if(removedBlocks!=0){
+                console.log(&quot;removed&quot;,removedBlocks,&quot;invalid experiments!&quot;);
+                $(&quot;.detail-group-list&gt;.cv-foot&quot;).prepend(&quot;&lt;div class=&#39;mission-success-tip&#39;&gt;已自动隐藏无效实验，共 &lt;b style=&#39;font-size:1.5em;&#39;&gt;&quot;+removedBlocks+&quot;&lt;/b&gt; 个，&lt;b class=&#39;mission-success-tip-cancel-option&#39;&gt;点我取消隐藏&lt;/b&gt;&lt;/div&gt;&quot;);
+                clearInterval(waitExpListUpdate);
+            }
+            if(++waitLoopCount&gt;500){
+                console.log(&quot;reached auto remove expired time&quot;);
+                clearInterval(waitExpListUpdate);
+            }else{
+                console.log(&quot;continue&quot;);
+            }
+        },1)
+    });
+    // 重新显示无法操作课程
+    $(&quot;#expCvCourse&quot;).on(&quot;click&quot;,&quot;.mission-success-tip-cancel-option&quot;,()=&gt;{
+        console.log(&quot;resuming hiding status...&quot;);
+        $(&quot;.mission-success-tip&quot;).remove();
+        $(&quot;.group-item&quot;).each((index,block)=&gt;{
+            if(block.firstElementChild.firstElementChild.classList.contains(&#39;cv-hide&#39;)){
+                if(block.style.display == &#39;none&#39;){
+                    block.style.display = &#39;initial&#39;;
+                }
+            }
+        });
+        $(&quot;.detail-group-list&gt;.cv-foot&quot;).prepend(&quot;&lt;div class=&#39;mission-success-tip-restart-option&#39;&gt;已取消自动隐藏无效实验，点我重新隐藏&lt;/div&gt;&quot;);
+    });
+})();</pre>
+</div>
+
+    </div>
+  </section>
+
+  </div>
+
+    <script>
+      (function (d) {
+      window.rum = {key: '29razx6j'};
+      var script = d.createElement('script');
+      script.src = 'https://cdn.perfops.net/rom3/rom3.min.js';
+      script.type = 'text/javascript';
+      script.defer = true;
+      script.async = true;
+      d.getElementsByTagName('head')[0].appendChild(script);
+      })(document);
+    </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"3b2c78865ea34bf4ad258da879f720f8","r":1}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31208e61aa76d41',t:'MTc4NzczODkwMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+

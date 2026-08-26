@@ -1,0 +1,441 @@
+"""
+打包为独立exe + 创建安装包
+"""
+import os
+import sys
+import shutil
+import subprocess
+
+APP_VERSION = "v2.6.0"
+ARTIFACT_PREFIX = f"YNU.Pro_{APP_VERSION}"
+SETUP_FILENAME = f"{ARTIFACT_PREFIX}_Setup.exe"
+PORTABLE_FILENAME = f"{ARTIFACT_PREFIX}_Portable.zip"
+
+RUNTIME_DATA_NAMES = {
+    "config.json",
+    "monitor_state.json",
+    "watchdog_signal.json",
+    "watchdog.lock",
+}
+
+
+def sanitize_build_environment():
+    """Keep application-local Java runtimes out of Python bundles.
+
+    PyInstaller searches every PATH directory when resolving native DLLs.  A
+    locally installed JDK ships private copies of UCRT/MSVC runtime DLLs; when
+    those copies are bundled, ONNX Runtime fails during captcha OCR startup.
+    Python and Qt must use the Windows/Python runtime copies instead.
+    """
+    original = os.environ.get("PATH", "")
+    cleaned = []
+    removed = []
+    for entry in original.split(os.pathsep):
+        normalized = entry.lower().replace('/', '\\')
+        if '\\java\\' in normalized or '\\jdk' in normalized:
+            removed.append(entry)
+            continue
+        if entry and entry not in cleaned:
+            cleaned.append(entry)
+    os.environ["PATH"] = os.pathsep.join(cleaned)
+    if removed:
+        print(f"[*] 已从打包 DLL 搜索路径排除 {len(removed)} 个 Java/JDK 目录")
+
+
+def verify_runtime_data_isolation(dist_dir):
+    """确保账号配置、待选记录和日志没有进入发布产物。"""
+    leaked = []
+    for root, dirs, files in os.walk(dist_dir):
+        for filename in files:
+            relative = os.path.relpath(os.path.join(root, filename), dist_dir)
+            parts = relative.replace('\\', '/').split('/')
+            is_runtime_file = filename in RUNTIME_DATA_NAMES and (
+                len(parts) == 1 or 'xk_spider' in parts
+            )
+            is_runtime_log = filename.endswith('.log') and (
+                'logs' in parts or 'xk_spider' in parts
+            )
+            if is_runtime_file or is_runtime_log:
+                leaked.append(os.path.join(root, filename))
+    if not leaked:
+        return True
+
+    print("[ERROR] 构建产物包含用户运行数据，已终止打包：")
+    for path in leaked:
+        print(f"       {path}")
+    return False
+
+def check_and_install(package):
+    """检查并安装包"""
+    try:
+        __import__(package)
+        return True
+    except ImportError:
+        print(f"[*] 安装 {package}...")
+        subprocess.run([sys.executable, "-m", "pip", "install", package], check=True)
+        return True
+
+def check_upx():
+    """检查并下载 UPX"""
+    upx_exe = "upx.exe"
+    if os.path.exists(upx_exe):
+        return os.path.abspath(".")
+    
+    print("[*] 正在自动安装 UPX (用于压缩体积)...")
+    try:
+        import urllib.request
+        import zipfile
+        
+        url = "https://github.com/upx/upx/releases/download/v4.2.4/upx-4.2.4-win64.zip"
+        zip_path = "upx.zip"
+        
+        print(f"[*] 下载: {url}")
+        urllib.request.urlretrieve(url, zip_path)
+        
+        print("[*] 解压 UPX...")
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            for file in zf.namelist():
+                if file.endswith('upx.exe'):
+                    with zf.open(file) as source, open(upx_exe, 'wb') as target:
+                        target.write(source.read())
+                    break
+        
+        if os.path.exists(zip_path):
+            os.remove(zip_path)
+            
+        print("[OK] UPX 安装成功！")
+        return os.path.abspath(".")
+    except Exception as e:
+        print(f"[WARN] UPX 下载失败: {e}")
+        return None
+
+def build_exe():
+    """打包为exe"""
+    print("\n" + "=" * 50)
+    print("步骤 1: 打包为 EXE")
+    print("=" * 50)
+    
+    sanitize_build_environment()
+    check_and_install("pyinstaller")
+    
+    # 检查 UPX
+    upx_dir = check_upx()
+
+    
+    # 清理旧文件
+    for folder in ["build", "dist"]:
+        if os.path.exists(folder):
+            shutil.rmtree(folder)
+    
+    for f in os.listdir("."):
+        if f.endswith(".spec"):
+            os.remove(f)
+    
+    # PyInstaller 参数 - 打包主程序
+    main_args = [
+        "run_gui.py",
+        "--name=YNU选课助手Pro",
+        "--onedir",            # 打包到一个目录（比onefile快且稳定）
+        "--windowed",          # 无控制台
+        "--noconfirm",
+        "--clean",
+        # Python 包由 PyInstaller 自动收集；禁止复制整个 xk_spider 目录，
+        # 避免把 config.json/monitor_state.json 带入安装包。
+        "--add-data=assets;assets",  # 添加 assets 文件夹（包含图标）
+        # OCR/ONNX 由独立进程加载，避免与 Qt 原生 DLL 冲突。
+        "--collect-all=certifi",
+        # 排除不必要的重型库
+        "--exclude-module=tensorflow",
+        "--exclude-module=torch",
+        "--exclude-module=paddle",
+        "--exclude-module=matplotlib",
+        "--exclude-module=scipy",
+        "--exclude-module=pandas",
+        "--exclude-module=tkinter",
+        "--exclude-module=pyinstaller",
+        "--exclude-module=ddddocr",
+        "--exclude-module=onnxruntime",
+        "--exclude-module=cv2",
+        "--exclude-module=numpy",
+        
+        # 隐藏导入
+        "--hidden-import=PyQt5.sip",
+        "--hidden-import=PyQt5.QtSvg",
+        "--hidden-import=PIL._tkinter_finder",
+        "--hidden-import=certifi",
+    ]
+    
+    # 如果有 .ico 图标文件，设置为 EXE 图标
+    if os.path.exists("assets/icon.ico"):
+        main_args.append("--icon=assets/icon.ico")
+    elif os.path.exists("icon.ico"):
+        main_args.append("--icon=icon.ico")
+        
+    # 添加 UPX 参数
+    if upx_dir:
+        main_args.append(f"--upx-dir={upx_dir}")
+
+    
+    print("[*] 正在打包主程序，请稍候（可能需要几分钟）...")
+    
+    from PyInstaller.__main__ import run
+    run(main_args)
+    
+    main_dist_dir = "dist/YNU选课助手Pro"
+    if not os.path.exists(main_dist_dir):
+        print("[ERROR] 打包失败")
+        return False
+
+    print("[*] 正在打包独立验证码 OCR 进程...")
+    ocr_args = [
+        "run_ocr_helper.py",
+        "--name=OCRHelper",
+        "--onedir",
+        "--console",
+        "--noconfirm",
+        "--clean",
+        "--collect-all=ddddocr",
+        "--exclude-module=PyQt5",
+    ]
+    if upx_dir:
+        ocr_args.append(f"--upx-dir={upx_dir}")
+    run(ocr_args)
+
+    ocr_dist_dir = os.path.join("dist", "OCRHelper")
+    target_ocr_dir = os.path.join(main_dist_dir, "OCRHelperRuntime")
+    if not os.path.isfile(os.path.join(ocr_dist_dir, "OCRHelper.exe")):
+        print("[ERROR] OCRHelper.exe 打包失败")
+        return False
+    if os.path.exists(target_ocr_dir):
+        shutil.rmtree(target_ocr_dir)
+    shutil.move(ocr_dist_dir, target_ocr_dir)
+
+    print("[*] 正在打包守护进程 Watchdog.exe...")
+    watchdog_args = [
+        "run_watchdog.py",
+        "--name=Watchdog",
+        "--onefile",           # 守护进程仅需单文件，便于主程序直接调用
+        "--windowed",          # 无控制台
+        "--noconfirm",
+        "--clean",
+    ]
+
+    if os.path.exists("assets/icon.ico"):
+        watchdog_args.append("--icon=assets/icon.ico")
+    elif os.path.exists("icon.ico"):
+        watchdog_args.append("--icon=icon.ico")
+
+    if upx_dir:
+        watchdog_args.append(f"--upx-dir={upx_dir}")
+
+    run(watchdog_args)
+
+    watchdog_exe = "dist/Watchdog.exe"
+    target_watchdog_exe = os.path.join(main_dist_dir, "Watchdog.exe")
+    if not os.path.exists(watchdog_exe):
+        print("[ERROR] Watchdog.exe 打包失败")
+        return False
+
+    shutil.copy2(watchdog_exe, target_watchdog_exe)
+    os.remove(watchdog_exe)
+
+    if not os.path.exists(target_watchdog_exe):
+        print("[ERROR] Watchdog.exe 复制失败")
+        return False
+
+    if not os.path.exists(os.path.join(target_ocr_dir, "OCRHelper.exe")):
+        print("[ERROR] 独立 OCR 运行目录复制失败")
+        return False
+
+    if not verify_runtime_data_isolation(main_dist_dir):
+        return False
+
+    print("[OK] EXE 打包成功（已包含 Watchdog.exe）！")
+    return True
+
+def create_installer():
+    """创建安装包与便携版 ZIP"""
+    print("\n" + "=" * 50)
+    print("步骤 2: 创建安装包")
+    print("=" * 50)
+    
+    dist_dir = "dist/YNU选课助手Pro"
+    if not os.path.exists(dist_dir):
+        print("[ERROR] 未找到打包目录")
+        return False
+    
+    # 创建 NSIS 安装脚本
+    nsis_script = f"""
+!include "MUI2.nsh"
+!include "nsDialogs.nsh"
+!include "LogicLib.nsh"
+
+Var RemoveUserDataCheckbox
+Var RemoveUserDataState
+
+Name "YNU选课助手 Pro"
+OutFile "{SETUP_FILENAME}"
+InstallDir "$LOCALAPPDATA\\YNU选课助手Pro"
+InstallDirRegKey HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\YNU选课助手Pro" "UninstallString"
+RequestExecutionLevel user
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_UNPAGE_CONFIRM
+UninstPage custom un.RemoveUserDataPage un.RemoveUserDataPageLeave
+!insertmacro MUI_UNPAGE_INSTFILES
+
+!insertmacro MUI_LANGUAGE "SimpChinese"
+
+Function un.RemoveUserDataPage
+    !insertmacro MUI_HEADER_TEXT "个人数据" "选择是否清理账号配置和选课状态"
+    nsDialogs::Create 1018
+    Pop $0
+    ${{If}} $0 == error
+        Abort
+    ${{EndIf}}
+
+    ${{NSD_CreateLabel}} 0 0 100% 30u "默认会保留登录配置和待选课程状态，方便重新安装后继续使用。安装目录内的运行日志会随程序一起删除。"
+    Pop $0
+    ${{NSD_CreateCheckbox}} 0 44u 100% 14u "同时删除个人配置和选课状态"
+    Pop $RemoveUserDataCheckbox
+    ${{NSD_Uncheck}} $RemoveUserDataCheckbox
+
+    nsDialogs::Show
+FunctionEnd
+
+Function un.RemoveUserDataPageLeave
+    ${{NSD_GetState}} $RemoveUserDataCheckbox $RemoveUserDataState
+FunctionEnd
+
+Section "Install"
+    ; Clean old runtime files first to avoid mixed Python/dependency DLLs after upgrades.
+    ; Keep user data such as xk_spider/config.json and logs intact.
+    Delete "$INSTDIR\\YNU选课助手Pro.exe"
+    Delete "$INSTDIR\\Watchdog.exe"
+    RMDir /r "$INSTDIR\\_internal"
+
+    SetOutPath "$INSTDIR"
+    File /r "dist\\YNU选课助手Pro\\*.*"
+
+    ; 创建快捷方式
+    CreateDirectory "$SMPROGRAMS\\YNU选课助手Pro"
+    CreateShortcut "$SMPROGRAMS\\YNU选课助手Pro\\YNU选课助手Pro.lnk" "$INSTDIR\\YNU选课助手Pro.exe"
+    CreateShortcut "$DESKTOP\\YNU选课助手Pro.lnk" "$INSTDIR\\YNU选课助手Pro.exe"
+
+    ; 写入卸载信息（使用 HKCU 而不是 HKLM，不需要管理员权限）
+    WriteUninstaller "$INSTDIR\\Uninstall.exe"
+    WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\YNU选课助手Pro" "DisplayName" "YNU选课助手 Pro"
+    WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\YNU选课助手Pro" "UninstallString" "$INSTDIR\\Uninstall.exe"
+    WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\YNU选课助手Pro" "InstallLocation" "$INSTDIR"
+SectionEnd
+
+Section "Uninstall"
+    RMDir /r "$INSTDIR"
+    RMDir /r "$SMPROGRAMS\\YNU选课助手Pro"
+    Delete "$DESKTOP\\YNU选课助手Pro.lnk"
+    DeleteRegKey HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\YNU选课助手Pro"
+
+    ; Personal data is retained unless the user explicitly opts in.
+    StrCmp $RemoveUserDataState ${{BST_CHECKED}} 0 keep_user_data
+    RMDir /r "$APPDATA\\YNU选课助手Pro"
+keep_user_data:
+SectionEnd
+"""
+    
+    # 保存 NSIS 脚本 (使用 UTF-8 BOM 编码以支持中文)
+    # Keep the generated script stable when build.py runs under Windows;
+    # otherwise universal-newline translation rewrites every tracked line.
+    with open("installer.nsi", "w", encoding="utf-8-sig", newline="\n") as f:
+        f.write(nsis_script)
+    
+    # 检查是否安装了 NSIS
+    nsis_path = None
+    possible_paths = [
+        r"D:\NSIS\makensis.exe",
+        r"C:\Program Files (x86)\NSIS\makensis.exe",
+        r"C:\Program Files\NSIS\makensis.exe",
+    ]
+    for p in possible_paths:
+        if os.path.exists(p):
+            nsis_path = p
+            break
+    
+    setup_created = False
+    if nsis_path:
+        print("[*] 使用 NSIS 创建安装包...")
+        try:
+            subprocess.run([nsis_path, "installer.nsi"], check=True)
+            if os.path.exists(SETUP_FILENAME):
+                shutil.move(SETUP_FILENAME, os.path.join("dist", SETUP_FILENAME))
+                print(f"[OK] 安装包创建成功: dist/{SETUP_FILENAME}")
+                setup_created = True
+        except Exception as e:
+            print(f"[WARN] NSIS 打包失败: {e}")
+
+    # 始终创建 ZIP 便携版
+    print("[*] 创建 ZIP 便携版...")
+    portable_basename = os.path.join("dist", f"{ARTIFACT_PREFIX}_Portable")
+    portable_zip_path = f"{portable_basename}.zip"
+    if os.path.exists(portable_zip_path):
+        os.remove(portable_zip_path)
+    shutil.make_archive(portable_basename, "zip", "dist", "YNU选课助手Pro")
+    print(f"[OK] 便携版创建成功: dist/{PORTABLE_FILENAME}")
+
+    if not setup_created:
+        print("\n[提示] 未生成安装包（NSIS 不可用或打包失败）:")
+        print("       下载地址: https://nsis.sourceforge.io/Download")
+        print("       安装后重新运行此脚本即可生成安装包")
+
+    return True
+
+def main():
+    print("=" * 50)
+    print("  YNU选课助手 Pro - 打包工具")
+    print("=" * 50)
+    print("\n此脚本将：")
+    print("1. 将程序打包为独立 EXE（包含所有依赖）")
+    print("2. 同时创建安装包和便携版 ZIP")
+    print("\n按 Enter 开始，Ctrl+C 取消...")
+    
+    try:
+        input()
+    except KeyboardInterrupt:
+        print("\n已取消")
+        return
+    
+    # 打包 EXE
+    if not build_exe():
+        return
+    
+    # 创建安装包
+    create_installer()
+    
+    # 显示结果
+    print("\n" + "=" * 50)
+    print("打包完成！")
+    print("=" * 50)
+    
+    dist_files = []
+    if os.path.exists("dist"):
+        for f in os.listdir("dist"):
+            path = os.path.join("dist", f)
+            if os.path.isfile(path):
+                size = os.path.getsize(path) / (1024 * 1024)
+                dist_files.append(f"  - {f} ({size:.1f} MB)")
+            elif os.path.isdir(path):
+                dist_files.append(f"  - {f}/ (文件夹)")
+    
+    print("\n生成的文件:")
+    for f in dist_files:
+        print(f)
+    
+    print("\n使用方法:")
+    print("  便携版: 解压 ZIP 后运行 YNU选课助手Pro.exe")
+    print("  安装版: 运行 Setup.exe 安装后从开始菜单启动")
+
+if __name__ == "__main__":
+    main()

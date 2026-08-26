@@ -1,0 +1,301 @@
+const cheerio = require('cheerio')
+//const db = require('../../database/course')
+
+// 折合百分制成绩（本科生用）(国内)
+const calculateEquivalentScore = score => {
+  if (/优/.test(score)) {
+    score = 95
+  } else if (/良/.test(score)) {
+    score = 85
+  } else if (/中/.test(score)) {
+    score = 75
+  } else if (/不及格/.test(score)) {
+    score = 0
+  } else if (/及格|通过/.test(score)) {
+    score = 60
+  }
+  return parseFloat(score) || 0
+}
+// 折合百分制成绩（本科生用）(国外)
+const calculateEquivalentForeignScore = score => {
+  if (/优/.test(score)) {
+    score = 97
+  } else if (/良/.test(score)) {
+    score = 87
+  } else if (/中/.test(score)) {
+    score = 77
+  } else if (/不及格/.test(score)) {
+    score = 0
+  } else if (/及格|通过/.test(score)) {
+    score = 60
+  }
+  return parseFloat(score) || 0
+}
+
+exports.route = {
+
+  /**
+  * GET /api/gpa
+  * 成绩查询
+  * 注意本科生和研究生返回结果格式略有不同
+  **/
+  async get() {
+
+
+    return await this.userCache('10m+', async () => {
+    // return await this.userCache('1s', async () => {
+      let { name, cardnum } = this.user
+
+      if (/^21318/.test(cardnum) || /^21319/.test(cardnum)) {
+        await this.useEHallAuth('4768574631264620')
+        let rawData = await this.post('http://ehall.seu.edu.cn/jwapp/sys/cjcx/modules/cjcx/xscjcx.do',
+          {
+            querySetting: [],
+            '*order': '-XNXQDM,KCH,KXH',
+            pageSize: 1000,
+            pageNumber: 1
+          })
+        //原始数据中有重复数据
+        rawData = rawData.data.datas.xscjcx.rows
+
+        let rawDetail = rawData.map(k => {
+          let semesterName = k.XNXQDM.split('-')
+
+          semesterName = `${semesterName[0].slice(2)}-${semesterName[1].slice(2)}-${semesterName[2]}`
+          return {
+            semester: semesterName,
+            cid: k.XSKCH,
+            courseName: k.XSKCM,
+            courseType: k.KCXZDM_DISPLAY === '必修' ? '' : k.KCXZDM_DISPLAY,
+            credit: k.XF,
+            score: k.DJCJMC ? k.DJCJMC : k.ZCJ,
+            foreignScore: k.DJCJMC ? calculateEquivalentForeignScore(k.DJCJMC) : k.ZCJ,
+            equivalentScore: k.DJCJMC ? calculateEquivalentScore(k.DJCJMC) : k.ZCJ,
+            isPassed: k.ZCJ >= 60,
+            isFirstPassed: false,
+            isHighestPassed: false,
+            scoreType: k.CXCKDM_DISPLAY === '初修' ? '首修' : k.CXCKDM_DISPLAY
+          }
+        })
+        //对数据rawDetail进行去重，依靠课程代码进行去重
+        //及格重修的课程代码与首修课程代码相同，将来可能会产生bug，希望以后可以不用数据去重
+        let cidList = {}
+        let indexList = []
+        rawDetail.forEach((currentTerm, index) => {
+          if (cidList[currentTerm.cid] !== true) {
+            cidList[currentTerm.cid] = true
+            indexList.push(index)
+          }
+        })
+        let detail = []
+        indexList.forEach((detailIndex) => {
+          detail.push(rawDetail[detailIndex])
+        })
+        //去重结束
+
+        let courseHasPassed = {}
+        let achievedCredits = 0
+        detail.slice().reverse().map(k => {
+          // 赋值后判断如果是首次通过
+          if ((k.isFirstPassed = k.isPassed && !courseHasPassed[k.cid])) {
+            courseHasPassed[k.cid] = true
+
+            // 更新已获得学分数
+            achievedCredits += k.credit
+          }
+        })
+
+
+        // 计算各门课程是否最高一次通过
+        // 用于前端判断课程是否默认计入出国绩点估算
+        let courseHighestPassed = {}
+        detail.map(k => {
+          if (k.isPassed && (!courseHighestPassed[k.cid] || k.equivalentScore > courseHighestPassed[k.cid].equivalentScore)) {
+            courseHighestPassed[k.cid] = k
+          }
+        })
+        Object.values(courseHighestPassed).map(k => k.isHighestPassed = true)
+        
+        // 解决转系生课程全为任选或限选的状况
+        let courseTypes = detail.map(k => k.courseType)
+        courseTypes = courseTypes.filter( k => k.courseType === '')
+
+        if(courseTypes.length === 0){
+          detail.map(k => {
+            if(k.courseType === '限选')
+              k.courseType = ''
+          })
+        }
+        
+        
+
+        // 按学期分组
+        detail = detail.reduce((a, b) => {
+          let semester = b.semester
+          delete b.semester
+          if (!a.length || a.slice(-1)[0].semester !== semester) {
+            return a.concat([{ semester, courses: [b] }])
+          } else {
+            a.slice(-1)[0].courses.push(b)
+            return a
+          }
+        }, [])
+
+        let gpa = null
+        let calculationTime = null
+        let gpaBeforeMakeup = null
+        let year = null
+        // 时间解析为时间戳
+        //calculationTime = calculationTime ? +moment(calculationTime) : null
+        this.logMsg = `${name} (${cardnum}) - 查询绩点`
+        return { gpa, gpaBeforeMakeup, achievedCredits, year, calculationTime, detail }
+
+      }
+
+      // 本科生
+      if (/^21/.test(cardnum)) {
+        await this.useAuthCookie()
+        let res = await this.get(
+          'http://xk.urp.seu.edu.cn/studentService/cs/stuServe/studentExamResultQuery.action'
+        )
+        let $ = cheerio.load(res.data)
+
+        // 计算去年的当前学期号，以便统计时进行过滤。
+        // 早于去年当前学期的数据不再记录。
+
+        //let currentTerm = (this.term.current || this.term.prev).name
+        //let prevYearCurrentTerm = currentTerm.split('-').map(Number).map((k, i) => i < 2 ? k - 1 : k).join('-')
+
+        // 解析课程
+        let detail = (await Promise.all($('#table2 tr').toArray().slice(1).map(async tr => {
+          let [semester, cid, courseName, credit, score, scoreType, courseType]
+            = $(tr).find('td').toArray().slice(1).map(td => {
+              return $(td).text().trim().replace(/&[0-9A-Za-z];/g, '')
+            })
+
+          // 折合百分制成绩
+          let equivalentScore = calculateEquivalentScore(score)
+
+          // 计算出国成绩
+          let foreignScore = calculateEquivalentForeignScore(score) === 0 ? score : calculateEquivalentForeignScore(score)
+
+          // 是否通过
+          // 获得学分的条件是首次通过，这里先计算是否通过，留给最后一起计算是否首次通过
+          let isPassed = equivalentScore >= 60
+
+          // 学分解析为浮点数
+          credit = parseFloat(credit)
+
+          // isFirstPassed 和 isHighestPassed 留给后面计算
+          return {
+            cid, semester,
+            courseName, courseType, credit, score, foreignScore, equivalentScore,
+            isPassed, isFirstPassed: false, isHighestPassed: false,
+            scoreType
+          }
+        })))
+
+        let [gpa, gpaBeforeMakeup, year, calculationTime]
+          = $('#table4 tr').eq(1).find('td').toArray().map(td => {
+            return $(td).text().trim().replace(/&[0-9A-Za-z];/g, '')
+          })
+
+        // 计算各门课程是否首次通过
+        // 用于判断课程是否获得学分，以及用于前端判断课程是否默认计入校内绩点估算
+        // 注意 reverse 是变更方法，需要先 slice 出来防止改变原数组的顺序
+        let courseHasPassed = {}
+        let achievedCredits = 0
+        detail.slice().reverse().map(k => {
+          // 赋值后判断如果是首次通过
+          if ((k.isFirstPassed = k.isPassed && !courseHasPassed[k.cid])) {
+            courseHasPassed[k.cid] = true
+
+            // 更新已获得学分数
+            achievedCredits += k.credit
+          }
+        })
+
+        // 计算各门课程是否最高一次通过
+        // 用于前端判断课程是否默认计入出国绩点估算
+        let courseHighestPassed = {}
+        detail.map(k => {
+          if (k.isPassed && (!courseHighestPassed[k.cid] || k.equivalentScore > courseHighestPassed[k.cid].equivalentScore)) {
+            courseHighestPassed[k.cid] = k
+          }
+        })
+        Object.values(courseHighestPassed).map(k => k.isHighestPassed = true)
+        
+        // 解决转系生课程全为任选或限选的状况
+        let courseTypes = detail.map(k => k.courseType)
+        courseTypes = courseTypes.filter( k => k.courseType === '')
+
+        if(courseTypes.length === 0){
+          detail.map(k => {
+            if(k.courseType === '限选')
+              k.courseType = ''
+          })
+        }        
+
+        // 按学期分组
+        detail = detail.reduce((a, b) => {
+          let semester = b.semester
+          delete b.semester
+          if (!a.length || a.slice(-1)[0].semester !== semester) {
+            return a.concat([{ semester, courses: [b] }])
+          } else {
+            a.slice(-1)[0].courses.push(b)
+            return a
+          }
+        }, [])
+
+        // 时间解析为时间戳
+        calculationTime = calculationTime ? +moment(calculationTime) : null
+        this.logMsg = `${name} (${cardnum}) - 查询绩点`
+        if (detail.length === 0) {
+          throw '教务处数据出错'
+        }
+        return { gpa, gpaBeforeMakeup, achievedCredits, year, calculationTime, detail }
+
+      } else if (/^22/.test(cardnum)) { // 研究生
+        let headers = { 'Referer': 'http://121.248.63.139/nstudent/index.aspx' }
+
+        // 获取成绩页
+        let res = await this.get('http://121.248.63.139/nstudent/grgl/xskccjcx.aspx', { headers })
+        let $ = cheerio.load(res.data)
+        let detail = ['#dgData', '#Datagrid1'].map(k => $(k)).map((table, i) => {
+          let scoreType = ['学位', '选修'][i]
+          return table.find('tr').toArray().slice(1).map(k => $(k)).map(tr => {
+            let [courseName, credit, semester, score, standardScore]
+              = tr.children('td').toArray().map(k => $(k).text().trim())
+
+            credit = parseFloat(credit)
+            return { semester, courseName, courseType: '', credit, score, standardScore, scoreType }
+          })
+        })
+          .reduce((a, b) => a.concat(b), [])
+          .sort((a, b) => b.semester - a.semester)
+          .reduce((a, b) => { // 按学期分组
+            let semester = b.semester
+            delete b.semester
+            if (!a.length || a.slice(-1)[0].semester !== semester) {
+              return a.concat([{ semester, courses: [b] }])
+            } else {
+              a.slice(-1)[0].courses.push(b)
+              return a
+            }
+          }, [])
+
+        let score = parseFloat($('#lblgghpjcj').text()) // 规格化平均成绩
+        let degree = parseFloat($('#lblxwxf').text()) // 学位学分
+        let optional = parseFloat($('#lblxxxf').text()) // 选修学分
+        let total = parseFloat($('#lblyxxf').text()) // 总学分
+        let required = parseFloat($('#lblyxxf1').text()) // 应修总学分
+        let credits = { degree, optional, total, required }
+        
+        
+
+        return { graduated: true, score, credits, detail }
+      }
+    })
+  }
+}

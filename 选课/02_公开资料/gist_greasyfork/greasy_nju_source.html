@@ -1,0 +1,1247 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>NJU|南大|南京大学选课助手 - Source code</title>
+  <meta name="description" value="Source code for NJU|南大|南京大学选课助手">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <script src="/vite/assets/application-Do-C1Ssw.js" crossorigin="" type="module"></script><link rel="stylesheet" crossorigin="" href="/vite/assets/application-BUQg-itE.css" />
+    <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="HlnDJ39f679R0XV0rZcT6BloY9eWO4KBrjfbF7fKluMwSexSh3NgR4YjkvYfk6dCIswHBAmn4RPrqr5iR5gR2g" />
+    <meta name="clckd" content="bf6242cc3039bff31a7815dff8ee247b" />
+    <meta name="lhverifycode" content="32dc01246faccb7f5b3cad5016dd5033" />
+  <link rel="canonical" href="https://greasyfork.org/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+  <link rel="icon" href="/vite/assets/blacklogo16-DftkYuVe.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap" media="print" onload="this.media='all'; this.onload=null;">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap"></noscript>
+
+    <link rel="alternate" hreflang="x-default" href="/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ar" href="/ar/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="be" href="/be/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="bg" href="/bg/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ckb" href="/ckb/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="cs" href="/cs/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="da" href="/da/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="de" href="/de/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="el" href="/el/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="en" href="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="eo" href="/eo/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="es" href="/es/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="es-419" href="/es-419/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fi" href="/fi/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fil" href="/fil/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fr" href="/fr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="fr-CA" href="/fr-CA/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="he" href="/he/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="hr" href="/hr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="hu" href="/hu/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="id" href="/id/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="it" href="/it/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ja" href="/ja/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ka" href="/ka/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ko" href="/ko/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="mr" href="/mr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="nb" href="/nb/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="nl" href="/nl/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="pl" href="/pl/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="pt" href="/pt/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="pt-BR" href="/pt-BR/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ro" href="/ro/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ru" href="/ru/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="sk" href="/sk/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="sr" href="/sr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="sv" href="/sv/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="th" href="/th/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="tr" href="/tr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="uk" href="/uk/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="ug" href="/ug/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="vi" href="/vi/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="zh-CN" href="/zh-CN/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+      <link rel="alternate" hreflang="zh-TW" href="/zh-TW/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+
+
+  <link rel="search" href="/en/opensearch.xml" type="application/opensearchdescription+xml" title="Greasy Fork search" hreflang="en">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NMRNRYW7C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7NMRNRYW7C', {
+        'ad_method': 'ea',
+        'ad_method_variant': '',
+        'action': 'scripts/show_code'
+      });
+    </script>
+
+    <script async src="https://media.ethicalads.io/media/client/ethicalads.min.js" onerror="if (typeof gtag !== 'undefined') { gtag('event', 'EthicalAds placement', { 'ea_campaign_type': '(error)' })};switchToEaFallback()"></script>
+
+    <meta name="twitter:card" content="summary">
+  <meta property="og:title" content="NJU|南大|南京大学选课助手">
+  <meta property="og:url" content="https://greasyfork.org/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B">
+  <meta property="og:description" content="红黑榜分析|一键课程收藏|课程冲突预警|秒点选中|抽签概率预测|跨校区预警">
+
+</head>
+<body>
+
+  <header id="main-header">
+    <div class="width-constraint">
+      <div id="site-name">
+        <a href="/en"><img alt="" width="96" height="96" src="/vite/assets/blacklogo96-CxYTSM_T.png" /></a>
+        <div id="site-name-text">
+          <h1><a href="/en">Greasy Fork</a></h1>
+        </div>
+      </div>
+      <div id="site-nav">
+        <div id="nav-user-info">
+            <span class="sign-in-link"><a rel="nofollow" href="/en/users/sign_in?return_to=%2Fen%2Fscripts%2F562715-nju-%25E5%258D%2597%25E5%25A4%25A7-%25E5%258D%2597%25E4%25BA%25AC%25E5%25A4%25A7%25E5%25AD%25A6%25E9%2580%2589%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%2Fcode">Sign in</a></span>
+
+                      <form class="language-selector" action="/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ar">
+                      Arabic (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="be">
+                      Belarusian (be)
+                    </option>
+                    <option data-language-url="/nb/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nb">
+                      Bokmål (nb)
+                    </option>
+                    <option data-language-url="/bg/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="bg">
+                      Bulgarian (bg)
+                    </option>
+                    <option data-language-url="/ckb/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ckb">
+                      Central Kurdish (ckb)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-CN">
+                      Chinese (China) (zh-CN)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-TW">
+                      Chinese (Taiwan) (zh-TW)
+                    </option>
+                    <option data-language-url="/hr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hr">
+                      Croatian (hr)
+                    </option>
+                    <option data-language-url="/cs/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="cs">
+                      Czech (cs)
+                    </option>
+                    <option data-language-url="/da/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="da">
+                      Danish (da)
+                    </option>
+                    <option data-language-url="/nl/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nl">
+                      Dutch (nl)
+                    </option>
+                    <option data-language-url="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="en" selected>
+                      English (en)
+                    </option>
+                    <option data-language-url="/eo/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="eo">
+                      Esperanto (eo)
+                    </option>
+                    <option data-language-url="/fil/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/fi/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fi">
+                      Finnish (fi)
+                    </option>
+                    <option data-language-url="/fr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr">
+                      French (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr-CA">
+                      French (Canada) (fr-CA)
+                    </option>
+                    <option data-language-url="/ka/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ka">
+                      Georgian (ka)
+                    </option>
+                    <option data-language-url="/de/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="de">
+                      German (de)
+                    </option>
+                    <option data-language-url="/el/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="el">
+                      Greek (el)
+                    </option>
+                    <option data-language-url="/he/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="he">
+                      Hebrew (he)
+                    </option>
+                    <option data-language-url="/hu/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hu">
+                      Hungarian (hu)
+                    </option>
+                    <option data-language-url="/id/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="id">
+                      Indonesian (id)
+                    </option>
+                    <option data-language-url="/it/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="it">
+                      Italian (it)
+                    </option>
+                    <option data-language-url="/ja/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ja">
+                      Japanese (ja)
+                    </option>
+                    <option data-language-url="/ko/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ko">
+                      Korean (ko)
+                    </option>
+                    <option data-language-url="/mr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="mr">
+                      Marathi (mr)
+                    </option>
+                    <option data-language-url="/pl/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pl">
+                      Polish (pl)
+                    </option>
+                    <option data-language-url="/pt/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt">
+                      Portuguese (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt-BR">
+                      Portuguese (Brazil) (pt-BR)
+                    </option>
+                    <option data-language-url="/ro/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ro">
+                      Romanian (ro)
+                    </option>
+                    <option data-language-url="/ru/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ru">
+                      Russian (ru)
+                    </option>
+                    <option data-language-url="/sr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sr">
+                      Serbian (sr)
+                    </option>
+                    <option data-language-url="/sk/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sk">
+                      Slovak (sk)
+                    </option>
+                    <option data-language-url="/es/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es">
+                      Spanish (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es-419">
+                      Spanish (es-419)
+                    </option>
+                    <option data-language-url="/sv/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sv">
+                      Swedish (sv)
+                    </option>
+                    <option data-language-url="/th/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="th">
+                      Thai (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="tr">
+                      Turkish (tr)
+                    </option>
+                    <option data-language-url="/ug/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ug">
+                      Uighur (ug)
+                    </option>
+                    <option data-language-url="/uk/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="uk">
+                      Ukrainian (uk)
+                    </option>
+                    <option data-language-url="/vi/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="vi">
+                      Vietnamese (vi)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+
+        </div>
+        <nav>
+          <li class="scripts-index-link"><a href="/en/scripts">Scripts</a></li>
+            <li class="forum-link"><a href="/en/discussions">Forum</a></li>
+          <li class="help-link"><a href="/en/help">Help</a></li>
+          <li class="with-submenu">
+            <a href="#" onclick="return false">More</a>
+            <nav>
+              <li><a href="/en/search">Advanced search</a></li>
+              <li><a href="/en/users">User list</a></li>
+              <li><a href="/en/scripts/libraries">Libraries</a></li>
+              <li><a href="/en/moderator_actions">Moderator log</a></li>
+            </nav>
+          </li>
+        </nav>
+      </div>
+
+      <div id="mobile-nav">
+        <div class="mobile-nav-opener">☰</div>
+        <nav class="collapsed">
+          <li class="scripts-index-link"><a href="/en/scripts">Scripts</a></li>
+          <li class="forum-link"><a href="/en/discussions">Forum</a></li>
+          <li class="help-link"><a href="/en/help">Help</a></li>
+          <li><a href="/en/search">Advanced search</a></li>
+          <li><a href="/en/users">User list</a></li>
+          <li><a href="/en/scripts/libraries">Libraries</a></li>
+          <li><a href="/en/moderator_actions">Moderator log</a></li>
+            <li class="multi-link-nav">
+              <span class="sign-in-link"><a rel="nofollow" href="/en/users/sign_in?return_to=%2Fen%2Fscripts%2F562715-nju-%25E5%258D%2597%25E5%25A4%25A7-%25E5%258D%2597%25E4%25BA%25AC%25E5%25A4%25A7%25E5%25AD%25A6%25E9%2580%2589%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%2Fcode">Sign in</a></span>
+            </li>
+          <li>            <form class="language-selector" action="/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ar">
+                      Arabic (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="be">
+                      Belarusian (be)
+                    </option>
+                    <option data-language-url="/nb/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nb">
+                      Bokmål (nb)
+                    </option>
+                    <option data-language-url="/bg/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="bg">
+                      Bulgarian (bg)
+                    </option>
+                    <option data-language-url="/ckb/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ckb">
+                      Central Kurdish (ckb)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-CN">
+                      Chinese (China) (zh-CN)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="zh-TW">
+                      Chinese (Taiwan) (zh-TW)
+                    </option>
+                    <option data-language-url="/hr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hr">
+                      Croatian (hr)
+                    </option>
+                    <option data-language-url="/cs/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="cs">
+                      Czech (cs)
+                    </option>
+                    <option data-language-url="/da/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="da">
+                      Danish (da)
+                    </option>
+                    <option data-language-url="/nl/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="nl">
+                      Dutch (nl)
+                    </option>
+                    <option data-language-url="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="en" selected>
+                      English (en)
+                    </option>
+                    <option data-language-url="/eo/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="eo">
+                      Esperanto (eo)
+                    </option>
+                    <option data-language-url="/fil/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/fi/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fi">
+                      Finnish (fi)
+                    </option>
+                    <option data-language-url="/fr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr">
+                      French (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="fr-CA">
+                      French (Canada) (fr-CA)
+                    </option>
+                    <option data-language-url="/ka/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ka">
+                      Georgian (ka)
+                    </option>
+                    <option data-language-url="/de/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="de">
+                      German (de)
+                    </option>
+                    <option data-language-url="/el/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="el">
+                      Greek (el)
+                    </option>
+                    <option data-language-url="/he/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="he">
+                      Hebrew (he)
+                    </option>
+                    <option data-language-url="/hu/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="hu">
+                      Hungarian (hu)
+                    </option>
+                    <option data-language-url="/id/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="id">
+                      Indonesian (id)
+                    </option>
+                    <option data-language-url="/it/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="it">
+                      Italian (it)
+                    </option>
+                    <option data-language-url="/ja/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ja">
+                      Japanese (ja)
+                    </option>
+                    <option data-language-url="/ko/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ko">
+                      Korean (ko)
+                    </option>
+                    <option data-language-url="/mr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="mr">
+                      Marathi (mr)
+                    </option>
+                    <option data-language-url="/pl/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pl">
+                      Polish (pl)
+                    </option>
+                    <option data-language-url="/pt/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt">
+                      Portuguese (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="pt-BR">
+                      Portuguese (Brazil) (pt-BR)
+                    </option>
+                    <option data-language-url="/ro/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ro">
+                      Romanian (ro)
+                    </option>
+                    <option data-language-url="/ru/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ru">
+                      Russian (ru)
+                    </option>
+                    <option data-language-url="/sr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sr">
+                      Serbian (sr)
+                    </option>
+                    <option data-language-url="/sk/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sk">
+                      Slovak (sk)
+                    </option>
+                    <option data-language-url="/es/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es">
+                      Spanish (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="es-419">
+                      Spanish (es-419)
+                    </option>
+                    <option data-language-url="/sv/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="sv">
+                      Swedish (sv)
+                    </option>
+                    <option data-language-url="/th/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="th">
+                      Thai (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="tr">
+                      Turkish (tr)
+                    </option>
+                    <option data-language-url="/ug/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="ug">
+                      Uighur (ug)
+                    </option>
+                    <option data-language-url="/uk/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="uk">
+                      Ukrainian (uk)
+                    </option>
+                    <option data-language-url="/vi/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/code" value="vi">
+                      Vietnamese (vi)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+</li>
+        </nav>
+      </div>
+
+      <script>
+        /* submit is handled by js if enabled */
+        document.querySelectorAll(".language-selector-submit").forEach((lss) => { lss.style.display = "none" })
+      </script>
+    </div>
+  </header>
+
+  <div class="width-constraint">
+
+      <section id="script-info">
+    <ul id="script-links" class="tabs">
+      <li><a href="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B"><span>Info</span></a></li>
+      <li class="current" aria-current="page"><span>Code</span></li>
+      <li><a href="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/versions"><span>History</span></a></li>
+      <li><a href="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/feedback"><span>Feedback (0)</span></a></li>
+      <li><a href="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/stats"><span>Stats</span></a></li>
+    </ul>
+    <header>
+      <h2>NJU|南大|南京大学选课助手</h2>
+      <p id="script-description" class="script-description">红黑榜分析|一键课程收藏|课程冲突预警|秒点选中|抽签概率预测|跨校区预警</p>
+    </header>
+    <div id="script-content">
+      
+
+      <div id="install-area">
+          
+<a class="install-link" data-install-format="js" data-ping-url="/scripts/562715/install-ping" data-post-install-url="https://greasyfork.org/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/post-install" data-ip-address="67.209.183.176" data-script-id="562715" data-ping-key="ec8f6f51ad6710cd84d96f00c40131075ea954a6" data-is-previous-version="false" data-previous-version-warning="This is not the latest version of this script. If you install it, you will never be updated to a newer version. Install anyway?" rel="nofollow" data-script-name="NJU|南大|南京大学选课助手" data-script-namespace="http://tampermonkey.net/" data-script-version="1.21.5" data-update-label="Update to version 1.21.5" data-downgrade-label="Downgrade to version 1.21.5" data-reinstall-label="Reinstall version 1.21.5" href="https://update.greasyfork.org/scripts/562715/NJU%7C%E5%8D%97%E5%A4%A7%7C%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B.user.js">Install this script</a><a class="install-help-link" title="How to install" rel="nofollow" href="/en/help/installing-user-scripts">?</a>
+      </div>
+
+
+
+<dialog id="installation-instructions-modal-js" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      How to install
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      You will need to install an extension such as <a target="tampermonkey" href="https://addons.mozilla.org/firefox/addon/tampermonkey/">Tampermonkey</a>, <a target="greasemonkey" href="https://addons.mozilla.org/firefox/addon/greasemonkey/">Greasemonkey</a> or <a target="violentmonkey" href="https://addons.mozilla.org/firefox/addon/violentmonkey/">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      You will need to install an extension such as <a target="tampermonkey" href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a> or <a target="violentmonkey" href="https://chrome.google.com/webstore/detail/violent-monkey/jinjaccalgkegednnccohejagnlnfdag">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      You will need to install an extension such as <a target="tampermonkey" href="https://addons.opera.com/extensions/details/tampermonkey-beta/">Tampermonkey</a> or <a target="violentmonkey" href="https://violentmonkey.github.io/get-it/">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      You will need to install an extension such as <a target="tampermonkey" href="https://www.tampermonkey.net/?browser=safari">Tampermonkey</a> or <a target="Userscripts" href="https://apps.apple.com/app/userscripts/id1463298887">Userscripts</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      You will need to install an extension such as <a target="tampermonkey" href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd">Tampermonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      You will need to install a user script manager extension to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">(I already have a user script manager, let me install it!)</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      OK
+    </button>
+  </footer>
+</dialog>
+
+<dialog id="installation-instructions-modal-css" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      How to install
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      You will need to install an extension such as <a target="stylus" href="https://addons.mozilla.org/firefox/addon/styl-us/">Stylus</a> to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      You will need to install an extension such as <a target="stylus" href="https://chrome.google.com/webstore/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne">Stylus</a> to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      You will need to install an extension such as <a target="stylus" href="https://addons.opera.com/extensions/details/stylus/">Stylus</a> to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      You will need to install a user style manager extension to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      You will need to install a user style manager extension to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      You will need to install a user style manager extension to install this style.
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">(I already have a user style manager, let me install it!)</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      OK
+    </button>
+  </footer>
+</dialog>
+
+
+
+<div id="script-feedback-suggestion">
+    <a rel="nofollow" href="/en/scripts/562715-nju-%E5%8D%97%E5%A4%A7-%E5%8D%97%E4%BA%AC%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B/feedback#post-discussion">Ask a question, post a review</a>, or <a rel="nofollow" href="/en/reports/new?item_class=script&amp;item_id=562715">report the script</a>.
+</div>
+
+
+
+  <div class="ad ad-ea" id="script-show-code-ad">
+    <div class="ad-content">
+        <div id="script-show-code-ea_image" class="flat ethical-ads adaptive" data-ea-publisher="greasyfork" data-ea-type="image" data-ea-priority="1"></div>
+        <div id="script-show-code-ea_large" class="flat ethical-ads adaptive" data-ea-publisher="greasyfork" data-ea-type="logo-large-v1" data-ea-priority="10"></div>
+    </div>
+  </div>
+
+
+
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
+
+<div>
+  <input type="checkbox" id="wrap-lines" checked value="1"><label for="wrap-lines" class="checkbox-label">Wrap lines</label>
+</div>
+<div class="code-container">
+  <pre class="prettyprint linenums wrap lang-js">// ==UserScript==
+// @name         NJU|南大|南京大学选课助手
+// @namespace    http://tampermonkey.net/
+// @version      1.21.5
+// @description  红黑榜分析|一键课程收藏|课程冲突预警|秒点选中|抽签概率预测|跨校区预警
+// @author       MellowWinds &amp; Gemini
+// @match        https://xk.nju.edu.cn/xsxkapp/*
+// @match        https://ehallapp.nju.edu.cn/jwapp/sys/wdkb/*
+// @require      https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js
+// @grant        GM_setValue
+// @grant        GM_getValue
+// @grant        GM_deleteValue
+// @grant        GM_addStyle
+// @run-at       document-end
+// @license      MIT
+// ==/UserScript==
+
+(function () {
+    &#39;use strict&#39;;
+
+    // ================== 1. 核心配置 ==================
+    const THEME = {
+        PRE: &#39;#34C759&#39;,
+        ADD: &#39;#007AFF&#39;,
+        GOOD: &#39;#1b5e20&#39;,
+        BAD: &#39;#c62828&#39;,
+        CONFLICT: &#39;#FF3B30&#39;,
+        CAMPUS: &#39;#FF9500&#39;,
+        PURPLE: &#39;#660874&#39;,
+        STAR_ON: &#39;#FF9500&#39;,
+        STAR_OFF: &#39;#999999&#39;,
+        P100: &#39;#1b5e20&#39;,
+        P80: &#39;#4caf50&#39;,
+        P60: &#39;#fdd835&#39;,
+        P40: &#39;#ff9800&#39;,
+        P20: &#39;#f44336&#39;,
+        P0: &#39;#8e0000&#39;
+    };
+
+    //动画曲线
+    const APPLE_EASE = &#39;cubic-bezier(0.19, 1, 0.22, 1)&#39;;
+
+    // --- 🔴 红榜词库---
+    const RED_WORDS = [// 核心褒奖 - 新增简单直白的夸赞
+        &#39;神仙&#39;, &#39;神&#39;, &#39;yyds&#39;, &#39;绝绝子&#39;, &#39;宝藏&#39;, &#39;满分&#39;, &#39;很棒&#39;, &#39;不错&#39;, &#39;可以&#39;, &#39;牛&#39;, &#39;强推&#39;, &#39;力荐&#39;, &#39;推荐&#39;, &#39;必选&#39;, &#39;首选&#39;, &#39;神中神&#39;, &#39;五星好评&#39;, &#39;良心课程&#39;, &#39;满分推荐&#39;, &#39;好课&#39;, &#39;好老师&#39;, &#39;超级好&#39;, &#39;特别好&#39;, &#39;真的好&#39;, &#39;挺好&#39;, &#39;很好&#39;, &#39;巨好&#39;, &#39;超棒&#39;, &#39;绝了&#39;, &#39;爱死&#39;, &#39;吹爆&#39;, &#39;无敌&#39;, &#39;完美&#39;, &#39;顶&#39;, &#39;赞&#39;, &#39;非常推荐&#39;, &#39;值得选&#39;,
+
+        // 分数/绩点 - 覆盖更多给分描述
+        &#39;给分好&#39;, &#39;给分高&#39;, &#39;分高&#39;, &#39;分好&#39;, &#39;满绩&#39;, &#39;高分&#39;, &#39;90+&#39;, &#39;95+&#39;, &#39;90分&#39;, &#39;95分&#39;, &#39;98&#39;, &#39;99&#39;, &#39;不吝啬&#39;, &#39;大方&#39;, &#39;给分大方&#39;, &#39;慷慨&#39;, &#39;手松&#39;, &#39;给分松&#39;, &#39;奶&#39;, &#39;奶爸&#39;, &#39;奶妈&#39;, &#39;捞&#39;, &#39;捞人&#39;, &#39;海底捞&#39;, &#39;调分&#39;, &#39;向上调&#39;, &#39;不挂人&#39;, &#39;容易过&#39;, &#39;好过&#39;, &#39;及格万岁&#39;, &#39;精准扶贫&#39;, &#39;送分&#39;, &#39;送分题&#39;, &#39;不压分&#39;, &#39;福利&#39;, &#39;稳&#39;, &#39;稳过&#39;, &#39;稳拿&#39;, &#39;稳稳的&#39;, &#39;不翻车&#39;, &#39;不玄学&#39;, &#39;不搞心态&#39;, &#39;不恶意&#39;, &#39;不卡线&#39;, &#39;不为难人&#39;, &#39;不卡人&#39;, &#39;不搞事情&#39;, &#39;人均高分&#39;, &#39;人均90&#39;, &#39;全班高分&#39;, &#39;绩点友好&#39;, &#39;GPA友好&#39;, &#39;对绩点友好&#39;, &#39;对学生友好&#39;, &#39;分数感人&#39;, &#39;给分感人&#39;, &#39;分巨高&#39;, &#39;分超高&#39;, &#39;给分神仙&#39;, &#39;给分良心&#39;, &#39;分数漂亮&#39;, &#39;好看&#39;, &#39;高绩点&#39;, &#39;保研&#39;, &#39;刷分&#39;, &#39;提分&#39;,
+
+        // 任务/考核 - 补充更多关于“水”和“轻松”的词
+        &#39;事少&#39;, &#39;事儿少&#39;, &#39;作业少&#39;, &#39;无作业&#39;, &#39;没作业&#39;, &#39;作业不多&#39;, &#39;作业简单&#39;, &#39;任务轻&#39;, &#39;负担轻&#39;, &#39;不点名&#39;, &#39;无点名&#39;, &#39;没点名&#39;, &#39;签到少&#39;, &#39;不签到&#39;, &#39;偶尔点名&#39;, &#39;无pre&#39;, &#39;没pre&#39;, &#39;不考试&#39;, &#39;无考试&#39;, &#39;没考试&#39;, &#39;无期中&#39;, &#39;无期末&#39;, &#39;开卷&#39;, &#39;半开卷&#39;, &#39;水课&#39;, &#39;很水&#39;, &#39;划水&#39;, &#39;摸鱼&#39;, &#39;轻松&#39;, &#39;不累&#39;, &#39;压力小&#39;, &#39;自由&#39;, &#39;考试简单&#39;, &#39;题目简单&#39;, &#39;原题&#39;, &#39;往年题&#39;, &#39;题库&#39;, &#39;重点准&#39;, &#39;划重点&#39;, &#39;给重点&#39;, &#39;复习资料&#39;, &#39;透题&#39;, &#39;论文给分好&#39;, &#39;任务量小&#39;, &#39;负担小&#39;, &#39;不卷&#39;, &#39;养老&#39;, &#39;躺平&#39;, &#39;适合摸鱼&#39;, &#39;适合划水&#39;, &#39;可以翘课&#39;, &#39;可以不来&#39;, &#39;随便听听&#39;, &#39;不用听&#39;, &#39;玩手机&#39;, &#39;做自己的事&#39;, &#39;写作业&#39;, &#39;自习&#39;,
+
+        // 老师/课堂 - 增加对老师性格和教学风格的描述
+        &#39;人好&#39;, &#39;人超好&#39;, &#39;人nice&#39;, &#39;nice&#39;, &#39;温柔&#39;, &#39;和蔼&#39;, &#39;亲切&#39;, &#39;耐心&#39;, &#39;负责&#39;, &#39;认真&#39;, &#39;细心&#39;, &#39;可爱&#39;, &#39;有趣&#39;, &#39;风趣&#39;, &#39;幽默&#39;, &#39;帅&#39;, &#39;帅气&#39;, &#39;美&#39;, &#39;漂亮&#39;, &#39;女神&#39;, &#39;男神&#39;, &#39;大佬&#39;, &#39;大牛&#39;, &#39;学术大牛&#39;, &#39;干货&#39;, &#39;收获&#39;, &#39;学到东西&#39;, &#39;涨知识&#39;, &#39;清晰&#39;, &#39;生动&#39;, &#39;菩萨&#39;, &#39;活菩萨&#39;, &#39;天使&#39;, &#39;知性&#39;, &#39;儒雅&#39;, &#39;随和&#39;, &#39;开明&#39;, &#39;通情达理&#39;, &#39;好说话&#39;, &#39;理解学生&#39;, &#39;尊重&#39;, &#39;不为难&#39;, &#39;氛围好&#39;, &#39;互动好&#39;, &#39;体验好&#39;, &#39;老师正常&#39;, &#39;三观正&#39;, &#39;有边界感&#39;, &#39;不爹&#39;, &#39;不PUA&#39;, &#39;不阴阳&#39;, &#39;不内涵&#39;, &#39;不摆架子&#39;, &#39;不装&#39;, &#39;好沟通&#39;, &#39;能商量&#39;, &#39;会听意见&#39;, &#39;尊重人&#39;, &#39;真·老师&#39;, &#39;真负责&#39;, &#39;听着舒服&#39;, &#39;讲得明白&#39;, &#39;条理清楚&#39;, &#39;思路清晰&#39;, &#39;不折腾&#39;, &#39;不整活&#39;, &#39;不搞花样&#39;, &#39;正常人课程&#39;, &#39;正常上课&#39;, &#39;正常考&#39;, &#39;正常给分&#39;, &#39;不恶心&#39;, &#39;不折磨人&#39;, &#39;不浪费时间&#39;, &#39;不拖后腿&#39;, &#39;善解人意&#39;, &#39;体贴&#39;, &#39;关心学生&#39;, &#39;像朋友&#39;, &#39;没架子&#39;, &#39;平易近人&#39;, &#39;讲课好&#39;, &#39;讲得好&#39;, &#39;水平高&#39;, &#39;有水平&#39;, &#39;不仅学到知识&#39;, &#39;人生导师&#39;, &#39;三观超正&#39;,
+
+        // 情绪/行动 - 补充更多正面情绪词
+        &#39;闭眼选&#39;, &#39;闭眼冲&#39;, &#39;闭眼入&#39;, &#39;冲&#39;, &#39;快选&#39;, &#39;选它&#39;, &#39;爱了&#39;, &#39;喜欢&#39;, &#39;开心&#39;, &#39;快乐&#39;, &#39;享受&#39;, &#39;幸福&#39;, &#39;值得&#39;, &#39;良心&#39;, &#39;福音&#39;, &#39;舒服&#39;, &#39;感动&#39;, &#39;感恩&#39;, &#39;救星&#39;, &#39;放心&#39;, &#39;爽&#39;, &#39;舒服爆了&#39;, &#39;一整个爱住&#39;, &#39;狠狠推荐&#39;, &#39;狠狠安利&#39;, &#39;不选会后悔&#39;, &#39;选了不亏&#39;, &#39;真香&#39;, &#39;属于是捡漏&#39;, &#39;属于福利课&#39;, &#39;白给&#39;, &#39;纯赚&#39;, &#39;血赚&#39;, &#39;值回票价&#39;, &#39;选就完了&#39;, &#39;选就对了&#39;, &#39;不后悔&#39;, &#39;无脑冲&#39;, &#39;无脑选&#39;, &#39;必修课&#39;, &#39;一定要选&#39;, &#39;千万别错过&#39;, &#39;相见恨晚&#39;, &#39;幸运&#39;, &#39;走运&#39;, &#39;快乐源泉&#39;];
+
+    // --- ⚫ 黑榜词库 ---
+    const BLACK_WORDS = [// 核心避雷 - 增加直接的负面评价
+        &#39;快跑&#39;, &#39;快逃&#39;, &#39;别选&#39;, &#39;别来&#39;, &#39;千万别选&#39;, &#39;慎选&#39;, &#39;避雷&#39;, &#39;大雷&#39;, &#39;巨坑&#39;, &#39;大坑&#39;, &#39;天坑&#39;, &#39;坑&#39;, &#39;后悔&#39;, &#39;恶心&#39;, &#39;吐了&#39;, &#39;垃圾&#39;, &#39;烂&#39;, &#39;烂课&#39;, &#39;依托答辩&#39;, &#39;答辩&#39;, &#39;史&#39;, &#39;坐牢&#39;, &#39;痛苦&#39;, &#39;折磨&#39;, &#39;煎熬&#39;, &#39;浪费时间&#39;, &#39;浪费生命&#39;, &#39;劝退&#39;, &#39;噩梦&#39;, &#39;无语&#39;, &#39;离谱&#39;, &#39;狗都不选&#39;, &#39;甚至&#39;, &#39;不如自学&#39;, &#39;不好&#39;, &#39;很差&#39;, &#39;极差&#39;, &#39;太差&#39;, &#39;糟糕&#39;, &#39;无聊透顶&#39;, &#39;不知所云&#39;, &#39;莫名其妙&#39;, &#39;不可理喻&#39;, &#39;令人发指&#39;, &#39;毁三观&#39;, &#39;有病&#39;, &#39;神经病&#39;, &#39;sb&#39;, &#39;nt&#39;,
+
+        // 分数/绩点 - 补充更多关于低分和评分标准的描述
+        &#39;给分差&#39;, &#39;给分低&#39;, &#39;分低&#39;, &#39;压分&#39;, &#39;低分&#39;, &#39;杀手&#39;, &#39;绩点杀手&#39;, &#39;GPA杀手&#39;, &#39;卡绩&#39;, &#39;卡人&#39;, &#39;挂科&#39;, &#39;挂人&#39;, &#39;挂科率高&#39;, &#39;不及格&#39;, &#39;重修&#39;, &#39;不捞&#39;, &#39;不调分&#39;, &#39;向下调&#39;, &#39;随机给分&#39;, &#39;乱给分&#39;, &#39;看脸&#39;, &#39;玄学&#39;, &#39;吝啬&#39;, &#39;小气&#39;, &#39;扣分&#39;, &#39;扣分狠&#39;, &#39;严&#39;, &#39;严格&#39;, &#39;给分严&#39;, &#39;给分恶心&#39;, &#39;分低到哭&#39;, &#39;不稳定&#39;, &#39;看心情&#39;, &#39;看老师脸色&#39;, &#39;看助教&#39;, &#39;看运气&#39;, &#39;绩点炸裂&#39;, &#39;GPA噩梦&#39;, &#39;血亏&#39;, &#39;白忙&#39;, &#39;做了也白做&#39;, &#39;分数不透明&#39;, &#39;没标准&#39;, &#39;标准模糊&#39;, &#39;随缘给分&#39;, &#39;给分成谜&#39;, &#39;分数离谱&#39;, &#39;反向给分&#39;, &#39;给分迷&#39;, &#39;给分魔幻&#39;, &#39;给分看人&#39;, &#39;没有优秀&#39;, &#39;优秀率低&#39;, &#39;卡89&#39;, &#39;卡84&#39;, &#39;卡59&#39;, &#39;均分低&#39;, &#39;没人性&#39;, &#39;不当人&#39;,
+
+        // 任务/考核 - 补充更多关于任务繁重和不合理要求的描述
+        &#39;事多&#39;, &#39;事儿多&#39;, &#39;事儿逼&#39;, &#39;作业多&#39;, &#39;作业难&#39;, &#39;作业繁琐&#39;, &#39;任务重&#39;, &#39;负担重&#39;, &#39;累&#39;, &#39;卷&#39;, &#39;内卷&#39;, &#39;很卷&#39;, &#39;卷死&#39;, &#39;压力大&#39;, &#39;心累&#39;, &#39;身心俱疲&#39;, &#39;点名&#39;, &#39;签到&#39;, &#39;每节课&#39;, &#39;花式点名&#39;, &#39;拍照&#39;, &#39;定位&#39;, &#39;通报&#39;, &#39;查重&#39;, &#39;严查&#39;, &#39;不准请假&#39;, &#39;强制&#39;, &#39;拖堂&#39;, &#39;占用&#39;, &#39;还要&#39;, &#39;pre多&#39;, &#39;很多pre&#39;, &#39;每周pre&#39;, &#39;pre难&#39;, &#39;论文多&#39;, &#39;论文难&#39;, &#39;考试难&#39;, &#39;题目难&#39;, &#39;闭卷&#39;, &#39;默写&#39;, &#39;背书&#39;, &#39;死记硬背&#39;, &#39;手写&#39;, &#39;几千字&#39;, &#39;没重点&#39;, &#39;不划重点&#39;, &#39;重点偏&#39;, &#39;考细节&#39;, &#39;超纲&#39;, &#39;折腾人&#39;, &#39;恶意满满&#39;, &#39;纯纯恶心&#39;, &#39;没意义作业&#39;, &#39;无效努力&#39;, &#39;形式主义&#39;, &#39;表演型学习&#39;, &#39;为难学生&#39;, &#39;故意卡&#39;, &#39;故意刁难&#39;, &#39;任务叠任务&#39;, &#39;套娃作业&#39;, &#39;一堆细则&#39;, &#39;要求巨多&#39;, &#39;标准随改&#39;, &#39;临时加任务&#39;, &#39;临时改规则&#39;, &#39;各种小测&#39;, &#39;突击检查&#39;, &#39;随堂考&#39;, &#39;没完没了&#39;, &#39;占用周末&#39;, &#39;占用假期&#39;, &#39;强制活动&#39;, &#39;强制参与&#39;, &#39;必须去&#39;, &#39;不准不去&#39;, &#39;扣平时分&#39;,
+
+        // 老师/教学 - 增加对老师负面性格和教学质量的描述
+        &#39;讲得差&#39;, &#39;讲课差&#39;, &#39;讲得烂&#39;, &#39;听不懂&#39;, &#39;不知所云&#39;, &#39;催眠&#39;, &#39;无聊&#39;, &#39;枯燥&#39;, &#39;水&#39;, &#39;念ppt&#39;, &#39;读ppt&#39;, &#39;照本宣科&#39;, &#39;照念&#39;, &#39;水平低&#39;, &#39;没水平&#39;, &#39;混&#39;, &#39;敷衍&#39;, &#39;不负责&#39;, &#39;不管&#39;, &#39;态度差&#39;, &#39;凶&#39;, &#39;骂人&#39;, &#39;阴阳怪气&#39;, &#39;嘲讽&#39;, &#39;pua&#39;, &#39;爹味&#39;, &#39;说教&#39;, &#39;装&#39;, &#39;傲慢&#39;, &#39;自大&#39;, &#39;歧视&#39;, &#39;针对&#39;, &#39;双标&#39;, &#39;偏心&#39;, &#39;更年期&#39;, &#39;老登&#39;, &#39;变态&#39;, &#39;奇葩&#39;, &#39;极品&#39;, &#39;独角戏&#39;, &#39;自嗨&#39;, &#39;各种要求&#39;, &#39;各种规矩&#39;, &#39;上课像受刑&#39;, &#39;听了个寂寞&#39;, &#39;浪费一学期&#39;, &#39;纯念稿&#39;, &#39;完全不讲&#39;, &#39;自己都没准备&#39;, &#39;逻辑混乱&#39;, &#39;前后矛盾&#39;, &#39;讲不清重点&#39;, &#39;不知道考什么&#39;, &#39;不知道学了啥&#39;, &#39;内容过时&#39;, &#39;老掉牙&#39;, &#39;情绪不稳定&#39;, &#39;爱发脾气&#39;, &#39;爱针对人&#39;, &#39;阴晴不定&#39;, &#39;双标严重&#39;, &#39;偏心严重&#39;, &#39;控制欲强&#39;, &#39;爹味十足&#39;, &#39;PUA重灾区&#39;, &#39;爱说教&#39;, &#39;爱上价值&#39;, &#39;爱道德绑架&#39;, &#39;自我感动型&#39;, &#39;自嗨型老师&#39;, &#39;把学生当工具人&#39;, &#39;没师德&#39;, &#39;不配当老师&#39;, &#39;误人子弟&#39;, &#39;毁人不倦&#39;, &#39;自以为是&#39;, &#39;高高在上&#39;, &#39;看不起学生&#39;, &#39;不尊重人&#39;, &#39;随意更改&#39;, &#39;出尔反尔&#39;, &#39;说话不算话&#39;,
+
+        // 情绪极端 - 补充更多负面情绪词
+        &#39;心态爆炸&#39;, &#39;人麻了&#39;, &#39;被恶心到了&#39;, &#39;想退课&#39;, &#39;想跑路&#39;, &#39;想转专业&#39;, &#39;想重开&#39;, &#39;一整个崩溃&#39;, &#39;纯纯坐牢&#39;, &#39;精神折磨&#39;, &#39;生理不适&#39;, &#39;气死&#39;, &#39;想骂人&#39;, &#39;想打人&#39;, &#39;想投诉&#39;, &#39;举报&#39;, &#39;真的无语&#39;, &#39;大无语&#39;, &#39;也是醉了&#39;, &#39;服了&#39;, &#39;绝望&#39;, &#39;致郁&#39;, &#39;怀疑人生&#39;, &#39;避之不及&#39;, &#39;谁选谁后悔&#39;];
+
+    const CN_NUM = {&#39;一&#39;: 1, &#39;二&#39;: 2, &#39;三&#39;: 3, &#39;四&#39;: 4, &#39;五&#39;: 5, &#39;六&#39;: 6, &#39;日&#39;: 7};
+    const CAMPUS_MAP = {&#39;XL&#39;: 0, &#39;GL&#39;: 1, &#39;PK&#39;: 2, &#39;SZ&#39;: 3};
+    const CAMPUS_KEYS = {
+        &#39;XL&#39;: {name: &#39;仙林&#39;, exclude: [&#39;鼓&#39;, &#39;浦&#39;, &#39;苏&#39;]},
+        &#39;GL&#39;: {name: &#39;鼓楼&#39;, exclude: [&#39;仙&#39;, &#39;浦&#39;, &#39;苏&#39;]},
+        &#39;PK&#39;: {name: &#39;浦口&#39;, exclude: [&#39;仙&#39;, &#39;鼓&#39;, &#39;苏&#39;]},
+        &#39;SZ&#39;: {name: &#39;苏州&#39;, exclude: [&#39;仙&#39;, &#39;鼓&#39;, &#39;浦&#39;]}
+    };
+
+    // ================== 2. 路由分发 (课表同步) ==================
+    const currentURL = window.location.href;
+    if (currentURL.includes(&#39;jwapp/sys/wdkb&#39;)) {
+        const injectSyncBtn = () =&gt; {
+            if (document.getElementById(&#39;nju-sync-btn&#39;)) return;
+            const btn = document.createElement(&#39;div&#39;);
+            btn.id = &#39;nju-sync-btn&#39;;
+            btn.innerHTML = &#39;🔄 同步到选课系统&#39;;
+            btn.style.cssText = `position: fixed; top: 80px; left: 50%; transform: translateX(-50%); z-index: 9999; padding: 8px 20px; background: ${THEME.PURPLE}; color: white; border-radius: 20px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: 0.2s;`;
+            btn.onclick = () =&gt; {
+                const rows = document.querySelectorAll(&#39;tr[id^=&quot;row&quot;]&#39;);
+                if (rows.length === 0) {
+                    alert(&#39;⚠️ 表格未加载&#39;);
+                    return;
+                }
+                let data = [];
+                rows.forEach(row =&gt; {
+                    const cells = row.querySelectorAll(&#39;td[role=&quot;gridcell&quot;]&#39;);
+                    if (cells.length &gt; 6) {
+                        const t = cells[6].getAttribute(&#39;title&#39;) || cells[6].innerText;
+                        const n = cells[2].getAttribute(&#39;title&#39;) || cells[2].innerText;
+                        if (t &amp;&amp; t.length &gt; 2) data.push({name: n.replace(/\d+班$/, &#39;&#39;).trim(), timeStr: t});
+                    }
+                });
+                if (data.length &gt; 0) {
+                    GM_setValue(&#39;NJU_SCHEDULE&#39;, data);
+                    alert(`✅ 同步 ${data.length} 门课成功！`);
+                }
+            };
+            document.body.appendChild(btn);
+        };
+        setInterval(injectSyncBtn, 2000);
+        return;
+    }
+
+    if (!currentURL.includes(&#39;xsxkapp&#39;)) return;
+
+    // ================== 3. 选课核心逻辑 ==================
+    let config = {
+        mode: GM_getValue(&#39;NJU_MODE&#39;, &#39;PRE&#39;),
+        autoConfirm: GM_getValue(&#39;NJU_AUTO&#39;, false),
+        conflictCheck: GM_getValue(&#39;NJU_CONFLICT&#39;, true),
+        enableRating: GM_getValue(&#39;NJU_RATING&#39;, true),
+        myCampus: GM_getValue(&#39;NJU_CAMPUS&#39;, &#39;XL&#39;),
+        checkCampus: GM_getValue(&#39;NJU_CHECK_CAMPUS&#39;, true)
+    };
+    let tempConfig = {...config};
+    let favorites = GM_getValue(&#39;NJU_FAVORITES&#39;, {});
+
+    const checkConflict = (targetTimeStr) =&gt; {
+        if (!config.conflictCheck) return false;
+        const mySchedule = GM_getValue(&#39;NJU_SCHEDULE&#39;, []);
+        const parse = (str) =&gt; {
+            const segments = str.split(/,|，/);
+            let slots = [];
+            segments.forEach(seg =&gt; {
+                const d = seg.match(/周([一二三四五六日])/), s = seg.match(/(\d+)-(\d+)节/),
+                    w = seg.match(/(\d+)-(\d+)周/);
+                if (d &amp;&amp; s &amp;&amp; w) slots.push({
+                    day: CN_NUM[d[1]], sS: parseInt(s[1]), eS: parseInt(s[2]), sW: parseInt(w[1]), eW: parseInt(w[2])
+                });
+            });
+            return slots;
+        };
+        const targetSlots = parse(targetTimeStr);
+        for (let my of mySchedule) {
+            const mySlots = parse(my.timeStr);
+            for (let tS of targetSlots) {
+                for (let mS of mySlots) {
+                    if (tS.day === mS.day) {
+                        const wOv = Math.max(tS.sW, mS.sW) &lt;= Math.min(tS.eW, mS.eW);
+                        const sOv = Math.max(tS.sS, mS.sS) &lt;= Math.min(tS.eS, mS.eS);
+                        if (wOv &amp;&amp; sOv) return {conflict: true, with: my.name};
+                    }
+                }
+            }
+        }
+        return false;
+    };
+
+    const analyze = (comments) =&gt; {
+        let r = 0, b = 0, txt = comments.join(&#39; &#39;).toLowerCase();
+        RED_WORDS.forEach(w =&gt; {
+            if (txt.includes(w)) r++;
+        });
+        BLACK_WORDS.forEach(w =&gt; {
+            if (txt.includes(w)) b++;
+        });
+        if (/9\d|100/.test(txt)) r += 2;
+        if (r + b === 0) return null;
+        const ratio = (r / (r + b)) * 100;
+        return {color: ratio &gt; 50 ? THEME.GOOD : THEME.BAD, label: ratio &gt; 50 ? &quot;🟢 较好&quot; : &quot;🔴 一般&quot;, comments};
+    };
+
+    const calcProb = (text) =&gt; {
+        const parts = text.split(&#39;/&#39;);
+        if (parts.length !== 2) return null;
+        const enroll = parseInt(parts[0]), cap = parseInt(parts[1]);
+        if (isNaN(enroll) || isNaN(cap)) return null;
+        let prob = enroll === 0 ? 100 : (cap / enroll) * 100;
+        if (prob &gt; 100) prob = 100;
+        let color = THEME.P0;
+        if (prob &gt;= 100) color = THEME.P100; else if (prob &gt;= 80) color = THEME.P80; else if (prob &gt;= 60) color = THEME.P60; else if (prob &gt;= 40) color = THEME.P40; else if (prob &gt;= 20) color = THEME.P20;
+        return {prob: Math.round(prob), color};
+    };
+
+    // ================== 4. UI 样式 (Apple 动画版) ==================
+    const injectStyles = () =&gt; {
+        if (document.getElementById(&#39;xk-v43-style&#39;)) return;
+        const style = document.createElement(&#39;style&#39;);
+        style.id = &#39;xk-v43-style&#39;;
+        style.innerHTML = `
+            #xk-island-root { position: fixed; top: 55px; left: 50%; transform: translateX(-50%); z-index: 999999; font-family: sans-serif; pointer-events: none; }
+
+            /* 灵动岛尺寸 - 统一 480px 高度，固定 420px 宽度 */
+            .xk-island {
+                pointer-events: auto; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(20px);
+                border: 1px solid #eee; border-radius: 24px; width: 140px; height: 38px;
+                display: flex; flex-direction: column; align-items: center; overflow: hidden;
+                /* Apple 级丝滑动画 */
+                transition: width 0.5s ${APPLE_EASE}, height 0.5s ${APPLE_EASE}, transform 0.5s ${APPLE_EASE};
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
+            .xk-island.expanded { width: 420px; height: 480px; box-shadow: 0 25px 70px rgba(0,0,0,0.2); }
+            .xk-island.expanded.mode-add { height: 480px; }
+
+            .status-wrapper { width: 140px; height: 38px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; cursor: pointer; }
+            .status-text { font-weight: 800; font-size: 14px; color: #333; }
+            .status-dot { width: 8px; height: 8px; border-radius: 50%; transition: 0.3s; }
+            .xk-panel { opacity: 0; width: 100%; padding: 0 20px; display: flex; flex-direction: column; gap: 15px; pointer-events: none; transition: 0.2s; margin-top: 5px; box-sizing: border-box; }
+            .xk-island.expanded .xk-panel { opacity: 1; pointer-events: auto; transition-delay: 0.1s; }
+
+            .hidden-row { display: none !important; }
+
+            /* 问号图标 - 强制默认光标 */
+            .help-icon { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: #eee; color: #666; font-size: 11px; font-weight: bold; cursor: default !important; margin-left: 6px; }
+            .help-icon:hover { background: #007AFF; color: white; }
+
+            /* 标签体系 - BR换行自然对齐 */
+            .nj-br { display: block; margin-top: 4px; content: &quot;&quot;; }
+            .nj-badge {
+                display: inline-block; padding: 3px 8px; border-radius: 6px;
+                font-size: 11px; font-weight: 800; color: #fff;
+                margin: 2px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                white-space: normal; line-height: 1.4; text-align: center;
+                cursor: default !important;
+                max-width: 160px; vertical-align: middle;
+            }
+
+            /* 收藏按钮 - 居中逻辑 */
+            .fav-toggle-btn {
+                display: table; margin: 0 auto 4px auto;
+                padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;
+                cursor: pointer; transition: 0.2s; border: 1px solid #ddd;
+                background: #f8f8f8; color: #666; white-space: nowrap;
+            }
+            .fav-toggle-btn.active { background: ${THEME.STAR_ON}; color: white; border-color: ${THEME.STAR_ON}; box-shadow: 0 2px 6px rgba(255, 149, 0, 0.3); }
+            .fav-toggle-btn:hover { transform: scale(1.05); }
+
+            /* Modal 独立显示层 - 修复版 */
+            .fav-modal-overlay {
+                position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+                background: rgba(0,0,0,0.4); backdrop-filter: blur(8px); /* 增强毛玻璃 */
+                z-index: 2147483647; /* Max Safe Integer */
+                display: flex; justify-content: center; align-items: center;
+                opacity: 0; pointer-events: none;
+                transition: opacity 0.4s ${APPLE_EASE};
+            }
+            .fav-modal-overlay.open { opacity: 1; pointer-events: auto; }
+
+            .fav-modal {
+                width: 450px; max-width: 90vw; max-height: 80vh;
+                background: #fff; border-radius: 20px;
+                box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+                display: flex; flex-direction: column; overflow: hidden;
+                transform: scale(0.92);
+                transition: transform 0.4s ${APPLE_EASE};
+            }
+            .fav-modal-overlay.open .fav-modal { transform: scale(1); }
+
+            .fav-header { padding: 18px 20px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 17px; background: #fff; }
+            .fav-close { cursor: pointer; color: #888; font-size: 22px; line-height: 1; transition: 0.2s; }
+            .fav-close:hover { color: #333; }
+
+            .fav-body { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; background: #f2f2f7; /* iOS grouped bg */ }
+            .fav-footer { padding: 15px 20px; border-top: 1px solid #f0f0f0; display: flex; gap: 10px; background: #fff; justify-content: space-between; }
+
+            .fav-row {
+                display: flex; align-items: center; padding: 14px;
+                background: #fff; border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+                transition: 0.2s;
+            }
+            .fav-row:hover { transform: scale(1.01); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+            .fav-check { margin-right: 14px; transform: scale(1.3); cursor: pointer; accent-color: ${THEME.ADD}; }
+            .fav-info { flex: 1; display: flex; flex-direction: column; }
+            .fav-name { font-weight: 600; color: #333; font-size: 14px; margin-bottom: 3px; }
+            .fav-detail { color: #888; font-size: 12px; }
+
+            /* Controls */
+            .ios-seg-ctrl { position: relative; display: flex; background: #eee; border-radius: 9px; padding: 2px; width: 100%; height: 32px; box-sizing: border-box; }
+            .seg-slider { position: absolute; top: 2px; left: 2px; height: 28px; background: #fff; border-radius: 7px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.3s ${APPLE_EASE}; z-index: 1; }
+            .seg-btn { flex: 1; text-align: center; font-size: 12px; font-weight: 600; color: #666; z-index: 2; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+            .seg-btn.active { color: #000; font-weight: 700; }
+            .seg-campus .seg-slider { width: calc((100% - 4px) / 4); }
+            .seg-campus[data-idx=&quot;0&quot;] .seg-slider { transform: translateX(0%); }
+            .seg-campus[data-idx=&quot;1&quot;] .seg-slider { transform: translateX(100%); }
+            .seg-campus[data-idx=&quot;2&quot;] .seg-slider { transform: translateX(200%); }
+            .seg-campus[data-idx=&quot;3&quot;] .seg-slider { transform: translateX(300%); }
+            .seg-mode .seg-slider { width: calc((100% - 4px) / 2); }
+            .seg-mode[data-idx=&quot;PRE&quot;] .seg-slider { transform: translateX(0%); }
+            .seg-mode[data-idx=&quot;ADD&quot;] .seg-slider { transform: translateX(100%); }
+            .ios-sw { position: relative; width: 44px; height: 26px; background: #e3e3e4; border-radius: 13px; cursor: pointer; transition: 0.3s; }
+            .ios-sw.on { background: #34C759; }
+            .ios-sw::after { content: &#39;&#39;; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; background: #fff; border-radius: 50%; transition: 0.3s; }
+            .ios-sw.on::after { transform: translateX(18px); }
+            .xk-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; transition: transform 0.1s; }
+            .xk-btn:active { transform: scale(0.96); }
+            .save-btn { width: 100%; padding: 12px; border-radius: 12px; border: none; font-size: 14px; font-weight: 800; cursor: pointer; background: #34C759; color: white; margin-top: 5px; transition: transform 0.1s; }
+            .save-btn:active { transform: scale(0.98); }
+
+            #nj-popover { position: fixed; z-index: 2147483647; width: 340px; max-height: 300px; overflow-y: auto; background: rgba(255,255,255,0.98); border-radius: 16px; padding: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.25); opacity: 0; pointer-events: none; transform: scale(0.96) translateY(5px); transition: 0.2s; }
+            #nj-popover.visible { opacity: 1; pointer-events: auto; transform: scale(1) translateY(0); }
+            .pop-item { font-size: 11px; color: #444; margin-bottom: 6px; border-bottom: 1px dashed #eee; padding-bottom: 4px; }
+        `;
+        document.head.appendChild(style);
+    };
+
+    // ================== 5. UI 逻辑 ==================
+    let popoverTimer = null;
+
+    // 注入收藏夹 Modal
+    const injectFavModal = () =&gt; {
+        if (document.getElementById(&#39;fav-modal-wrapper&#39;)) return;
+        const div = document.createElement(&#39;div&#39;);
+        div.id = &#39;fav-modal-wrapper&#39;;
+        div.className = &#39;fav-modal-overlay&#39;;
+        div.innerHTML = `
+            &lt;div class=&quot;fav-modal&quot;&gt;
+                &lt;div class=&quot;fav-header&quot;&gt;&lt;span&gt;⭐ 收藏夹管理&lt;/span&gt;&lt;span class=&quot;fav-close&quot; id=&quot;fav-close&quot;&gt;✕&lt;/span&gt;&lt;/div&gt;
+                &lt;div class=&quot;fav-body&quot; id=&quot;fav-container&quot;&gt;&lt;/div&gt;
+                &lt;div class=&quot;fav-footer&quot;&gt;
+                    &lt;div style=&quot;display:flex; gap:5px;&quot;&gt;
+                        &lt;button class=&quot;xk-btn&quot; id=&quot;fav-select-all&quot; style=&quot;background:#eee; color:#333; padding:8px 12px;&quot;&gt;全选&lt;/button&gt;
+                        &lt;button class=&quot;xk-btn&quot; id=&quot;fav-del-sel&quot; style=&quot;background:#FF3B30; color:white; padding:8px 12px;&quot;&gt;删除&lt;/button&gt;
+                    &lt;/div&gt;
+                    &lt;div style=&quot;display:flex; gap:5px;&quot;&gt;
+                        &lt;button class=&quot;xk-btn&quot; id=&quot;fav-export&quot; style=&quot;background:#007AFF; color:white; padding:8px 12px;&quot;&gt;备份&lt;/button&gt;
+                        &lt;button class=&quot;xk-btn&quot; id=&quot;fav-import&quot; style=&quot;background:#34C759; color:white; padding:8px 12px;&quot;&gt;恢复&lt;/button&gt;
+                        &lt;input type=&quot;file&quot; id=&quot;fav-imp-file&quot; style=&quot;display:none&quot; accept=&quot;.json&quot;&gt;
+                    &lt;/div&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        `;
+        document.body.appendChild(div);
+
+        const modal = document.getElementById(&#39;fav-modal-wrapper&#39;);
+        document.getElementById(&#39;fav-close&#39;).onclick = () =&gt; modal.classList.remove(&#39;open&#39;);
+        modal.onclick = (e) =&gt; {
+            if (e.target === modal) modal.classList.remove(&#39;open&#39;);
+        };
+        document.getElementById(&#39;fav-select-all&#39;).onclick = () =&gt; {
+            const checks = document.getElementById(&#39;fav-container&#39;).querySelectorAll(&#39;.fav-check&#39;);
+            const all = Array.from(checks).every(c =&gt; c.checked);
+            checks.forEach(c =&gt; c.checked = !all);
+        };
+        document.getElementById(&#39;fav-del-sel&#39;).onclick = () =&gt; {
+            const checked = document.getElementById(&#39;fav-container&#39;).querySelectorAll(&#39;.fav-check:checked&#39;);
+            if (checked.length === 0) return;
+            if (confirm(&#39;删除选中？&#39;)) {
+                let favs = GM_getValue(&#39;NJU_FAVORITES&#39;, {});
+                checked.forEach(c =&gt; {
+                    delete favs[c.value];
+                    const btn = document.querySelector(`span[data-fav-id=&quot;${c.value}&quot;]`);
+                    if (btn) {
+                        btn.classList.remove(&#39;active&#39;);
+                        btn.innerHTML = &#39;☆ 收藏&#39;;
+                    }
+                });
+                GM_setValue(&#39;NJU_FAVORITES&#39;, favs);
+                updateFavList(favs);
+                document.getElementById(&#39;btn-open-fav&#39;).innerText = `⭐ 管理我的收藏夹 (${Object.keys(favs).length})`;
+            }
+        };
+        document.getElementById(&#39;fav-export&#39;).onclick = () =&gt; {
+            const blob = new Blob([JSON.stringify(GM_getValue(&#39;NJU_FAVORITES&#39;, {}), null, 2)], {type: &#39;application/json&#39;});
+            const a = document.createElement(&#39;a&#39;);
+            a.href = URL.createObjectURL(blob);
+            a.download = &#39;nju_favs.json&#39;;
+            a.click();
+        };
+        document.getElementById(&#39;fav-import&#39;).onclick = () =&gt; document.getElementById(&#39;fav-imp-file&#39;).click();
+        document.getElementById(&#39;fav-imp-file&#39;).onchange = (e) =&gt; {
+            const r = new FileReader();
+            r.onload = (ev) =&gt; {
+                try {
+                    Object.assign(GM_getValue(&#39;NJU_FAVORITES&#39;, {}), JSON.parse(ev.target.result));
+                    GM_setValue(&#39;NJU_FAVORITES&#39;, GM_getValue(&#39;NJU_FAVORITES&#39;));
+                    location.reload();
+                } catch (e) {
+                    alert(&#39;文件错误&#39;);
+                }
+            };
+            r.readAsText(e.target.files[0]);
+        };
+    };
+
+    const updateFavList = (favs) =&gt; {
+        const container = document.getElementById(&#39;fav-container&#39;);
+        container.innerHTML = &#39;&#39;;
+        const list = Object.entries(favs);
+        if (!list.length) {
+            container.innerHTML = &#39;&lt;div style=&quot;text-align:center;color:#999;margin-top:20px;&quot;&gt;暂无收藏&lt;/div&gt;&#39;;
+            return;
+        }
+        list.forEach(([id, i]) =&gt; {
+            const row = document.createElement(&#39;div&#39;);
+            row.className = &#39;fav-row&#39;;
+            row.innerHTML = `&lt;input type=&quot;checkbox&quot; class=&quot;fav-check&quot; value=&quot;${id}&quot;&gt;&lt;div class=&quot;fav-info&quot;&gt;&lt;div class=&quot;fav-name&quot;&gt;${i.name}&lt;/div&gt;&lt;div class=&quot;fav-detail&quot;&gt;${i.teacher} | ${i.time}&lt;/div&gt;&lt;/div&gt;`;
+            container.appendChild(row);
+        });
+    };
+
+    const renderIsland = () =&gt; {
+        if (document.getElementById(&#39;xk-island-root&#39;)) return;
+        const root = document.createElement(&#39;div&#39;);
+        root.id = &#39;xk-island-root&#39;;
+        const dbSize = Object.keys(GM_getValue(&#39;NJU_DB&#39;, {})).length;
+        let favorites = GM_getValue(&#39;NJU_FAVORITES&#39;, {});
+
+        root.innerHTML = `
+            &lt;div id=&quot;xk-island-main&quot; class=&quot;xk-island&quot;&gt;
+                &lt;div class=&quot;status-wrapper&quot;&gt;&lt;div id=&quot;xk-dot&quot; class=&quot;status-dot&quot;&gt;&lt;/div&gt;&lt;span class=&quot;status-text&quot;&gt;选课助手&lt;/span&gt;&lt;/div&gt;
+                &lt;div class=&quot;xk-panel&quot;&gt;
+                    &lt;div class=&quot;ios-seg-ctrl seg-mode&quot; id=&quot;ctrl-mode&quot; data-idx=&quot;${tempConfig.mode}&quot;&gt;
+                        &lt;div class=&quot;seg-slider&quot;&gt;&lt;/div&gt;
+                        &lt;div class=&quot;seg-btn ${tempConfig.mode === &#39;PRE&#39; ? &#39;active&#39; : &#39;&#39;}&quot; data-val=&quot;PRE&quot;&gt;初选模式&lt;/div&gt;
+                        &lt;div class=&quot;seg-btn ${tempConfig.mode === &#39;ADD&#39; ? &#39;active&#39; : &#39;&#39;}&quot; data-val=&quot;ADD&quot;&gt;补退选 (开发中)&lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div style=&quot;font-size:12px; font-weight:700; color:#444; margin-top:4px;&quot;&gt;🏫 我的主校区 &lt;span class=&quot;help-icon&quot; id=&quot;h-campus&quot;&gt;?&lt;/span&gt;&lt;/div&gt;
+                    &lt;div class=&quot;ios-seg-ctrl seg-campus&quot; id=&quot;ctrl-campus&quot; data-idx=&quot;${CAMPUS_MAP[tempConfig.myCampus]}&quot;&gt;
+                        &lt;div class=&quot;seg-slider&quot;&gt;&lt;/div&gt;
+                        &lt;div class=&quot;seg-btn ${tempConfig.myCampus === &#39;XL&#39; ? &#39;active&#39; : &#39;&#39;}&quot; data-val=&quot;XL&quot;&gt;仙林&lt;/div&gt;
+                        &lt;div class=&quot;seg-btn ${tempConfig.myCampus === &#39;GL&#39; ? &#39;active&#39; : &#39;&#39;}&quot; data-val=&quot;GL&quot;&gt;鼓楼&lt;/div&gt;
+                        &lt;div class=&quot;seg-btn ${tempConfig.myCampus === &#39;PK&#39; ? &#39;active&#39; : &#39;&#39;}&quot; data-val=&quot;PK&quot;&gt;浦口&lt;/div&gt;
+                        &lt;div class=&quot;seg-btn ${tempConfig.myCampus === &#39;SZ&#39; ? &#39;active&#39; : &#39;&#39;}&quot; data-val=&quot;SZ&quot;&gt;苏州&lt;/div&gt;
+                    &lt;/div&gt;
+                    &lt;div style=&quot;display:flex; justify-content:space-between; align-items:center;&quot;&gt;&lt;span style=&quot;font-size:13px; font-weight:700;&quot;&gt;🛡️ 冲突预警 &lt;span class=&quot;help-icon&quot; id=&quot;h-conflict&quot;&gt;?&lt;/span&gt;&lt;/span&gt;&lt;div id=&quot;sw-conflict&quot; class=&quot;ios-sw ${tempConfig.conflictCheck ? &#39;on&#39; : &#39;&#39;}&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+                    &lt;div style=&quot;display:flex; justify-content:space-between; align-items:center;&quot;&gt;&lt;span style=&quot;font-size:13px; font-weight:700;&quot;&gt;📈 启用评价 &lt;span class=&quot;help-icon&quot; id=&quot;h-rating&quot;&gt;?&lt;/span&gt;&lt;/span&gt;&lt;div id=&quot;sw-rating&quot; class=&quot;ios-sw ${tempConfig.enableRating ? &#39;on&#39; : &#39;&#39;}&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+                    &lt;div id=&quot;row-auto&quot; style=&quot;display:flex; justify-content:space-between; align-items:center;&quot;&gt;&lt;span style=&quot;font-size:13px; font-weight:700;&quot;&gt;⚡ 自动确认 &lt;span class=&quot;help-icon&quot; id=&quot;h-auto&quot;&gt;?&lt;/span&gt;&lt;/span&gt;&lt;div id=&quot;sw-auto&quot; class=&quot;ios-sw ${tempConfig.autoConfirm ? &#39;on&#39; : &#39;&#39;}&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+                    &lt;button id=&quot;btn-open-fav&quot; class=&quot;xk-btn&quot; style=&quot;background:#f0f0f5; color:#333; border:1px solid #ddd;&quot;&gt;⭐ 管理我的收藏夹 (${Object.keys(favorites).length})&lt;/button&gt;
+                    &lt;div style=&quot;display:flex; gap:10px; margin-top:5px;&quot;&gt;
+                        &lt;input type=&quot;file&quot; id=&quot;xk-file&quot; accept=&quot;.xlsx, .xls&quot; style=&quot;display:none&quot; /&gt;
+                        &lt;button id=&quot;btn-imp&quot; class=&quot;xk-btn&quot; style=&quot;background:${THEME.PURPLE}; color:#fff;&quot;&gt;📂 导入数据&lt;/button&gt;
+                        &lt;button id=&quot;btn-clr&quot; class=&quot;xk-btn&quot; style=&quot;background:rgba(255,59,48,0.08); color:#FF3B30;&quot;&gt;🗑️ 清空 ${dbSize}&lt;/button&gt;
+                    &lt;/div&gt;
+                    &lt;button id=&quot;btn-save&quot; class=&quot;save-btn&quot;&gt;💾 保存配置&lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        `;
+        document.body.appendChild(root);
+        injectFavModal();
+
+        const island = document.getElementById(&#39;xk-island-main&#39;);
+        const autoRow = document.getElementById(&#39;row-auto&#39;);
+        if (tempConfig.mode === &#39;ADD&#39;) autoRow.classList.add(&#39;hidden-row&#39;);
+
+        island.onmouseenter = () =&gt; island.classList.add(&#39;expanded&#39;);
+        island.onmouseleave = () =&gt; island.classList.remove(&#39;expanded&#39;);
+        document.getElementById(&#39;xk-dot&#39;).style.backgroundColor = config.mode === &#39;PRE&#39; ? THEME.PRE : THEME.ADD;
+
+        const modeCtrl = document.getElementById(&#39;ctrl-mode&#39;);
+        modeCtrl.querySelectorAll(&#39;.seg-btn&#39;).forEach(b =&gt; b.onclick = (e) =&gt; {
+            const val = e.target.dataset.val;
+            modeCtrl.dataset.idx = val;
+            modeCtrl.querySelectorAll(&#39;.seg-btn&#39;).forEach(i =&gt; i.classList.remove(&#39;active&#39;));
+            e.target.classList.add(&#39;active&#39;);
+            tempConfig.mode = val;
+            if (val === &#39;ADD&#39;) autoRow.classList.add(&#39;hidden-row&#39;); else autoRow.classList.remove(&#39;hidden-row&#39;);
+        });
+        const campCtrl = document.getElementById(&#39;ctrl-campus&#39;);
+        campCtrl.querySelectorAll(&#39;.seg-btn&#39;).forEach(b =&gt; b.onclick = (e) =&gt; {
+            campCtrl.dataset.idx = CAMPUS_MAP[e.target.dataset.val];
+            tempConfig.myCampus = e.target.dataset.val;
+        });
+        const bindT = (id, k) =&gt; document.getElementById(id).onclick = function () {
+            tempConfig[k] = !tempConfig[k];
+            this.classList.toggle(&#39;on&#39;);
+        };
+        bindT(&#39;sw-conflict&#39;, &#39;conflictCheck&#39;);
+        bindT(&#39;sw-rating&#39;, &#39;enableRating&#39;);
+        bindT(&#39;sw-auto&#39;, &#39;autoConfirm&#39;);
+        document.getElementById(&#39;btn-save&#39;).onclick = () =&gt; {
+            GM_setValue(&#39;NJU_MODE&#39;, tempConfig.mode);
+            GM_setValue(&#39;NJU_CAMPUS&#39;, tempConfig.myCampus);
+            GM_setValue(&#39;NJU_CONFLICT&#39;, tempConfig.conflictCheck);
+            GM_setValue(&#39;NJU_RATING&#39;, tempConfig.enableRating);
+            GM_setValue(&#39;NJU_AUTO&#39;, tempConfig.autoConfirm);
+            location.reload();
+        };
+        document.getElementById(&#39;btn-open-fav&#39;).onclick = () =&gt; {
+            updateFavList(GM_getValue(&#39;NJU_FAVORITES&#39;, {}));
+            document.getElementById(&#39;fav-modal-wrapper&#39;).classList.add(&#39;open&#39;);
+        };
+        document.getElementById(&#39;btn-imp&#39;).onclick = () =&gt; document.getElementById(&#39;xk-file&#39;).click();
+        document.getElementById(&#39;xk-file&#39;).onchange = (e) =&gt; {
+            const r = new FileReader();
+            r.onload = (ev) =&gt; {
+                const rows = XLSX.utils.sheet_to_json(XLSX.read(new Uint8Array(ev.target.result), {type: &#39;array&#39;}).Sheets[XLSX.read(new Uint8Array(ev.target.result), {type: &#39;array&#39;}).SheetNames[0]]);
+                const db = {};
+                rows.forEach(row =&gt; {
+                    let c = row[&#39;课程&#39;] || row[&#39;课程名称&#39;], t = row[&#39;授课老师&#39;] || row[&#39;任课教师&#39;], comms = [];
+                    Object.keys(row).forEach(k =&gt; {
+                        if (String(k).includes(&#39;评价&#39;) &amp;&amp; row[k]) comms.push(row[k]);
+                    });
+                    if (c &amp;&amp; t) {
+                        const res = analyze(comms);
+                        if (res) db[`${c}#${t}`] = res;
+                    }
+                });
+                GM_setValue(&#39;NJU_DB&#39;, db);
+                location.reload();
+            };
+            r.readAsArrayBuffer(e.target.files[0]);
+        };
+        document.getElementById(&#39;btn-clr&#39;).onclick = () =&gt; {
+            if (confirm(&quot;清空？&quot;)) {
+                GM_deleteValue(&#39;NJU_DB&#39;);
+                GM_deleteValue(&#39;NJU_FAVORITES&#39;);
+                location.reload();
+            }
+        };
+
+        // --- 问号详情逻辑 ---
+        const schNum = GM_getValue(&#39;NJU_SCHEDULE&#39;, []).length;
+        const helpMap = {
+            &#39;h-campus&#39;: &#39;跨校区预警：不同校区会显示橙色警告。&#39;,
+            &#39;h-conflict&#39;: `检测已同步课表的冲突。请前往“网上办事服务大厅”-“我的课表”界面进行导入。&lt;br&gt;当前已同步: &lt;b&gt;${schNum}&lt;/b&gt; 门课程。`,
+            &#39;h-rating&#39;: &#39;开启后显示红黑榜推测。&lt;br&gt;&lt;b&gt;红黑榜推测仅供参考，请务必展开查看原始评价。&lt;/b&gt;&#39;,
+            &#39;h-auto&#39;: &#39;&lt;b&gt;风险功能&lt;/b&gt;：开启后脚本将自动秒点确认弹窗。&#39;
+        };
+
+        Object.entries(helpMap).forEach(([id, html]) =&gt; {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.onmouseenter = () =&gt; {
+                clearTimeout(popoverTimer);
+                const pop = document.getElementById(&#39;nj-popover&#39;);
+                pop.innerHTML = `&lt;div style=&quot;font-size:13px; color:#333; line-height:1.6;&quot;&gt;${html}&lt;/div&gt;`;
+                const rect = el.getBoundingClientRect();
+                pop.style.left = (rect.right + 10) + &#39;px&#39;;
+                pop.style.top = rect.top + &#39;px&#39;;
+                pop.classList.add(&#39;visible&#39;);
+            };
+            el.onmouseleave = () =&gt; popoverTimer = setTimeout(() =&gt; document.getElementById(&#39;nj-popover&#39;).classList.remove(&#39;visible&#39;), 200);
+        });
+    };
+
+    const initPopover = () =&gt; {
+        if (document.getElementById(&#39;nj-popover&#39;)) return;
+        const pop = document.createElement(&#39;div&#39;);
+        pop.id = &#39;nj-popover&#39;;
+        document.body.appendChild(pop);
+        pop.onmouseenter = () =&gt; clearTimeout(popoverTimer);
+        pop.onmouseleave = () =&gt; popoverTimer = setTimeout(() =&gt; pop.classList.remove(&#39;visible&#39;), 300);
+    };
+
+    const injectBadges = () =&gt; {
+        const db = GM_getValue(&#39;NJU_DB&#39;, {});
+        let favs = GM_getValue(&#39;NJU_FAVORITES&#39;, {});
+
+        document.querySelectorAll(&#39;tr.course-tr&#39;).forEach(row =&gt; {
+            if (row.dataset.checkedV43) return;
+
+            // V39 收藏逻辑 - 注入课程号 (.kch) 头顶
+            const kchCell = row.querySelector(&#39;.kch&#39;);
+            if (kchCell) {
+                const link = kchCell.querySelector(&#39;a&#39;) || kchCell;
+                const cid = link.dataset.tcid || link.dataset.number || link.innerText.trim();
+                const name = row.querySelector(&#39;.kcmc&#39;)?.innerText || &#39;未知&#39;;
+                const teacher = row.querySelector(&#39;.jsmc&#39;)?.innerText || &#39;未知&#39;;
+                const time = row.querySelector(&#39;.sjdd&#39;)?.innerText || &#39;&#39;;
+
+                if (cid &amp;&amp; !kchCell.querySelector(&#39;.fav-toggle-btn&#39;)) {
+                    const btn = document.createElement(&#39;span&#39;);
+                    const isFav = !!favs[cid];
+                    btn.className = `fav-toggle-btn ${isFav ? &#39;active&#39; : &#39;&#39;}`;
+                    btn.innerHTML = isFav ? &#39;★ 已收藏&#39; : &#39;☆ 收藏&#39;;
+                    btn.dataset.favId = cid;
+                    btn.onclick = (e) =&gt; {
+                        e.stopPropagation();
+                        favs = GM_getValue(&#39;NJU_FAVORITES&#39;, {});
+                        if (favs[cid]) {
+                            delete favs[cid];
+                            btn.classList.remove(&#39;active&#39;);
+                            btn.innerHTML = &#39;☆ 收藏&#39;;
+                        } else {
+                            favs[cid] = {name, teacher, time};
+                            btn.classList.add(&#39;active&#39;);
+                            btn.innerHTML = &#39;★ 已收藏&#39;;
+                        }
+                        GM_setValue(&#39;NJU_FAVORITES&#39;, favs);
+                        const b = document.getElementById(&#39;btn-open-fav&#39;);
+                        if (b) b.innerText = `⭐ 管理我的收藏夹 (${Object.keys(favs).length})`;
+                    };
+                    kchCell.prepend(btn);
+                }
+            }
+
+            const appendB = (cell, el) =&gt; {
+                if (!cell.querySelector(&#39;.nj-br&#39;)) {
+                    const br = document.createElement(&#39;br&#39;);
+                    br.className = &#39;nj-br&#39;;
+                    cell.appendChild(br);
+                }
+                cell.appendChild(el);
+            };
+
+            // 1. 概率
+            const numCell = row.querySelector(&#39;.yxrs&#39;);
+            if (numCell) {
+                const p = calcProb(numCell.innerText.trim());
+                if (p) {
+                    const t = document.createElement(&#39;span&#39;);
+                    t.className = &#39;nj-badge&#39;;
+                    t.style.background = p.color;
+                    t.innerText = `${p.prob}%`;
+                    appendB(numCell, t);
+                }
+            }
+
+            // 2. 红黑榜
+            const jsmcCell = row.querySelector(&#39;.jsmc&#39;);
+            if (jsmcCell &amp;&amp; config.enableRating &amp;&amp; Object.keys(db).length) {
+                const txt = row.innerText.replace(/\s/g, &#39;&#39;);
+                for (const k in db) {
+                    const [c, t] = k.split(&#39;#&#39;);
+                    if (txt.includes(c.replace(/\s/g, &#39;&#39;))) {
+                        const ts = t.split(/[\s,，、]+/);
+                        if (ts.some(n =&gt; n &amp;&amp; txt.includes(n))) {
+                            const d = db[k];
+                            const tag = document.createElement(&#39;span&#39;);
+                            tag.className = &#39;nj-badge&#39;;
+                            tag.style.background = d.color;
+                            tag.innerText = d.label;
+                            tag.style.cursor = &#39;help&#39;;
+                            tag.onmouseenter = () =&gt; {
+                                clearTimeout(popoverTimer);
+                                const pop = document.getElementById(&#39;nj-popover&#39;);
+                                let h = `&lt;div style=&quot;font-weight:800;color:${THEME.PURPLE};margin-bottom:8px;border-bottom:1px solid #eee;&quot;&gt;${c}-${t}&lt;/div&gt;`;
+                                d.comments.forEach(x =&gt; h += `&lt;div class=&quot;pop-item&quot;&gt;● ${x}&lt;/div&gt;`);
+                                pop.innerHTML = h;
+                                const r = tag.getBoundingClientRect();
+                                pop.style.left = Math.min(r.left, window.innerWidth - 340) + &#39;px&#39;;
+                                pop.style.top = (r.bottom + 8) + &#39;px&#39;;
+                                pop.classList.add(&#39;visible&#39;);
+                            };
+                            tag.onmouseleave = () =&gt; popoverTimer = setTimeout(() =&gt; document.getElementById(&#39;nj-popover&#39;).classList.remove(&#39;visible&#39;), 300);
+                            appendB(jsmcCell, tag);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 3. 冲突/校区
+            const sjCell = row.querySelector(&#39;.sjdd&#39;);
+            const xqCell = row.querySelector(&#39;.xq&#39;);
+            if (sjCell &amp;&amp; config.conflictCheck) {
+                const st = sjCell.innerText;
+                if (st &amp;&amp; checkConflict(st)) {
+                    const r = checkConflict(st);
+                    const tag = document.createElement(&#39;span&#39;);
+                    tag.className = &#39;nj-badge&#39;;
+                    tag.style.background = THEME.CONFLICT;
+                    tag.innerText = `冲突: ${r.with}`;
+                    appendB(sjCell, tag);
+                }
+            }
+            if (xqCell &amp;&amp; config.checkCampus &amp;&amp; config.myCampus) {
+                const xt = xqCell.innerText;
+                const st = sjCell ? sjCell.innerText : &#39;&#39;;
+                if (CAMPUS_KEYS[config.myCampus].exclude.some(k =&gt; st.includes(k) || xt.includes(k))) {
+                    const tag = document.createElement(&#39;span&#39;);
+                    tag.className = &#39;nj-badge&#39;;
+                    tag.style.background = THEME.CAMPUS;
+                    tag.innerText = `跨校区`;
+                    appendB(xqCell, tag);
+                }
+            }
+
+            row.dataset.checkedV43 = &quot;true&quot;;
+        });
+    };
+
+    const startObserver = () =&gt; {
+        const obs = new MutationObserver(() =&gt; {
+            if (config.autoConfirm) {
+                const btn = document.querySelector(&#39;.cv-sure, .cvBtnFlag[data-type=&quot;sure&quot;]&#39;);
+                if (btn &amp;&amp; btn.offsetParent) setTimeout(() =&gt; btn.click(), 50);
+            }
+        });
+        obs.observe(document.body, {childList: true, subtree: true});
+    };
+
+    setInterval(() =&gt; {
+        if (!document.getElementById(&#39;xk-island-root&#39;)) {
+            injectStyles();
+            renderIsland();
+            initPopover();
+        }
+        injectBadges();
+    }, 1000);
+    startObserver();
+})();</pre>
+</div>
+
+    </div>
+  </section>
+
+  </div>
+
+    <script>
+      (function (d) {
+      window.rum = {key: '29razx6j'};
+      var script = d.createElement('script');
+      script.src = 'https://cdn.perfops.net/rom3/rom3.min.js';
+      script.type = 'text/javascript';
+      script.defer = true;
+      script.async = true;
+      d.getElementsByTagName('head')[0].appendChild(script);
+      })(document);
+    </script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"3b2c78865ea34bf4ad258da879f720f8","r":1}' crossorigin="anonymous"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31208d66892b4c4',t:'MTc4NzczODg5OA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
+

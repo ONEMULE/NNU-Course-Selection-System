@@ -1,0 +1,98 @@
+{
+    "name": "xjtu tools",
+    "description": "an extentison convenient for xjtuers",
+    "version": "1.0",
+    "permissions": [
+        "cookies",
+        "downloads",
+        "notifications",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://*.xjtu.edu.cn/*",
+        "http://*.xjtu.edu.cn/*"
+    ],
+    "author": "le",
+    "manifest_version": 3,
+    "action": {
+        "default_icon": "icon.png"
+    },
+    "background": {
+        "service_worker": "scripts/background.js"
+    },
+    "icons": {
+        "16": "icon.png",
+        "32": "icon.png",
+        "48": "icon.png",
+        "64": "icon.png"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://ehall.xjtu.edu.cn/jwapp/sys/cjcx/*default/*"
+            ],
+            "js": [
+                "scripts/checkGrades.js"
+            ],
+            "css": [
+                "checkGrades.css"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "matches": [
+                "https://ehall.xjtu.edu.cn/jwapp/sys/wspjyyapp/*default/*"
+            ],
+            "js": [
+                "scripts/teachingEvaluation.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://xkfw.xjtu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do"
+            ],
+            "js": [
+                "scripts/exit.js"
+            ]
+        },
+        {
+            "matches": [
+                "https://lms.xjtu.edu.cn/course/*/*"
+            ],
+            "js": [
+                "scripts/downloadResources.js"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "matches": [
+                "https://xjtu.yuketang.cn/pro/lms/*"
+            ],
+            "js": [
+                "scripts/antiPause.js"
+            ],
+            "run_at": "document_start",
+            "all_frames": true
+        },
+        {
+            "matches": [
+                "https://xkfw.xjtu.edu.cn/xsxkapp/sys/xsxkapp/*default/*"
+            ],
+            "js": [
+                "scripts/watchCourse.js"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "scripts/inject.js"
+            ],
+            "matches": [
+                "https://ehall.xjtu.edu.cn/*",
+                "https://xjtu.yuketang.cn/*"
+            ]
+        }
+    ]
+}

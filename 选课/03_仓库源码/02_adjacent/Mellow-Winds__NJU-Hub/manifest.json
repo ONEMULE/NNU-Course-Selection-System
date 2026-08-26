@@ -1,0 +1,119 @@
+{
+  "manifest_version": 3,
+  "name": "NJU Hub - 南大智慧终端",
+  "version": "26.3.1",
+  "default_locale": "zh_CN",
+  "description": "NJU功能增强：GPA快速查询 | 课表抓取 | 自动登录 | LMS增强",
+  "permissions": [
+    "storage",
+    "declarativeNetRequest",
+    "scripting",
+    "tabs",
+    "downloads"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "scripts/seec_xhr_bridge.js",
+        "scripts/lms_preview_bridge.js",
+        "data/ai_cache.json",
+        "data/merged_ratings.json"
+      ],
+      "matches": ["*://*.nju.edu.cn/*"]
+    }
+  ],
+  "host_permissions": [
+    "*://*.nju.edu.cn/*",
+    "http://elite.nju.edu.cn/*",
+    "https://ggtypt.nju.edu.cn/*",
+    "https://api.siliconflow.cn/*",
+    "https://api.openai.com/*",
+    "https://open.bigmodel.cn/*",
+    "https://table.nju.edu.cn/*"
+  ],
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_icon": "icons/icon128.png"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "nju-hub@mellow-winds.github.io",
+      "strict_min_version": "115.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://authserver.nju.edu.cn/authserver/login*"],
+      "js": ["scripts/auth_auto_login.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://xk.nju.edu.cn/*"],
+      "js": ["scripts/xk_login_autofill.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": [
+        "*://ehallapp.nju.edu.cn/jwapp/sys/wdkb/*",
+        "*://xk.nju.edu.cn/xsxkapp/*"
+      ],
+      "js": [
+        "libs/xlsx.full.min.js",
+        "scripts/xk/xk_storage.js",
+        "scripts/xk/xk_conflict.js",
+        "scripts/xk/xk_ai.js",
+        "scripts/xk/xk_ui.js",
+        "scripts/xk/xk_badges.js",
+        "scripts/xk/xk_filter.js",
+        "scripts/xk/xk_schedule.js",
+        "scripts/xk/xk_notify.js",
+        "scripts/xk/xk_main.js"
+      ],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["http://elite.nju.edu.cn/exchangesystem/*"],
+      "js": ["scripts/elite_gpa_viewer.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["https://lms.nju.edu.cn/*"],
+      "js": ["scripts/lms_enhance.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://ehallapp.nju.edu.cn/jwapp/sys/wspjyyapp/*"],
+      "js": ["libs/nju-modal.js", "scripts/auto_eval.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://p-nju.seec.seecoder.cn/*"],
+      "js": ["scripts/seec_workpanel.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://study.nju.edu.cn/home/index.mooc*"],
+      "js": ["scripts/spoc_auto_redirect.js"],
+      "run_at": "document_end"
+    },
+    {
+      "matches": ["*://ggtypt.nju.edu.cn/*"],
+      "js": [
+        "scripts/pe_score_viewer/pe_score_fetcher.js",
+        "scripts/pe_score_viewer/pe_score_ui.js",
+        "scripts/pe_score_viewer/pe_score_main.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}

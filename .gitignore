@@ -1,0 +1,13 @@
+# NNU Course Selection System: local-only sensitive browser captures
+# These files may contain session-bearing URLs or page-specific data.
+/选课/01_本地证据/raw/
+/选课/选课.html
+/选课/选课点击后.html
+/选课/选课失败弹窗.html
+/选课/选课_files/
+/选课/选课点击后_files/
+/选课/选课失败弹窗_files/
+
+# Independent clone metadata is kept locally as a recoverable backup;
+# the checked-out source is vendored into this top-level snapshot.
+/选课/99_quarantine/nested_git_metadata/

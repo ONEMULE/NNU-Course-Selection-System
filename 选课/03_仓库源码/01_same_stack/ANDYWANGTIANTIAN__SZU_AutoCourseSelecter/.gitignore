@@ -1,0 +1,6 @@
+*.pyc
+/build
+/dist/
+/build/
+/.idea/
+/v2/SZU_AutoCourseSelecter/target/

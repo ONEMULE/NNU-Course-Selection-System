@@ -1,0 +1,43 @@
+# ── OS ──
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── IDE ──
+.idea/
+.vscode/
+
+# ── AI / Tooling ──
+.claude/
+.superpowers/
+
+# ── Flutter / Dart ──
+.dart_tool/
+build/
+.flutter-plugins*
+*.iml
+
+# ── Go ──
+*.exe
+*.exe~
+*.log
+*.test
+backend/xjtu-genius-*
+!frontend/windows/runner/resources/*.ico
+
+# ── Python ──
+__pycache__/
+*.pyc
+
+# ── Release ──
+dist/
+release-artifacts/
+
+# ── Temp ──
+*~
+*.tmp
+*.bak
+*.swp
+
+# ── Archive (old version) ──
+.wdm/

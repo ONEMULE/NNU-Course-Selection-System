@@ -1,0 +1,54 @@
+{
+  "button": [
+    {
+      "name": "PWA 主页",
+      "type": "view",
+      "url": "https://myseu.cn"
+    },
+    {
+      "name": "小功能",
+      "sub_button": [
+        {
+          "name": "新生指引",
+          "type": "view",
+          "url": "https://myseu.cn/#/intro"
+        },
+        {
+          "name": "一卡通充值",
+          "type": "view",
+          "url": "https://myseu.cn/#/card/charge"
+        },
+        {
+          "name": "绩点估算",
+          "type": "view",
+          "url": "https://myseu.cn/#/grade"
+        },
+        {
+          "name": "课表预测",
+          "type": "view",
+          "url": "https://myseu.cn/#/course-stat"
+        },
+        {
+          "name": "洗衣房查询",
+          "type": "view",
+          "url": "https://myseu.cn/#/laundry"
+        }
+      ]
+    },
+    {
+      "name": "小服务",
+      "sub_button": [
+        {
+          "name": "校历查询",
+          "type": "view",
+          "url": "http://heraldstudio.com/static/images/xiaoli.jpg"
+        },
+        {
+          "name": "权益投诉",
+          "type": "view",
+          "url": "http://jinshuju.net/f/By3aTK"
+        }
+      ]
+    }
+  ]
+}

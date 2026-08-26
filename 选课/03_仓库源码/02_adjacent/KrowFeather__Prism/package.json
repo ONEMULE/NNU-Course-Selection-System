@@ -1,0 +1,56 @@
+{
+  "name": "prism",
+  "private": true,
+  "version": "1.0.0b",
+  "main": "./electron/main.js",
+  "author": "KrowFeather",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "start": "concurrently \"pnpm dev\" \"pnpm electron:dev\"",
+    "electron:dev": "wait-on tcp:3000 && electron .",
+    "build:electron": "pnpm build && electron-builder"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "axios": "^1.13.2",
+    "element-plus": "^2.13.1",
+    "vue": "^3.5.22",
+    "vue-router": "^4.6.4",
+    "wait-on": "^9.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.8.1",
+    "concurrently": "^9.2.1",
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7",
+    "vue-tsc": "^3.1.0"
+  },
+  "build": {
+    "appId": "com.krowfeather.prism",
+    "productName": "Prism",
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "directories": {
+      "output": "dist-electron"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}

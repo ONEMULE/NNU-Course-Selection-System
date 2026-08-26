@@ -1,0 +1,376 @@
+/* popup/style.css — Material Design 3 Motion System */
+
+* {
+    box-sizing: border-box;
+}
+
+/* ── MD3 Motion Tokens ─────────────────────────────────────────── */
+:root {
+    /* Easing */
+    --md-sys-motion-easing-emphasized:           cubic-bezier(0.2, 0, 0, 1);
+    --md-sys-motion-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+    --md-sys-motion-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+    --md-sys-motion-easing-standard:             cubic-bezier(0.2, 0, 0, 1);
+    --md-sys-motion-easing-standard-decelerate:  cubic-bezier(0, 0, 0, 1);
+    --md-sys-motion-spring:                      cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Duration */
+    --md-sys-motion-duration-short3: 150ms;
+    --md-sys-motion-duration-short4: 200ms;
+    --md-sys-motion-duration-medium2: 300ms;
+    --md-sys-motion-duration-medium4: 400ms;
+    --md-sys-motion-duration-long2:   500ms;
+
+    /* Color Scheme (Material You defaults) */
+    --md-sys-color-primary:               #0ea5e9;
+    --md-sys-color-on-primary:            #FFFFFF;
+    --md-sys-color-primary-container:     #D0E8FF;
+    --md-sys-color-on-primary-container:  #001D36;
+    --md-sys-color-surface:               #F9FAFB;
+    --md-sys-color-on-surface:            #111827;
+    --md-sys-color-on-surface-variant:    #6B7280;
+    --md-sys-color-surface-container:     #FFFFFF;
+    --md-sys-color-surface-container-low: #F3F4F6;
+    --md-sys-color-surface-container-high:#EBEDF0;
+    --md-sys-color-outline-variant:       #E5E7EB;
+    --md-sys-color-outline:               #9CA3AF;
+
+    /* Legacy aliases */
+    --bg: var(--md-sys-color-surface);
+    --card: var(--md-sys-color-surface-container);
+    --border: var(--md-sys-color-outline-variant);
+    --primary: var(--md-sys-color-primary);
+    --text: var(--md-sys-color-on-surface);
+    --muted: var(--md-sys-color-on-surface-variant);
+    --radius: 12px;
+}
+
+body {
+    width: 340px;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    background: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ────────────────────────────────────────────────────── */
+.dashboard-header {
+    padding: 20px 16px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#greeting-text {
+    font-size: 20px;
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -0.2px;
+    line-height: 1.2;
+    color: var(--md-sys-color-on-surface);
+}
+
+.date-text {
+    font-size: 12px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 6px 0 0;
+    font-weight: 500;
+}
+
+.settings-trigger {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--md-sys-color-on-surface-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    font-size: 0;
+    position: relative;
+    overflow: hidden;
+    transition:
+        background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+        transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized);
+}
+
+.settings-trigger:hover {
+    background: var(--md-sys-color-surface-container-high);
+}
+
+.settings-trigger:active {
+    transform: scale(0.9);
+}
+
+/* ── Main Panel ────────────────────────────────────────────────── */
+.main-panel {
+    padding: 0 12px 20px;
+    width: 100%;
+}
+
+/* ── Divider ───────────────────────────────────────────────────── */
+.divider {
+    font-size: 11px;
+    color: var(--md-sys-color-on-surface-variant);
+    margin: 16px 6px 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── Card ──────────────────────────────────────────────────────── */
+.card {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 16px;
+    padding: 4px 0;
+    margin-bottom: 12px;
+    box-shadow: none;
+    /* Staggered entrance — slow & soothing */
+    opacity: 0;
+    transform: translateY(20px);
+    animation: popupCardIn 600ms var(--md-sys-motion-easing-emphasized-decelerate) both;
+}
+
+.card:nth-child(1) { animation-delay: 80ms; }
+.card:nth-child(2) { animation-delay: 180ms; }
+.card:nth-child(3) { animation-delay: 280ms; }
+
+@keyframes popupCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Quick Actions ─────────────────────────────────────────────── */
+.quick-actions {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.primary-btn {
+    width: 100%;
+    border: none;
+    background: var(--md-sys-color-primary);
+    color: var(--md-sys-color-on-primary);
+    font-weight: 700;
+    font-size: 14px;
+    border-radius: 20px;
+    padding: 12px 16px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        box-shadow var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+        transform var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-emphasized),
+        filter var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.primary-btn:hover {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2), 0 4px 8px rgba(0,0,0,0.12);
+}
+
+.primary-btn:active {
+    transform: scale(0.97);
+    filter: brightness(0.92);
+}
+
+/* ── Feature Stack ─────────────────────────────────────────────── */
+.feature-stack {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+}
+
+.feature-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    transition: background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.feature-row:last-child {
+    border-bottom: none;
+}
+
+.feature-row:hover {
+    background: var(--md-sys-color-surface-container-low);
+}
+
+.feature-row:first-child {
+    border-radius: 16px 16px 0 0;
+}
+
+.feature-row:last-child {
+    border-radius: 0 0 16px 16px;
+}
+
+.feature-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* ── MD3 Switch (Popup) ────────────────────────────────────────── */
+.ios-switch {
+    position: relative;
+    width: 52px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.ios-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.ios-switch .slider {
+    position: absolute;
+    inset: 0;
+    background: var(--md-sys-color-surface-container-high);
+    border: 2px solid var(--md-sys-color-outline);
+    border-radius: 9999px;
+    cursor: pointer;
+    transition:
+        background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard),
+        border-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.ios-switch .slider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--md-sys-color-outline);
+    transform: translateY(-50%);
+    transition:
+        transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
+        height var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
+        width var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
+        left var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-emphasized),
+        background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+/* Switch — Hover */
+.ios-switch .slider:hover {
+    border-color: var(--md-sys-color-on-surface);
+}
+.ios-switch .slider:hover::after {
+    background: var(--md-sys-color-on-surface);
+}
+
+/* Switch — Focus */
+.ios-switch input:focus-visible + .slider {
+    box-shadow: 0 0 0 2px var(--md-sys-color-surface), 0 0 0 4px var(--md-sys-color-primary);
+}
+
+/* Switch — Pressed */
+.ios-switch input:active + .slider::after {
+    width: 28px;
+    height: 28px;
+    left: 2px;
+}
+
+/* Switch — Checked */
+.ios-switch input:checked + .slider {
+    background: var(--md-sys-color-primary);
+    border-color: var(--md-sys-color-primary);
+}
+
+.ios-switch input:checked + .slider::after {
+    transform: translateY(-50%) translateX(20px);
+    height: 24px;
+    width: 24px;
+    left: 2px;
+    background: var(--md-sys-color-on-primary);
+}
+
+/* Switch — Checked + Hover */
+.ios-switch input:checked + .slider:hover {
+    filter: brightness(1.08);
+}
+
+/* Switch — Checked + Pressed */
+.ios-switch input:checked:active + .slider::after {
+    width: 28px;
+    height: 28px;
+}
+
+/* ── Ripple Effect ─────────────────────────────────────────────── */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: currentColor;
+    opacity: 0;
+    transform: scale(0);
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+
+.ripple.animate {
+    animation: rippleExpand var(--md-sys-motion-duration-long2) var(--md-sys-motion-easing-standard) forwards;
+}
+
+@keyframes rippleExpand {
+    0% {
+        transform: scale(0);
+        opacity: 0.16;
+    }
+    80% {
+        opacity: 0.08;
+    }
+    100% {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* ── Popup Entrance ────────────────────────────────────────────── */
+@keyframes popupReveal {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.dashboard-header {
+    animation: popupReveal 500ms var(--md-sys-motion-easing-emphasized-decelerate) both;
+    animation-delay: 0ms;
+}
+
+/* ── Reduced Motion ────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

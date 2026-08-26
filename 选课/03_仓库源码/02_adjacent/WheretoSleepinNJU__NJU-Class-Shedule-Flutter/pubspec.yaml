@@ -1,0 +1,107 @@
+name: wheretosleepinnju
+description: wheretosleepinnju
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 4.0.2+67
+
+environment:
+  sdk: ">=2.12.0 <3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  shared_preferences: 
+    path: ./external/flutter_packages/packages/shared_preferences/shared_preferences
+  webview_flutter: 
+    path: ./external/flutter_packages/packages/webview_flutter/webview_flutter
+  path_provider:
+    path: ./external/flutter_packages/packages/path_provider/path_provider
+  url_launcher: 
+    path: ./external/flutter_packages/packages/url_launcher/url_launcher
+  image_picker:
+    path: ./external/flutter_packages/packages/image_picker/image_picker
+  palette_generator:
+    path: ./external/flutter_packages/packages/palette_generator
+  mobile_scanner:
+    path: ./external/fluttertpc_mobile_scanner
+
+  sqflite: ^2.0.0+4
+  flutter_swiper_null_safety_flutter3: ^2.0.0
+  scoped_model: ^2.0.0-nullsafety.0
+  azlistview: ^2.0.0-nullsafety.0
+  flutter_native_splash: ^2.0.5
+  flutter_linkify: ^6.0.0
+  flutter_html: ^3.0.0-beta.2
+  qr_flutter: ^4.0.0
+  zxing2: ^0.2.3
+  archive: ^3.4.10
+  html: ^0.15.0
+  dio: ^5.9.0
+
+  # https://gitcode.com/openharmony-sig/flutter_plus_plugins/pull/52
+  package_info_plus:
+    path: ./external/flutter_plus_plugins_package_info_plus/packages/package_info_plus/package_info_plus
+  # 只用在iOS，等待鸿蒙支持
+  in_app_review: ^2.0.3
+
+  umeng_common_sdk: ^1.2.7
+  umeng_common_sdk_ohos: 1.2.9
+  device_calendar: 4.3.3
+  device_calendar_ohos:
+    path: ./external/fluttertpc_device_calendar/ohos
+
+  # https://gitcode.com/openharmony-sig/fluttertpc_share_extend/pull/8
+  share_extend:
+    git:
+      url: https://gitcode.com/fuchuanyang/fluttertpc_share_extend.git
+  fluttertoast:
+    git:
+      url: https://gitcode.com/openharmony-sig/flutter_fluttertoast.git
+
+
+dependency_overrides:
+  collection: ^1.19.0
+  scrollable_positioned_list: 0.3.2
+  url_launcher:
+    path: ./external/flutter_packages/packages/url_launcher/url_launcher
+  shared_preferences:
+    path: ./external/flutter_packages/packages/shared_preferences/shared_preferences
+  webview_flutter:
+    path: ./external/flutter_packages/packages/webview_flutter/webview_flutter
+  path_provider:
+    path: ./external/flutter_packages/packages/path_provider/path_provider
+  image_picker:
+    path: ./external/flutter_packages/packages/image_picker/image_picker
+  sqflite:
+    path: ./external/flutter_sqflite/sqflite
+  sqflite_common:
+    path: ./external/flutter_sqflite/sqflite_common
+
+dev_dependencies:
+  flutter_lints: ^1.0.4
+  flutter_test:
+    sdk: flutter
+  intl_utils: ^2.8.7
+
+flutter:
+  uses-material-design: true
+  assets:
+    - res/icon.png
+
+flutter_intl:
+  enabled: true
+
+analyzer:
+  strong-mode: true
+  language:
+    enableSuperMixins: true
+
+flutter_native_splash:
+  color: "#ffffff"
+  color_dark: "#000000"

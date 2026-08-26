@@ -1,0 +1,2471 @@
+
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <title>东南大学选课助手升级版 - Codice sorgente</title>
+  <meta name="description" value="Source code for 东南大学选课助手升级版">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <script src="/vite/assets/application-Do-C1Ssw.js" crossorigin="" type="module"></script><link rel="stylesheet" crossorigin="" href="/vite/assets/application-BUQg-itE.css" />
+    <meta name="csrf-param" content="authenticity_token" />
+<meta name="csrf-token" content="CxkJh5Jmh-0Ce2ts8Et1NhiWiKkahRFiMt9B2TZdx0V1KUAgx7AS8Tmvj1Az2cf_G-gNVgVSjkKcxsnjNrmT9w" />
+    <meta name="clckd" content="bf6242cc3039bff31a7815dff8ee247b" />
+    <meta name="lhverifycode" content="32dc01246faccb7f5b3cad5016dd5033" />
+  <link rel="canonical" href="https://greasyfork.org/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+  <link rel="icon" href="/vite/assets/blacklogo16-DftkYuVe.png">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap" media="print" onload="this.media='all'; this.onload=null;">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans&amp;display=swap"></noscript>
+
+    <link rel="alternate" hreflang="x-default" href="/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ar" href="/ar/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="be" href="/be/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="bg" href="/bg/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ckb" href="/ckb/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="cs" href="/cs/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="da" href="/da/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="de" href="/de/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="el" href="/el/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="en" href="/en/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="eo" href="/eo/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="es" href="/es/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="es-419" href="/es-419/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="fi" href="/fi/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="fil" href="/fil/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="fr" href="/fr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="fr-CA" href="/fr-CA/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="he" href="/he/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="hr" href="/hr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="hu" href="/hu/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="id" href="/id/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="it" href="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ja" href="/ja/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ka" href="/ka/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ko" href="/ko/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="mr" href="/mr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="nb" href="/nb/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="nl" href="/nl/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="pl" href="/pl/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="pt" href="/pt/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="pt-BR" href="/pt-BR/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ro" href="/ro/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ru" href="/ru/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="sk" href="/sk/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="sr" href="/sr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="sv" href="/sv/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="th" href="/th/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="tr" href="/tr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="uk" href="/uk/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="ug" href="/ug/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="vi" href="/vi/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="zh-CN" href="/zh-CN/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+      <link rel="alternate" hreflang="zh-TW" href="/zh-TW/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+
+
+  <link rel="search" href="/it/opensearch.xml" type="application/opensearchdescription+xml" title="ricerca Greasy Fork" hreflang="it">
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7NMRNRYW7C"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-7NMRNRYW7C', {
+        'ad_method': 'ea',
+        'ad_method_variant': '',
+        'action': 'scripts/show_code'
+      });
+    </script>
+
+    <script async src="https://media.ethicalads.io/media/client/ethicalads.min.js" onerror="if (typeof gtag !== 'undefined') { gtag('event', 'EthicalAds placement', { 'ea_campaign_type': '(error)' })};switchToEaFallback()"></script>
+
+    <meta name="twitter:card" content="summary">
+  <meta property="og:title" content="东南大学选课助手升级版">
+  <meta property="og:url" content="https://greasyfork.org/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88">
+  <meta property="og:description" content="听说你抢不到课">
+
+</head>
+<body>
+
+  <header id="main-header">
+    <div class="width-constraint">
+      <div id="site-name">
+        <a href="/it"><img alt="" width="96" height="96" src="/vite/assets/blacklogo96-CxYTSM_T.png" /></a>
+        <div id="site-name-text">
+          <h1><a href="/it">Greasy Fork</a></h1>
+        </div>
+      </div>
+      <div id="site-nav">
+        <div id="nav-user-info">
+            <span class="sign-in-link"><a rel="nofollow" href="/it/users/sign_in?return_to=%2Fit%2Fscripts%2F561050-%25E4%25B8%259C%25E5%258D%2597%25E5%25A4%25A7%25E5%25AD%25A6%25E9%2580%2589%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%25E5%258D%2587%25E7%25BA%25A7%25E7%2589%2588%2Fcode">Entra</a></span>
+
+                      <form class="language-selector" action="/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ar">
+                      Arabo (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="be">
+                      Bielorusso (be)
+                    </option>
+                    <option data-language-url="/nb/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="nb">
+                      Bokmål (nb)
+                    </option>
+                    <option data-language-url="/bg/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="bg">
+                      Bulgaro (bg)
+                    </option>
+                    <option data-language-url="/cs/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="cs">
+                      Ceco (cs)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="zh-CN">
+                      Cinese (Cina) (zh-CN)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="zh-TW">
+                      Cinese (Taiwan) (zh-TW)
+                    </option>
+                    <option data-language-url="/ko/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ko">
+                      Coreano (ko)
+                    </option>
+                    <option data-language-url="/hr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="hr">
+                      Croato (hr)
+                    </option>
+                    <option data-language-url="/da/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="da">
+                      Danese (da)
+                    </option>
+                    <option data-language-url="/he/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="he">
+                      Ebraico (he)
+                    </option>
+                    <option data-language-url="/eo/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="eo">
+                      Esperanto (eo)
+                    </option>
+                    <option data-language-url="/fil/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/fi/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fi">
+                      Finlandese (fi)
+                    </option>
+                    <option data-language-url="/fr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fr">
+                      Francese (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fr-CA">
+                      Francese (Canada) (fr-CA)
+                    </option>
+                    <option data-language-url="/ka/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ka">
+                      Georgiano (ka)
+                    </option>
+                    <option data-language-url="/ja/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ja">
+                      Giapponese (ja)
+                    </option>
+                    <option data-language-url="/el/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="el">
+                      Greco moderno  (el)
+                    </option>
+                    <option data-language-url="/id/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="id">
+                      Indonesiano (id)
+                    </option>
+                    <option data-language-url="/en/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="en">
+                      Inglese (en)
+                    </option>
+                    <option data-language-url="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="it" selected>
+                      Italiano (it)
+                    </option>
+                    <option data-language-url="/mr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="mr">
+                      Marathi (mr)
+                    </option>
+                    <option data-language-url="/nl/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="nl">
+                      Olandese (nl)
+                    </option>
+                    <option data-language-url="/pl/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="pl">
+                      Polacco (pl)
+                    </option>
+                    <option data-language-url="/pt/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="pt">
+                      Portoghese (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="pt-BR">
+                      Portoghese (Brasile) (pt-BR)
+                    </option>
+                    <option data-language-url="/ro/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ro">
+                      Romeno (ro)
+                    </option>
+                    <option data-language-url="/ru/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ru">
+                      Russo (ru)
+                    </option>
+                    <option data-language-url="/sr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="sr">
+                      Serbo (sr)
+                    </option>
+                    <option data-language-url="/sk/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="sk">
+                      Slovacco (sk)
+                    </option>
+                    <option data-language-url="/es/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="es">
+                      Spagnolo (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="es-419">
+                      Spagnolo (es-419)
+                    </option>
+                    <option data-language-url="/sv/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="sv">
+                      Svedese (sv)
+                    </option>
+                    <option data-language-url="/de/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="de">
+                      Tedesco (de)
+                    </option>
+                    <option data-language-url="/th/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="th">
+                      Thailandese (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="tr">
+                      Turco (tr)
+                    </option>
+                    <option data-language-url="/uk/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="uk">
+                      Ucraino (uk)
+                    </option>
+                    <option data-language-url="/ug/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ug">
+                      Uighur (ug)
+                    </option>
+                    <option data-language-url="/hu/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="hu">
+                      Ungherese (hu)
+                    </option>
+                    <option data-language-url="/vi/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="vi">
+                      Vietnamita (vi)
+                    </option>
+                    <option data-language-url="/ckb/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ckb">
+                      کوردیی ناوەندی (ckb)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+
+        </div>
+        <nav>
+          <li class="scripts-index-link"><a href="/it/scripts">Scripts</a></li>
+            <li class="forum-link"><a href="/it/discussions">Forum</a></li>
+          <li class="help-link"><a href="/it/help">Aiuto</a></li>
+          <li class="with-submenu">
+            <a href="#" onclick="return false">Altro</a>
+            <nav>
+              <li><a href="/it/search">Ricerca avanzata</a></li>
+              <li><a href="/it/users">Lista utenti</a></li>
+              <li><a href="/it/scripts/libraries">Librerie</a></li>
+              <li><a href="/it/moderator_actions">Log moderatore</a></li>
+            </nav>
+          </li>
+        </nav>
+      </div>
+
+      <div id="mobile-nav">
+        <div class="mobile-nav-opener">☰</div>
+        <nav class="collapsed">
+          <li class="scripts-index-link"><a href="/it/scripts">Scripts</a></li>
+          <li class="forum-link"><a href="/it/discussions">Forum</a></li>
+          <li class="help-link"><a href="/it/help">Aiuto</a></li>
+          <li><a href="/it/search">Ricerca avanzata</a></li>
+          <li><a href="/it/users">Lista utenti</a></li>
+          <li><a href="/it/scripts/libraries">Librerie</a></li>
+          <li><a href="/it/moderator_actions">Log moderatore</a></li>
+            <li class="multi-link-nav">
+              <span class="sign-in-link"><a rel="nofollow" href="/it/users/sign_in?return_to=%2Fit%2Fscripts%2F561050-%25E4%25B8%259C%25E5%258D%2597%25E5%25A4%25A7%25E5%25AD%25A6%25E9%2580%2589%25E8%25AF%25BE%25E5%258A%25A9%25E6%2589%258B%25E5%258D%2587%25E7%25BA%25A7%25E7%2589%2588%2Fcode">Entra</a></span>
+            </li>
+          <li>            <form class="language-selector" action="/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">
+              <select class="language-selector-locale" name="locale" data-translate-url="https://github.com/greasyfork-org/greasyfork/wiki/Translating-Greasy-Fork">
+                    <option data-language-url="/ar/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ar">
+                      Arabo (ar)
+                    </option>
+                    <option data-language-url="/be/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="be">
+                      Bielorusso (be)
+                    </option>
+                    <option data-language-url="/nb/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="nb">
+                      Bokmål (nb)
+                    </option>
+                    <option data-language-url="/bg/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="bg">
+                      Bulgaro (bg)
+                    </option>
+                    <option data-language-url="/cs/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="cs">
+                      Ceco (cs)
+                    </option>
+                    <option data-language-url="/zh-CN/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="zh-CN">
+                      Cinese (Cina) (zh-CN)
+                    </option>
+                    <option data-language-url="/zh-TW/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="zh-TW">
+                      Cinese (Taiwan) (zh-TW)
+                    </option>
+                    <option data-language-url="/ko/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ko">
+                      Coreano (ko)
+                    </option>
+                    <option data-language-url="/hr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="hr">
+                      Croato (hr)
+                    </option>
+                    <option data-language-url="/da/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="da">
+                      Danese (da)
+                    </option>
+                    <option data-language-url="/he/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="he">
+                      Ebraico (he)
+                    </option>
+                    <option data-language-url="/eo/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="eo">
+                      Esperanto (eo)
+                    </option>
+                    <option data-language-url="/fil/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fil">
+                      Filipino (fil)
+                    </option>
+                    <option data-language-url="/fi/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fi">
+                      Finlandese (fi)
+                    </option>
+                    <option data-language-url="/fr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fr">
+                      Francese (fr)
+                    </option>
+                    <option data-language-url="/fr-CA/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="fr-CA">
+                      Francese (Canada) (fr-CA)
+                    </option>
+                    <option data-language-url="/ka/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ka">
+                      Georgiano (ka)
+                    </option>
+                    <option data-language-url="/ja/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ja">
+                      Giapponese (ja)
+                    </option>
+                    <option data-language-url="/el/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="el">
+                      Greco moderno  (el)
+                    </option>
+                    <option data-language-url="/id/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="id">
+                      Indonesiano (id)
+                    </option>
+                    <option data-language-url="/en/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="en">
+                      Inglese (en)
+                    </option>
+                    <option data-language-url="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="it" selected>
+                      Italiano (it)
+                    </option>
+                    <option data-language-url="/mr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="mr">
+                      Marathi (mr)
+                    </option>
+                    <option data-language-url="/nl/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="nl">
+                      Olandese (nl)
+                    </option>
+                    <option data-language-url="/pl/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="pl">
+                      Polacco (pl)
+                    </option>
+                    <option data-language-url="/pt/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="pt">
+                      Portoghese (pt)
+                    </option>
+                    <option data-language-url="/pt-BR/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="pt-BR">
+                      Portoghese (Brasile) (pt-BR)
+                    </option>
+                    <option data-language-url="/ro/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ro">
+                      Romeno (ro)
+                    </option>
+                    <option data-language-url="/ru/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ru">
+                      Russo (ru)
+                    </option>
+                    <option data-language-url="/sr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="sr">
+                      Serbo (sr)
+                    </option>
+                    <option data-language-url="/sk/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="sk">
+                      Slovacco (sk)
+                    </option>
+                    <option data-language-url="/es/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="es">
+                      Spagnolo (es)
+                    </option>
+                    <option data-language-url="/es-419/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="es-419">
+                      Spagnolo (es-419)
+                    </option>
+                    <option data-language-url="/sv/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="sv">
+                      Svedese (sv)
+                    </option>
+                    <option data-language-url="/de/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="de">
+                      Tedesco (de)
+                    </option>
+                    <option data-language-url="/th/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="th">
+                      Thailandese (th)
+                    </option>
+                    <option data-language-url="/tr/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="tr">
+                      Turco (tr)
+                    </option>
+                    <option data-language-url="/uk/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="uk">
+                      Ucraino (uk)
+                    </option>
+                    <option data-language-url="/ug/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ug">
+                      Uighur (ug)
+                    </option>
+                    <option data-language-url="/hu/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="hu">
+                      Ungherese (hu)
+                    </option>
+                    <option data-language-url="/vi/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="vi">
+                      Vietnamita (vi)
+                    </option>
+                    <option data-language-url="/ckb/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code" value="ckb">
+                      کوردیی ناوەندی (ckb)
+                    </option>
+                <option value="help">Help us translate!</option>
+              </select><input class="language-selector-submit" type="submit" value="→">
+            </form>
+</li>
+        </nav>
+      </div>
+
+      <script>
+        /* submit is handled by js if enabled */
+        document.querySelectorAll(".language-selector-submit").forEach((lss) => { lss.style.display = "none" })
+      </script>
+    </div>
+  </header>
+
+  <div class="width-constraint">
+      <p class="notice"><b><a href="/en/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/code">Greasy Fork is available in English.</a></b></p>
+
+      <section id="script-info">
+    <ul id="script-links" class="tabs">
+      <li><a href="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88"><span>Informazioni</span></a></li>
+      <li class="current" aria-current="page"><span>Codice</span></li>
+      <li><a href="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/versions"><span>Storia</span></a></li>
+      <li><a href="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/feedback"><span>Feedback (0)</span></a></li>
+      <li><a href="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/stats"><span>Statistiche</span></a></li>
+    </ul>
+    <header>
+      <h2>东南大学选课助手升级版</h2>
+      <p id="script-description" class="script-description">听说你抢不到课</p>
+    </header>
+    <div id="script-content">
+      
+
+      <div id="install-area">
+          
+<a class="install-link" data-install-format="js" data-ping-url="/scripts/561050/install-ping" data-post-install-url="https://greasyfork.org/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/post-install" data-ip-address="67.209.183.176" data-script-id="561050" data-ping-key="ec8f6f51ad6710cd84d96f00c40131075ea954a6" data-is-previous-version="false" data-previous-version-warning="Questa non è la versione più recente di questo script. Se la installi, non sarà mai aggiornata ad una versione successiva. Installare comunque?" rel="nofollow" data-script-name="东南大学选课助手升级版" data-script-namespace="http://tampermonkey.net/" data-script-version="3.4.0" data-update-label="Aggiorna alla versione 3.4.0" data-downgrade-label="Riporta alla versione 3.4.0" data-reinstall-label="Reinstalla la versione 3.4.0" href="https://update.greasyfork.org/scripts/561050/%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88.user.js">Installa questo script</a><a class="install-help-link" title="Come installare" rel="nofollow" href="/it/help/installing-user-scripts">?</a>
+      </div>
+
+
+
+<dialog id="installation-instructions-modal-js" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      Come installare
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      Dovrai installare un&#39;estensione come <a target="tampermonkey" href="https://addons.mozilla.org/firefox/addon/tampermonkey/">Tampermonkey</a>, <a target="greasemonkey" href="https://addons.mozilla.org/firefox/addon/greasemonkey/">Greasemonkey</a> o <a target="violentmonkey" href="https://addons.mozilla.org/firefox/addon/violentmonkey/">Violentmonkey</a> per installare questo script.
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      You will need to install an extension such as <a target="tampermonkey" href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo">Tampermonkey</a> or <a target="violentmonkey" href="https://chrome.google.com/webstore/detail/violent-monkey/jinjaccalgkegednnccohejagnlnfdag">Violentmonkey</a> to install this script.
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      Dovrai installare un&#39;estensione come <a target="tampermonkey" href="https://addons.opera.com/extensions/details/tampermonkey-beta/">Tampermonkey</a> o <a target="violentmonkey" href="https://violentmonkey.github.io/get-it/">Violentmonkey</a> per installare questo script.
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      Dovrai installare un&#39;estensione come <a target="tampermonkey" href="https://www.tampermonkey.net/?browser=safari">Tampermonkey</a> o <a target="Userscripts" href="https://apps.apple.com/app/userscripts/id1463298887">Userscripts</a> per installare questo script.
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      Dovrai installare un&#39;estensione come ad esempio <a target="tampermonkey" href="https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd">Tampermonkey</a> per installare questo script.
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      Dovrai installare un gestore di script utente per installare questo script.
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">(Ho già un gestore di script utente, lasciamelo installare!)</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      OK
+    </button>
+  </footer>
+</dialog>
+
+<dialog id="installation-instructions-modal-css" class="modal" closedby="any">
+  <header class="modal__header" aria-labelledby="installation-instructions-modal-title">
+    <h3 class="modal__title" id="installation-instructions-modal-title">
+      Come installare
+    </h3>
+    <button class="modal__close modal__cancel" aria-label="Close modal"></button>
+  </header>
+  <main class="modal__content" id="installation-instructions-modal-content">
+    <p class="installation-instructions-modal-content-firefox">
+      Dovrai installare un&#39;estensione come ad esempio <a target="stylus" href="https://addons.mozilla.org/firefox/addon/styl-us/">Stylus</a> per installare questo stile.
+    </p>
+    <p class="installation-instructions-modal-content-chrome">
+      Dovrai installare un&#39;estensione come ad esempio <a target="stylus" href="https://chrome.google.com/webstore/detail/stylus/clngdbkpkpeebahjckkjfobafhncgmne">Stylus</a> per installare questo stile.
+    </p>
+    <p class="installation-instructions-modal-content-opera">
+      Dovrai installare un&#39;estensione come ad esempio <a target="stylus" href="https://addons.opera.com/extensions/details/stylus/">Stylus</a> per installare questo stile.
+    </p>
+    <p class="installation-instructions-modal-content-safari">
+      Dovrai installare un&#39;estensione per la gestione degli stili utente per installare questo stile.
+    </p>
+    <p class="installation-instructions-modal-content-edge">
+      Dovrai installare un&#39;estensione per la gestione degli stili utente per installare questo stile.
+    </p>
+    <p class="installation-instructions-modal-content-other">
+      Dovrai installare un&#39;estensione per la gestione degli stili utente per installare questo stile.
+    </p>
+    <p class="installation-instructions-modal-content-bypass">
+      <a href="#">(Ho già un gestore di stile utente, lasciamelo installare!)</a>
+    </p>
+  </main>
+  <footer class="modal__footer">
+    <button class="modal__btn modal__cancel">
+      OK
+    </button>
+  </footer>
+</dialog>
+
+
+
+<div id="script-feedback-suggestion">
+    <a rel="nofollow" href="/it/scripts/561050-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E9%80%89%E8%AF%BE%E5%8A%A9%E6%89%8B%E5%8D%87%E7%BA%A7%E7%89%88/feedback#post-discussion">Fai una domanda, pubblica una recensione</a>, oppure <a rel="nofollow" href="/it/reports/new?item_class=script&amp;item_id=561050">segnala lo script</a>.
+</div>
+
+
+
+  <div class="ad ad-ea" id="script-show-code-ad">
+    <div class="ad-content">
+        <div id="script-show-code-ea_image" class="flat ethical-ads adaptive" data-ea-publisher="greasyfork" data-ea-type="image" data-ea-priority="1"></div>
+        <div id="script-show-code-ea_large" class="flat ethical-ads adaptive" data-ea-publisher="greasyfork" data-ea-type="logo-large-v1" data-ea-priority="10"></div>
+    </div>
+  </div>
+
+
+
+<script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js?lang=css"></script>
+
+<div>
+  <input type="checkbox" id="wrap-lines" checked value="1"><label for="wrap-lines" class="checkbox-label">Manda a capo le linee</label>
+</div>
+<div class="code-container">
+  <pre class="prettyprint linenums wrap lang-js">// ==UserScript==
+// @name        东南大学选课助手升级版
+// @namespace   http://tampermonkey.net/
+// @version     3.4.0
+// @description 听说你抢不到课
+// @author      june,based on july
+// @license     MIT
+// @match       newxk.urp.seu.edu.cn/xsxk/elective/grablessons?*
+// @run-at      document-loaded
+// @icon        https://s2.loli.net/2024/12/19/lngsEvZ8tfUdJzr.jpg
+// ==/UserScript==
+
+(function () {
+  // 版本
+  let version = [3, 4, 0];
+
+  // 请求
+  let request = axios.create();
+
+  // 提示
+  let tip = grablessonsVue.$message;
+
+  let isRunning = false;
+  let shouldStop = false;
+
+  // 所选课程
+  let enrollDict = {};
+
+  // 设置
+  let settings = {};
+
+  // 定义默认设置
+  const defaultSettings = {
+    token: &quot;&quot;,
+    savedCourseCodes: &quot;&quot;,
+    mode: {
+      isAsync: false,
+      isCyclic: true,
+      cycleCount: -1, // -1表示无限循环
+      enableSearch: false,
+    },
+    interval: {
+      sync: {
+        single: 300, // 同步单次间隔
+        group: 1000, // 同步分组间隔
+      },
+      async: {
+        single: 350, // 异步单次间隔
+        group: 1000, // 异步分组间隔
+      },
+    },
+    search: {
+      pageSize: 20, // 每页课程数量
+      pageDelay: 500, // 翻页延迟(ms)
+    },
+  };
+
+  // 挂载的顶层组件
+  let app = document.getElementById(&quot;xsxkapp&quot;);
+
+  // 组件生成
+  ((self) =&gt; {
+    // 生成组件
+    self.mount = () =&gt; {
+      self.createTag();
+      self.createPanel();
+      self.createMask();
+      self.addEnrollButton();
+    };
+
+    // 生成节点
+    self.createNode = ({ tagName, text, HTML, obj, ev, children }) =&gt; {
+      let node = document.createElement(tagName);
+      if (obj) {
+        for (let key of Object.keys(obj)) {
+          node.setAttribute(key, obj[key]);
+        }
+      }
+      if (text) {
+        node.innerText = text;
+      }
+      if (HTML) {
+        node.innerHTML = HTML;
+      }
+      if (ev) {
+        for (let key of Object.keys(ev)) {
+          node.addEventListener(key, ev[key]);
+        }
+      }
+      if (children) {
+        children.map((x) =&gt; node.appendChild(x));
+      }
+      return node;
+    };
+
+    // 生成打开和关闭面板的按钮
+    self.createTag = () =&gt; {
+      let node = self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          class: &quot;slideMenu&quot;,
+          style: `
+              position: fixed;
+              top: 250px;
+              left:30px;width:
+              40px;z-index: 1314;
+          `,
+        },
+        children: [
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              class: &quot;centre-btn item el-icon-date&quot;,
+              style: `background-color: #2b2b2b`,
+            },
+            ev: {
+              mousedown: (e) =&gt; {
+                methods.drag(e, node);
+              },
+            },
+          }),
+        ],
+      });
+      app.appendChild(node);
+    };
+
+    // 生成面板
+    self.createPanel = () =&gt; {
+      app.appendChild(
+        self.createNode({
+          tagName: &quot;div&quot;,
+          obj: {
+            id: &quot;panel&quot;,
+            style: `
+              position: fixed;
+              right: 0;
+              top:0 ;
+              z-index: 520;
+              width: 350px;
+              height: 100%;
+              background-color: rgba(61,72,105,0.8);
+              display: block;
+            `,
+          },
+          children: [
+            self.createNode({ tagName: &quot;hr&quot; }),
+            self.createNode({
+              tagName: &quot;h1&quot;,
+              text: &quot;东大抢课脚本&quot;,
+              obj: {
+                style: &quot;color: #c7e6e6; text-align: center&quot;,
+              },
+            }),
+            self.createNode({ tagName: &quot;hr&quot; }),
+            self.createNode({
+              tagName: &quot;input&quot;,
+              obj: {
+                id: &quot;input-box&quot;,
+                class: &quot;el-input__inner&quot;,
+                style: `
+                  width: 96%;
+                  margin-left: 2%;
+                  height: 30px
+                `,
+                placeholder: &quot;输入课程代码(不区分大小写)，按回车确定&quot;,
+              },
+              ev: {
+                keydown: methods.enter,
+              },
+            }),
+            self.createNode({
+              tagName: &quot;div&quot;,
+              obj: {
+                id: &quot;list-wrap&quot;,
+                style: `
+                  overflow: auto;
+                  margin: 10px;
+                  border:1px solid white;
+                  height: 75%
+                `,
+              },
+            }),
+            self.createNode({
+              tagName: &quot;button&quot;,
+              obj: {
+                id: &quot;enroll-button&quot;,
+                class: &quot;el-button el-button--primary el-button--small is-round&quot;,
+                style: `
+                  margin: 20px;
+                  position: absolute;
+                  right:50%;
+                  bottom:5%
+                `,
+              },
+              text: &quot;一键抢课&quot;,
+              ev: {
+                click: async () =&gt; {
+                  if (shouldStop) {
+                    tip({
+                      type: &quot;error&quot;,
+                      message: &quot;请稍候，正在终止上一个抢课进程&quot;,
+                      duration: 1000,
+                    });
+                    return;
+                  }
+                  if (isRunning) {
+                    await methods.stopEnrolling();
+                  }
+                  isRunning = true;
+                  methods.updateUIState();
+                  methods.enroll();
+                },
+              },
+            }),
+            self.createNode({
+              tagName: &quot;button&quot;,
+              obj: {
+                id: &quot;settings-stop-button&quot;,
+                class: `el-button el-button--${
+                  isRunning ? &quot;danger&quot; : &quot;info&quot;
+                } el-button--small is-round`,
+                style: `
+                  margin: 20px;
+                  position: absolute;
+                  right:20%;
+                  bottom:5%
+                `,
+              },
+              text: isRunning ? &quot;停止抢课&quot; : &quot;更多设置&quot;,
+              ev: {
+                click: async () =&gt; {
+                  if (isRunning) {
+                    await methods.stopEnrolling();
+                  } else {
+                    document.getElementById(&quot;mask&quot;).style.display = &quot;block&quot;;
+                    self.updatePopup(settings.mode.enableSearch, settings);
+                  }
+                },
+              },
+            }),
+            self.createNode({
+              tagName: &quot;div&quot;,
+              obj: {
+                style: `
+                      margin: 20px;
+                      position: absolute;
+                      right:2%;
+                      bottom:1%;
+                      color: white;
+                      float: right
+                  `,
+              },
+              text: &quot;ver&quot; + version.join(&quot;.&quot;),
+            }),
+          ],
+        })
+      );
+      self.reloadList();
+    };
+
+    // 生成抢课表格
+    self.reloadList = () =&gt; {
+      let list_wrap = document.querySelector(&quot;#panel #list-wrap&quot;);
+      list_wrap.innerHTML = &quot;&quot;;
+      if (JSON.stringify(enrollDict) === &quot;{}&quot;) {
+        list_wrap.innerHTML =
+          &quot;&lt;h3 style=&#39;text-align: center;color:lightblue;margin-top: 50%&#39;&gt;还未选择课程&lt;/h3&gt;&quot;;
+      } else {
+        list_wrap.appendChild(
+          self.createNode({
+            tagName: &quot;table&quot;,
+            obj: {
+              width: &quot;100%&quot;,
+              border: &quot;1&quot;,
+              style: `
+                background-color: rgba(0,0,0,0);
+                color: lightblue
+            `,
+            },
+            children: [
+              self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `
+                    height: 30px;
+                    background-color: #255e95
+                `,
+                },
+                HTML: `
+                &lt;th style=&quot;text-align:center;width: 55%&quot;&gt;课程&lt;/th&gt;
+                &lt;th style=&quot;text-align:center;width: 15%&quot;&gt;教师&lt;/th&gt;
+                &lt;th style=&quot;text-align:center;width: 30%&quot;&gt;操作&lt;/th&gt;
+              `,
+              }),
+              ...Object.keys(enrollDict)
+                .filter(
+                  (key) =&gt;
+                    enrollDict[key].courseBatch ===
+                    grablessonsVue.lcParam.currentBatch.code
+                )
+                .map((key) =&gt; {
+                  return self.createNode({
+                    tagName: &quot;tr&quot;,
+                    obj: {
+                      style: `height: 30px`,
+                    },
+                    children: [
+                      self.createNode({
+                        tagName: &quot;td&quot;,
+                        obj: {
+                          style: `text-align: center`,
+                        },
+                        text: enrollDict[key].courseName,
+                      }),
+                      self.createNode({
+                        tagName: &quot;td&quot;,
+                        obj: {
+                          style: `text-align: center`,
+                        },
+                        text: enrollDict[key].teacherName,
+                      }),
+                      self.createNode({
+                        tagName: &quot;td&quot;,
+                        obj: {
+                          style: `text-align: center`,
+                        },
+                        children: [
+                          self.createNode({
+                            tagName: &quot;button&quot;,
+                            text: &quot;删除&quot;,
+                            obj: {
+                              class: &quot;delete-button&quot;,
+                              style: `
+                                color: red;
+                                background: transparent;
+                                border: 1px solid red;
+                                border-radius: 6px;
+                                text-align: center;
+                                cursor: pointer;
+                                text-decoration: none;
+                                margin-right: 2px
+                              `,
+                            },
+                            ev: {
+                              click: () =&gt; {
+                                const course = enrollDict[key];
+                                delete enrollDict[key];
+                                methods.saveData();
+                                tip({
+                                  type: &quot;success&quot;,
+                                  message: `${course.teacherName} 的 ${course.courseName} 已删除`,
+                                  duration: 1000,
+                                });
+                                self.reloadList();
+                              },
+                            },
+                          }),
+                          self.createNode({
+                            tagName: &quot;button&quot;,
+                            text: &quot;更多&quot;,
+                            obj: {
+                              style: `
+                                color: orange;
+                                background: transparent;
+                                border: 1px solid orange;
+                                border-radius: 6px;
+                                text-align: center;
+                                cursor: pointer;
+                                text-decoration: none;
+                                margin-left: 2px
+                              `,
+                            },
+                            ev: {
+                              click: () =&gt; {
+                                document.getElementById(&quot;mask&quot;).style.display =
+                                  &quot;block&quot;;
+                                self.createPopUp(
+                                  &quot;详细信息&quot;,
+                                  self.showCourseDetails(enrollDict[key])
+                                );
+                              },
+                            },
+                          }),
+                        ],
+                      }),
+                    ],
+                  });
+                }),
+            ],
+          })
+        );
+      }
+    };
+
+    // 生成遮罩
+    self.createMask = () =&gt; {
+      let node = self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          id: &quot;mask&quot;,
+          style: `
+              position: fixed;
+              left: 0;
+              top: 0;
+              width: 100%;
+              height: 100%;
+              z-index: 2002;
+              background-color: rgba(66, 66, 66, 0.6);
+              display: none
+          `,
+        },
+        ev: {
+          click: () =&gt; {
+            node.style.display = &quot;none&quot;;
+            document.querySelectorAll(&quot;.temp&quot;).forEach((el) =&gt; {
+              if (el.parentNode) el.parentNode.removeChild(el);
+            });
+          },
+        },
+      });
+      app.appendChild(node);
+    };
+
+    // 生成弹出窗
+    self.createPopUp = (title, node, onConfirm, width, height, onExtend) =&gt; {
+      const popupNode = self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          class: &quot;temp&quot;,
+          style: `
+            position: fixed;
+            left: ${width ? 50 - 0.5 * width : 30}%;
+            top: ${height ? 50 - 0.5 * height : 30}%;
+            width: ${width || 40}%;
+            height: ${height || 40}%;
+            z-index: 2021;
+            background-color: white;
+            border-radius: 30px;
+            overflow: auto;
+          `,
+        },
+        children: [
+          self.createNode({
+            tagName: &quot;h1&quot;,
+            obj: {
+              style: `
+                margin: 20px 0;
+                width: 100%;
+                text-align: center;
+              `,
+            },
+            text: title,
+          }),
+          node,
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              style: `
+                position: absolute;
+                width: 80%;
+                left: 10%;
+                bottom: 10%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              `,
+            },
+            children: [
+              // 左侧按钮组
+              self.createNode({
+                tagName: &quot;div&quot;,
+                obj: {
+                  style: &quot;display: flex; gap: 10%;&quot;,
+                },
+                children: [
+                  ...(onExtend
+                    ? [
+                        self.createNode({
+                          tagName: &quot;button&quot;,
+                          obj: {
+                            class:
+                              &quot;el-button el-button--primary el-button--large is-round&quot;,
+                          },
+                          text: &quot;更多&quot;,
+                          ev: { click: onExtend },
+                        }),
+                      ]
+                    : []),
+                  // 如果存在其他temp类元素,说明当前不是第一层弹窗
+                  ...(document.querySelectorAll(&quot;.temp&quot;).length &gt; 0
+                    ? [
+                        self.createNode({
+                          tagName: &quot;button&quot;,
+                          obj: {
+                            class:
+                              &quot;el-button el-button--warning el-button--large is-round&quot;,
+                          },
+                          text: &quot;返回&quot;,
+                          ev: {
+                            click: () =&gt; {
+                              // 移除当前弹窗
+                              if (popupNode.parentNode) {
+                                popupNode.parentNode.removeChild(popupNode);
+                              }
+                            },
+                          },
+                        }),
+                      ]
+                    : []),
+                ],
+              }),
+              // 右侧确认按钮
+              self.createNode({
+                tagName: &quot;button&quot;,
+                obj: {
+                  class:
+                    &quot;el-button el-button--default el-button--large is-round&quot;,
+                },
+                text: &quot;确定&quot;,
+                ev: {
+                  click: () =&gt; {
+                    if (onConfirm) onConfirm();
+                    if (document.querySelectorAll(&quot;.temp&quot;).length &gt; 1) {
+                      if (popupNode.parentNode) {
+                        popupNode.parentNode.removeChild(popupNode);
+                      }
+                    } else {
+                      // 否则清除所有弹窗
+                      document.getElementById(&quot;mask&quot;).style.display = &quot;none&quot;;
+                      document.querySelectorAll(&quot;.temp&quot;).forEach((el) =&gt; {
+                        if (el.parentNode) el.parentNode.removeChild(el);
+                      });
+                    }
+                  },
+                },
+              }),
+            ],
+          }),
+        ],
+        ev: {
+          // 阻止默认的表单提交行为
+          submit: (e) =&gt; e.preventDefault(),
+          // 阻止回车冒泡
+          keydown: (e) =&gt; {
+            if (e.key === &quot;Enter&quot;) {
+              e.preventDefault();
+              e.stopPropagation();
+            }
+          },
+        },
+      });
+
+      app.appendChild(popupNode);
+      return popupNode;
+    };
+
+    self.currentPopup = null;
+
+    // 更新弹窗
+    self.updatePopup = (enableSearch, tempSettings) =&gt; {
+      // 如果存在旧弹窗，先移除
+      if (self.currentPopup &amp;&amp; self.currentPopup.parentNode) {
+        self.currentPopup.parentNode.removeChild(self.currentPopup);
+      }
+
+      const mainSettings = self.showSettings(tempSettings);
+
+      // 创建新弹窗
+      self.currentPopup = self.createPopUp(
+        &quot;设置&quot;,
+        mainSettings.node,
+        () =&gt; {
+          Object.assign(settings, mainSettings.tempSettings);
+          methods.saveData();
+          tip({
+            type: &quot;success&quot;,
+            message: &quot;设置已保存&quot;,
+            duration: 1000,
+          });
+        },
+        30,
+        40,
+        enableSearch
+          ? () =&gt; {
+              const searchSettings = self.showSearchSettings();
+              self.createPopUp(
+                &quot;搜索设置&quot;,
+                searchSettings.node,
+                () =&gt; {
+                  Object.assign(settings, searchSettings.tempSettings);
+                  methods.saveData();
+                  tip({
+                    type: &quot;success&quot;,
+                    message: &quot;设置已保存&quot;,
+                    duration: 1000,
+                  });
+                },
+                30,
+                40
+              );
+            }
+          : null
+      );
+    };
+
+    // 数值输入框及其保存按钮
+    self.createNumberInput = (options) =&gt; {
+      const {
+        value, // 初始值
+        min, // 最小值
+        max, // 最大值
+        step, // 步进值
+        style, // 样式
+        onSave, // 保存回调
+        updateValue, // 值更新回调(可选)
+      } = options;
+
+      let inputElement = null;
+      let saveButton = null;
+      let currentBaseValue = value;
+
+      // 创建更新按钮状态的函数
+      const updateSaveButton = () =&gt; {
+        if (!inputElement || !saveButton) return;
+        const currentValue = parseInt(inputElement.value);
+        const isDifferent = currentValue !== currentBaseValue;
+
+        saveButton.style.opacity = isDifferent ? &quot;1&quot; : &quot;0.5&quot;;
+        saveButton.style.cursor = isDifferent ? &quot;pointer&quot; : &quot;not-allowed&quot;;
+        saveButton.disabled = !isDifferent;
+      };
+
+      // 提供更新基准值的函数
+      const updateBaseValue = (newValue) =&gt; {
+        currentBaseValue = newValue;
+        updateSaveButton();
+      };
+
+      // 创建输入框
+      inputElement = self.createNode({
+        tagName: &quot;input&quot;,
+        obj: {
+          class: &quot;el-input__inner&quot;,
+          type: &quot;number&quot;,
+          value: value,
+          min: min,
+          max: max,
+          step: step,
+          style:
+            style ||
+            &quot;width: 40%; margin-left: 2%; margin-right: 2%; height: 30px&quot;,
+        },
+        ev: {
+          input: updateSaveButton,
+          wheel: (e) =&gt; {
+            e.preventDefault();
+            const delta = e.deltaY &gt; 0 ? -parseInt(step) : parseInt(step);
+            const newValue = Math.max(
+              parseInt(min),
+              Math.min(parseInt(max), parseInt(e.target.value) + delta)
+            );
+            e.target.value = newValue;
+            updateSaveButton();
+            if (updateValue) updateValue(newValue);
+          },
+          keydown: (e) =&gt; {
+            if (e.key === &quot;Enter&quot;) {
+              e.preventDefault();
+              saveButton.click();
+            } else if (e.key === &quot;ArrowUp&quot; || e.key === &quot;ArrowDown&quot;) {
+              e.preventDefault();
+              const delta =
+                e.key === &quot;ArrowUp&quot; ? parseInt(step) : -parseInt(step);
+              const newValue = Math.max(
+                parseInt(min),
+                Math.min(parseInt(max), parseInt(e.target.value) + delta)
+              );
+              e.target.value = newValue;
+              updateSaveButton();
+              if (updateValue) updateValue(newValue);
+            }
+          },
+        },
+      });
+
+      // 创建保存按钮
+      saveButton = self.createNode({
+        tagName: &quot;button&quot;,
+        obj: {
+          class: &quot;el-button el-button--primary el-button--small&quot;,
+          style: &quot;opacity: 0.5; cursor: not-allowed&quot;,
+          disabled: true,
+        },
+        text: &quot;应用&quot;,
+        ev: {
+          click: () =&gt; {
+            onSave(parseInt(inputElement.value));
+            saveButton.style.opacity = &quot;0.5&quot;;
+            saveButton.style.cursor = &quot;not-allowed&quot;;
+            saveButton.disabled = true;
+          },
+        },
+      });
+
+      return {
+        input: inputElement,
+        button: saveButton,
+        updateSaveButton: updateSaveButton,
+        updateBaseValue: updateBaseValue,
+      };
+    };
+
+    // 设置
+    self.showSettings = (tempSettings) =&gt; {
+      tempSettings = tempSettings
+        ? tempSettings
+        : JSON.parse(JSON.stringify(settings));
+
+      const intervalInput = self.createNumberInput({
+        value: methods.getCurrentInterval(tempSettings),
+        min: tempSettings.mode.isGrouped ? &quot;1000&quot; : &quot;100&quot;,
+        max: tempSettings.mode.isGrouped ? &quot;2000&quot; : &quot;1000&quot;,
+        step: &quot;25&quot;,
+        onSave: (value) =&gt; {
+          const mode = tempSettings.mode.isAsync ? &quot;async&quot; : &quot;sync&quot;;
+          const type = tempSettings.mode.isGrouped ? &quot;group&quot; : &quot;single&quot;;
+          tempSettings.interval[mode][type] = value;
+        },
+      });
+
+      const settingsNode = self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          style: &quot;margin-left: 10%&quot;,
+        },
+        children: [
+          // 抢课方式选择
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              style: &quot;margin-bottom: 5%&quot;,
+            },
+            children: [
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot;抢课方式：&quot;,
+                obj: {
+                  style: &quot;margin-right: 10%&quot;,
+                },
+              }),
+              self.createNode({
+                tagName: &quot;input&quot;,
+                obj: {
+                  type: &quot;radio&quot;,
+                  name: &quot;cycle-mode&quot;,
+                  id: &quot;single-cycle&quot;,
+                },
+                ev: {
+                  change: (e) =&gt; {
+                    tempSettings.mode.isCyclic = !e.target.checked;
+                  },
+                },
+              }),
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot; 单次抢课&quot;,
+                obj: {
+                  for: &quot;single-cycle&quot;,
+                  style: &quot;margin-right: 10%&quot;,
+                },
+              }),
+              self.createNode({
+                tagName: &quot;input&quot;,
+                obj: {
+                  type: &quot;radio&quot;,
+                  name: &quot;cycle-mode&quot;,
+                  id: &quot;multi-cycle&quot;,
+                },
+                ev: {
+                  change: (e) =&gt; {
+                    tempSettings.mode.isCyclic = e.target.checked;
+                  },
+                },
+              }),
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot; 循环抢课&quot;,
+                obj: {
+                  for: &quot;multi-cycle&quot;,
+                },
+              }),
+            ],
+          }),
+          // 发送模式选择
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              style: &quot;margin-bottom: 5%&quot;,
+            },
+            children: [
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot;发送模式：&quot;,
+                obj: {
+                  style: &quot;margin-right: 10%&quot;,
+                },
+              }),
+              self.createNode({
+                tagName: &quot;input&quot;,
+                obj: {
+                  type: &quot;radio&quot;,
+                  name: &quot;send-mode&quot;,
+                  id: &quot;sync-mode&quot;,
+                },
+                ev: {
+                  change: (e) =&gt; {
+                    tempSettings.mode.isAsync = !e.target.checked;
+                    const newValue = methods.getCurrentInterval(tempSettings);
+                    intervalInput.input.value = newValue;
+                    intervalInput.updateBaseValue(newValue); // 更新基准值
+                  },
+                },
+              }),
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot; 同步模式&quot;,
+                obj: {
+                  for: &quot;sync-mode&quot;,
+                  style: &quot;margin-right: 10%&quot;,
+                },
+              }),
+              self.createNode({
+                tagName: &quot;input&quot;,
+                obj: {
+                  type: &quot;radio&quot;,
+                  name: &quot;send-mode&quot;,
+                  id: &quot;async-mode&quot;,
+                },
+                ev: {
+                  change: (e) =&gt; {
+                    tempSettings.mode.isAsync = e.target.checked;
+                    const newValue = methods.getCurrentInterval(tempSettings);
+                    intervalInput.input.value = newValue;
+                    intervalInput.updateBaseValue(newValue); // 更新基准值
+                  },
+                },
+              }),
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot; 异步模式&quot;,
+                obj: {
+                  for: &quot;async-mode&quot;,
+                },
+              }),
+            ],
+          }),
+          // 发送方式选择
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              style: &quot;margin-bottom: 5%&quot;,
+            },
+            children: [
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot;发送方式：&quot;,
+                obj: {
+                  style: &quot;margin-right: 10%&quot;,
+                },
+              }),
+              self.createNode({
+                tagName: &quot;input&quot;,
+                obj: {
+                  type: &quot;radio&quot;,
+                  name: &quot;group-mode&quot;,
+                  id: &quot;single-send&quot;,
+                },
+                ev: {
+                  change: (e) =&gt; {
+                    tempSettings.mode.isGrouped = !e.target.checked;
+                    const newValue = methods.getCurrentInterval(tempSettings);
+                    intervalInput.input.value = newValue;
+                    intervalInput.updateBaseValue(newValue); // 更新基准值
+                  },
+                },
+              }),
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot; 单个发送&quot;,
+                obj: {
+                  for: &quot;single-send&quot;,
+                  style: &quot;margin-right: 10%&quot;,
+                },
+              }),
+              self.createNode({
+                tagName: &quot;input&quot;,
+                obj: {
+                  type: &quot;radio&quot;,
+                  name: &quot;group-mode&quot;,
+                  id: &quot;group-send&quot;,
+                },
+                ev: {
+                  change: (e) =&gt; {
+                    tempSettings.mode.isGrouped = e.target.checked;
+                    const newValue = methods.getCurrentInterval(tempSettings);
+                    intervalInput.input.value = newValue;
+                    intervalInput.updateBaseValue(newValue); // 更新基准值
+                  },
+                },
+              }),
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot; 分组发送&quot;,
+                obj: {
+                  for: &quot;group-send&quot;,
+                },
+              }),
+            ],
+          }),
+          // 时间间隔设置
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              style: &quot;display: flex; align-items: center&quot;,
+            },
+            children: [
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot;时间间隔(ms)：&quot;,
+                obj: {
+                  style: &quot;margin-right: 10px&quot;,
+                },
+              }),
+              intervalInput.input,
+              intervalInput.button,
+            ],
+          }),
+          // 搜索功能启用开关
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: {
+              style: &quot;margin-top: 5%&quot;,
+            },
+            children: [
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot;启用搜索功能：&quot;,
+                obj: {
+                  style: &quot;margin-right: 5%&quot;,
+                },
+              }),
+              self.createNode({
+                tagName: &quot;input&quot;,
+                obj: {
+                  type: &quot;checkbox&quot;,
+                  id: &quot;enable-search&quot;,
+                },
+                ev: {
+                  change: (e) =&gt; {
+                    tempSettings.mode.enableSearch = e.target.checked;
+                    self.updatePopup(e.target.checked, tempSettings);
+                  },
+                },
+              }),
+            ],
+          }),
+        ],
+      });
+
+      // 创建完成后进行初始化
+      setTimeout(() =&gt; {
+        // 获取所有需要初始化的单选按钮
+        const singleCycleInput = settingsNode.querySelector(&quot;#single-cycle&quot;);
+        const multiCycleInput = settingsNode.querySelector(&quot;#multi-cycle&quot;);
+        const syncModeInput = settingsNode.querySelector(&quot;#sync-mode&quot;);
+        const asyncModeInput = settingsNode.querySelector(&quot;#async-mode&quot;);
+        const singleSendInput = settingsNode.querySelector(&quot;#single-send&quot;);
+        const groupSendInput = settingsNode.querySelector(&quot;#group-send&quot;);
+        const enableSearchInput = settingsNode.querySelector(&quot;#enable-search&quot;);
+
+        // 根据设置初始化抢课方式
+        if (tempSettings.mode.isCyclic) {
+          multiCycleInput.checked = true;
+        } else {
+          singleCycleInput.checked = true;
+        }
+
+        // 根据设置初始化发送模式
+        if (tempSettings.mode.isAsync) {
+          asyncModeInput.checked = true;
+        } else {
+          syncModeInput.checked = true;
+        }
+
+        // 根据设置初始化发送方式
+        if (tempSettings.mode.isGrouped) {
+          groupSendInput.checked = true;
+        } else {
+          singleSendInput.checked = true;
+        }
+
+        // 根据设置初始化搜索功能开关
+        if (tempSettings.mode.enableSearch) {
+          enableSearchInput.checked = true;
+        }
+      }, 0);
+
+      return {
+        node: settingsNode,
+        tempSettings: tempSettings,
+      };
+    };
+
+    // 搜索设置
+    self.showSearchSettings = () =&gt; {
+      // 创建临时设置对象和引用变量
+      const tempSettings = JSON.parse(JSON.stringify(settings));
+
+      const pageSizeInput = self.createNumberInput({
+        value: tempSettings.search.pageSize,
+        min: &quot;10&quot;,
+        max: &quot;100&quot;,
+        step: &quot;10&quot;,
+        onSave: (value) =&gt; {
+          tempSettings.search.pageSize = value;
+        },
+      });
+
+      const pageDelayInput = self.createNumberInput({
+        value: tempSettings.search.pageDelay,
+        min: &quot;100&quot;,
+        max: &quot;2000&quot;,
+        step: &quot;100&quot;,
+        onSave: (value) =&gt; {
+          tempSettings.search.pageDelay = value;
+        },
+      });
+
+      const settingsNode = self.createNode({
+        tagName: &quot;div&quot;,
+        obj: { style: &quot;margin: 10%&quot; },
+        children: [
+          // 每页数量设置
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: { style: &quot;margin-bottom: 5%&quot; },
+            children: [
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot;每页数量：&quot;,
+                obj: { style: &quot;margin-right: 10%&quot; },
+              }),
+              pageSizeInput.input,
+              pageSizeInput.button,
+            ],
+          }),
+          // 翻页延迟设置
+          self.createNode({
+            tagName: &quot;div&quot;,
+            obj: { style: &quot;margin-bottom: 5%&quot; },
+            children: [
+              self.createNode({
+                tagName: &quot;label&quot;,
+                text: &quot;翻页延迟：&quot;,
+                obj: { style: &quot;margin-right: 10%&quot; },
+              }),
+              pageDelayInput.input,
+              pageDelayInput.button,
+            ],
+          }),
+        ],
+      });
+
+      return {
+        node: settingsNode,
+        tempSettings: tempSettings,
+      };
+    };
+
+    // 生成课程详情信息
+    self.showCourseDetails = (course) =&gt; {
+      return self.createNode({
+        tagName: &quot;div&quot;,
+        obj: {
+          style: `margin:5%`,
+        },
+        children: [
+          self.createNode({
+            tagName: &quot;table&quot;,
+            obj: {
+              width: &quot;80%&quot;,
+              border: &quot;1&quot;,
+              style: `
+            background-color: rgba(0,0,0,0);
+            color: black;
+            margin: 0 auto;
+          `,
+            },
+            children: [
+              // 表头
+              self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `
+                height: 30px;
+                background-color: #255e95;
+                color: lightblue;
+              `,
+                },
+                HTML: `
+              &lt;th style=&quot;text-align:center;width: 30%&quot;&gt;属性&lt;/th&gt;
+              &lt;th style=&quot;text-align:center;width: 70%&quot;&gt;值&lt;/th&gt;
+            `,
+              }),
+              // 课程号和课程名
+              self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `height: 30px`,
+                },
+                children: [
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: &quot;课程信息&quot;,
+                  }),
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: `${course.courseName}`,
+                  }),
+                ],
+              }),
+              // 学院和教师
+              self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `height: 30px`,
+                },
+                children: [
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: &quot;开课单位/教师&quot;,
+                  }),
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: `${course.department} ${course.teacherName}`,
+                  }),
+                ],
+              }),
+              // 授课地点
+              self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `height: 30px`,
+                },
+                children: [
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: &quot;授课地点&quot;,
+                  }),
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: course.location || &quot;待定&quot;,
+                  }),
+                ],
+              }),
+              // 课程性质和类别
+              self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `height: 30px`,
+                },
+                children: [
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: &quot;课程属性&quot;,
+                  }),
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: `${course.courseNature} ${course.courseCategory}`,
+                  }),
+                ],
+              }),
+              // 选课人数
+              self.createNode({
+                tagName: &quot;tr&quot;,
+                obj: {
+                  style: `height: 30px`,
+                },
+                children: [
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: &quot;选课人数&quot;,
+                  }),
+                  self.createNode({
+                    tagName: &quot;td&quot;,
+                    obj: { style: `text-align: center` },
+                    text: `${course.selectedCount}/${course.totalCapacity}`,
+                  }),
+                ],
+              }),
+            ],
+          }),
+        ],
+      });
+    };
+
+    //生成抢课按钮
+    self.addEnrollButton = () =&gt; {
+      // 监听课程块的点击事件
+      document.addEventListener(&quot;click&quot;, function (event) {
+        const target = event.target;
+        const trElement = target.closest(&quot;tr.el-table__row&quot;);
+        if (trElement &amp;&amp; trElement.classList.contains(&quot;expanded&quot;)) {
+          setTimeout(() =&gt; {
+            const expandedRow = trElement.nextElementSibling;
+            const expandedCell = expandedRow.querySelector(
+              &quot;td.el-table__expanded-cell&quot;
+            );
+            if (!expandedCell) {
+              console.error(&quot;未找到 expandedCell&quot;);
+              return;
+            }
+
+            // 获取课程编码
+            const courseCode = trElement.querySelector(&quot;td span&quot;).innerText;
+            // 获取课程名称
+            const courseName = trElement.querySelector(
+              &quot;td:nth-child(2) span&quot;
+            ).innerText;
+
+            // 获取 expandedCell 内的所有“选择”按钮
+            const selectButtons = Array.from(
+              expandedCell.querySelectorAll(
+                &quot;button.el-button--primary.el-button--mini.is-round span&quot;
+              )
+            ).filter((span) =&gt; span.innerText.includes(&quot;选择&quot;));
+
+            selectButtons.forEach((selectButton) =&gt; {
+              // 创建“添加”按钮
+              const addButton = document.createElement(&quot;button&quot;);
+              addButton.className =
+                &quot;el-button el-button--primary el-button--mini is-round add-course-button&quot;;
+              addButton.innerHTML = &quot;&lt;span&gt;添加&lt;/span&gt;&quot;;
+
+              // 存储课程编码到按钮属性中
+              addButton.setAttribute(&quot;data-course-code&quot;, courseCode);
+              addButton.setAttribute(&quot;data-course-name&quot;, courseName);
+
+              // 设置按钮的禁用状态
+              if (isRunning) {
+                addButton.disabled = true;
+                addButton.style.cursor = &quot;not-allowed&quot;;
+                addButton.style.opacity = &quot;0.5&quot;;
+              }
+
+              // 在“选择”按钮后插入“添加”按钮
+              selectButton.parentElement.parentElement.appendChild(addButton);
+
+              // 添加点击事件
+              addButton.addEventListener(&quot;click&quot;, function () {
+                // 获取课程班编号
+                const classRow = selectButton.closest(&quot;.el-card__body&quot;);
+                if (!classRow) {
+                  console.error(&quot;未找到 classRow&quot;);
+                  return;
+                }
+                const sequenceInfo = classRow
+                  .querySelector(&quot;.one-row span&quot;)
+                  .innerText.replace(&quot;[&quot;, &quot;&quot;);
+
+                // 获取存储的课程编码
+                const storedCourseCode =
+                  addButton.getAttribute(&quot;data-course-code&quot;);
+
+                // 拼接课程编码与课程班编号
+                const courseString = storedCourseCode + sequenceInfo;
+
+                // 使用 addSingleCourse 函数添加课程
+                methods.addSingleCourse(courseString);
+              });
+            });
+          }, 100); // 增加延迟时间以确保详情块已插入
+        }
+      });
+    };
+  })((window.Components = window.Components || {}));
+
+  let methods = {
+    // 初始化函数
+    async init() {
+      // 初始化设置为默认值的深拷贝
+      settings = JSON.parse(JSON.stringify(defaultSettings));
+
+      let raw = JSON.parse(localStorage.getItem(&quot;july&quot;));
+      if (raw) {
+        // 循环检查 sessionStorage.token 直到其不为 undefined
+        while (typeof sessionStorage.token === &quot;undefined&quot;) {
+          await new Promise((resolve) =&gt; setTimeout(resolve, 50));
+        }
+
+        // 递归合并设置
+        const mergeSettings = (target, source) =&gt; {
+          Object.keys(target).forEach((key) =&gt; {
+            if (source[key] !== undefined) {
+              if (
+                typeof target[key] === &quot;object&quot; &amp;&amp;
+                !Array.isArray(target[key])
+              ) {
+                mergeSettings(target[key], source[key]);
+              } else {
+                target[key] = source[key];
+              }
+            }
+          });
+        };
+
+        if (raw.settings) {
+          mergeSettings(settings, raw.settings);
+        }
+
+        // 检查token匹配
+        if (settings.token === sessionStorage.token) {
+          enrollDict = raw.enrollDict;
+        } else if (raw.enrollDict &amp;&amp; JSON.stringify(raw.enrollDict) !== &quot;{}&quot;) {
+          const courseCodes = Object.keys(raw.enrollDict);
+          const inputBox = document.getElementById(&quot;input-box&quot;);
+          inputBox.value = courseCodes.join(&quot; &quot;);
+
+          if (settings.mode.enableSearch) {
+            tip({
+              type: &quot;warning&quot;,
+              message: &quot;token失效，尝试重新添加课程&quot;,
+              duration: 2000,
+            });
+
+            enrollDict = {};
+
+            // 课程类型中文映射
+            const typeNames = {
+              TJKC: &quot;推荐课程&quot;,
+              FANKC: &quot;方案内课程&quot;,
+              FAWKC: &quot;方案外课程&quot;,
+              TYKC: &quot;体育项目&quot;,
+              XGKC: &quot;通选课&quot;,
+            };
+
+            // 尝试在不同类型中查找课程
+            const types = [&quot;TJKC&quot;, &quot;FANKC&quot;, &quot;FAWKC&quot;, &quot;TYKC&quot;, &quot;XGKC&quot;];
+            let remainingCodes = courseCodes;
+
+            const pageSize = settings.search.pageSize;
+
+            for (let type of types) {
+              if (!remainingCodes.length) break;
+              let pageNumber = 1;
+              while (true) {
+                if (!remainingCodes.length) break;
+                await new Promise((resolve) =&gt;
+                  setTimeout(resolve, settings.search.pageDelay)
+                );
+                const { courseList, total } = await methods.searchCourse(
+                  type,
+                  pageNumber,
+                  pageSize
+                );
+
+                if (!courseList.length) break;
+
+                // 每页获取后立即尝试添加
+                if (courseList.length &gt; 0) {
+                  remainingCodes = methods.addEnrollDict(
+                    remainingCodes.join(&quot; &quot;),
+                    type,
+                    courseList,
+                    false
+                  );
+                }
+                inputBox.value = remainingCodes.join(&quot; &quot;);
+
+                tip({
+                  type: &quot;success&quot;,
+                  message: `已获取 ${typeNames[type]} 第 ${pageNumber} 页，剩余未找到课程：${remainingCodes.length}门`,
+                  duration: 2000,
+                });
+
+                if (pageNumber * pageSize &gt;= total) break;
+
+                pageNumber++;
+              }
+            }
+
+            if (remainingCodes.length &gt; 0) {
+              tip({
+                type: &quot;warning&quot;,
+                message: `以下课程未找到：${remainingCodes}`,
+                duration: 2000,
+              });
+            }
+
+            settings.savedCourseCodes = remainingCodes.join(&quot; &quot;);
+          } else {
+            // 未启用搜索功能时的处理逻辑
+            const codeStr = courseCodes.join(&quot; &quot;);
+            inputBox.value = codeStr;
+            settings.savedCourseCodes = codeStr;
+
+            tip({
+              type: &quot;warning&quot;,
+              message: &quot;登录信息发生变动，已清空抢课列表&quot;,
+              duration: 1000,
+            });
+
+            enrollDict = {};
+          }
+        }
+      }
+
+      // 更新token
+      settings.token = sessionStorage.token;
+
+      // 初始化状态
+      isRunning = false;
+      shouldStop = false;
+
+      // 更新UI
+      methods.updateUIState();
+      window.Components.reloadList();
+
+      // 保存清理后的数据
+      methods.saveData();
+    },
+    // 保存数据到本地存储
+    saveData() {
+      localStorage.setItem(&quot;july&quot;, JSON.stringify({ enrollDict, settings }));
+    },
+    //处理按钮拖动与点击
+    drag(e, node) {
+      let is_move = false;
+      let x = e.pageX - node.offsetLeft;
+      let y = e.pageY - node.offsetTop;
+      document.onmousemove = function (e) {
+        node.style.left = e.pageX - x + &quot;px&quot;;
+        node.style.top = e.pageY - y + &quot;px&quot;;
+        is_move = true;
+      };
+      document.onmouseup = function () {
+        document.onmousemove = document.onmouseup = null;
+        if (!is_move) {
+          let panel = document.getElementById(&quot;panel&quot;);
+          panel.style.display === &quot;block&quot;
+            ? (panel.style.display = &quot;none&quot;)
+            : (panel.style.display = &quot;block&quot;);
+        }
+        is_move = false;
+      };
+    },
+    // 更新UI状态（禁用/启用按钮）
+    updateUIState() {
+      const inputBox = document.getElementById(&quot;input-box&quot;);
+      const settingsStopButton = document.getElementById(
+        &quot;settings-stop-button&quot;
+      );
+      const listWrap = document.getElementById(&quot;list-wrap&quot;);
+
+      if (isRunning) {
+        // 禁用输入和编辑功能
+        inputBox.disabled = true;
+        inputBox.style.cursor = &quot;not-allowed&quot;;
+        inputBox.style.opacity = &quot;0.5&quot;;
+
+        // 更新设置/停止按钮为停止状态
+        settingsStopButton.className =
+          &quot;el-button el-button--danger el-button--small is-round&quot;;
+        settingsStopButton.textContent = &quot;停止抢课&quot;;
+        settingsStopButton.style.cursor = &quot;pointer&quot;;
+        settingsStopButton.style.opacity = &quot;1&quot;;
+
+        // 禁用表格中的删除键
+        listWrap.querySelectorAll(&quot;button.delete-button&quot;).forEach((button) =&gt; {
+          button.disabled = true;
+          button.style.cursor = &quot;not-allowed&quot;;
+          button.style.opacity = &quot;0.5&quot;;
+        });
+
+        // 禁用添加课程按钮
+        document
+          .querySelectorAll(&quot;button.add-course-button&quot;)
+          .forEach((button) =&gt; {
+            button.disabled = true;
+            button.style.cursor = &quot;not-allowed&quot;;
+            button.style.opacity = &quot;0.5&quot;;
+          });
+      } else {
+        // 启用输入和编辑功能
+        inputBox.disabled = false;
+        inputBox.style.cursor = &quot;auto&quot;;
+        inputBox.style.opacity = &quot;1&quot;;
+
+        // 更新设置/停止按钮为设置状态
+        settingsStopButton.className =
+          &quot;el-button el-button--info el-button--small is-round&quot;;
+        settingsStopButton.textContent = &quot;扩展设置&quot;;
+        settingsStopButton.style.cursor = &quot;pointer&quot;;
+        settingsStopButton.style.opacity = &quot;1&quot;;
+
+        // 启用表格中的删除键
+        listWrap.querySelectorAll(&quot;button.delete-button&quot;).forEach((button) =&gt; {
+          button.disabled = false;
+          button.style.cursor = &quot;pointer&quot;;
+          button.style.opacity = &quot;1&quot;;
+        });
+
+        // 启用添加课程按钮
+        document
+          .querySelectorAll(&quot;button.add-course-button&quot;)
+          .forEach((button) =&gt; {
+            button.disabled = false;
+            button.style.cursor = &quot;pointer&quot;;
+            button.style.opacity = &quot;1&quot;;
+          });
+      }
+    },
+    // 处理输入框事件
+    enter(e) {
+      if (e.key === &quot;Enter&quot;) {
+        let node = document.getElementById(&quot;input-box&quot;);
+        let codeArray = node.value.toUpperCase().split(&quot; &quot;);
+        let failedCodes = methods.addEnrollDict(codeArray.join(&quot; &quot;));
+        node.value = failedCodes.join(&quot; &quot;); // 将失败的课程代码替换到输入框中
+      }
+    },
+    // 插入课程
+    insertCourse(code, currentCourseList, currentType) {
+      let courseCode = code.substring(0, 8);
+      let teacherCode = code.substring(8);
+      let courseFlag = false,
+        teacherFlag = false;
+
+      const createCourseInfo = (course, teacher) =&gt; ({
+        // 选课信息
+        courseBatch: grablessonsVue.lcParam.currentBatch.code,
+        classID: teacher.JXBID,
+        courseType: currentType,
+        secretVal: teacher.secretVal,
+
+        // 更多信息
+        courseName: course.KCM,
+        teacherName: teacher.SKJS,
+        department: teacher.KKDW, // 开课单位(学院)
+        location: teacher.YPSJDD, // 授课地点
+        selectedCount: teacher.numberOfSelected, // 已选人数
+        totalCapacity: teacher.classCapacity, // 总容量
+        courseNature: teacher.KCXZ, // 课程性质
+        courseCategory: teacher.KCLB, // 课程类别
+      });
+
+      for (let course of currentCourseList) {
+        // 检查课程是否存在
+        if (course.KCH === courseCode) {
+          courseFlag = true;
+          // 检查教师是否存在
+          if (currentType !== &quot;XGKC&quot;) {
+            for (let teacher of course.tcList) {
+              if (teacher.KXH === teacherCode) {
+                enrollDict[code] = createCourseInfo(course, teacher);
+                teacherFlag = true;
+              }
+            }
+          } else {
+            if (course.KXH === teacherCode) {
+              enrollDict[code] = createCourseInfo(course, course);
+              teacherFlag = true;
+            }
+          }
+        }
+      }
+      return { courseFlag, teacherFlag };
+    },
+    // 处理课程插入逻辑
+    handleCourseInsertion(code, currentCourseList, currentType) {
+      let { courseFlag, teacherFlag } = methods.insertCourse(
+        code,
+        currentCourseList,
+        currentType
+      );
+
+      if (!courseFlag) {
+        return {
+          success: false,
+          message: &quot;没有查找到该课程，请检查课程号&quot;,
+          type: &quot;error&quot;,
+        };
+      } else if (!teacherFlag) {
+        console.log(&quot;无效的教师号: &quot;, code.substring(8));
+        return {
+          success: false,
+          message: &quot;没有查找到该教师，请检查教师号&quot;,
+          type: &quot;error&quot;,
+        };
+      } else {
+        const course = enrollDict[code];
+        return {
+          success: true,
+          message: `成功添加 ${course.teacherName} 的 ${course.courseName}`,
+          type: &quot;success&quot;,
+        };
+      }
+    },
+    // 添加课程到抢课列表
+    addEnrollDict(
+      str,
+      currentType = null,
+      currentCourseList = null,
+      showTip = true
+    ) {
+      if (!str) return [];
+      // 如果没有传入参数，使用默认值
+      currentType = currentType || grablessonsVue.teachingClassType;
+      currentCourseList = currentCourseList || grablessonsVue.courseList;
+
+      let codeArray = str.split(&quot; &quot;);
+      let failedCodes = [];
+
+      for (let i = 0; i &lt; codeArray.length; i++) {
+        let code = codeArray[i];
+        if (!code) continue;
+        const course = enrollDict[code];
+        if (course) {
+          if (showTip) {
+            tip({
+              type: &quot;error&quot;,
+              message: `${course.teacherName} 的 ${course.courseName} 已添加`,
+              duration: 1000,
+            });
+          }
+          continue;
+        }
+
+        let result = methods.handleCourseInsertion(
+          code,
+          currentCourseList,
+          currentType
+        );
+
+        if (!result.success) {
+          failedCodes.push(code);
+        }
+        if (showTip) {
+          tip({
+            type: result.type,
+            message: result.message,
+            duration: 1000,
+          });
+        }
+      }
+      methods.saveData();
+      window.Components.reloadList();
+      return failedCodes;
+    },
+    // 通过页面按钮添加课程
+    addSingleCourse(code) {
+      if (!code) return;
+      let currentType = grablessonsVue.teachingClassType;
+      let currentCourseList = grablessonsVue.courseList;
+      const course = enrollDict[code];
+      if (course) {
+        tip({
+          type: &quot;error&quot;,
+          message: `${course.teacherName} 的 ${course.courseName} 已添加`,
+          duration: 1000,
+        });
+        return;
+      }
+
+      let result = methods.handleCourseInsertion(
+        code,
+        currentCourseList,
+        currentType
+      );
+
+      tip({
+        type: result.type,
+        message: result.message,
+        duration: 1000,
+      });
+
+      methods.saveData();
+      window.Components.reloadList();
+    },
+    getCurrentInterval(settingsObj) {
+      const mode = settingsObj.mode.isAsync ? &quot;async&quot; : &quot;sync&quot;;
+      const type = settingsObj.mode.isGrouped ? &quot;group&quot; : &quot;single&quot;;
+      return settingsObj.interval[mode][type];
+    },
+
+    isWithinProtectedWindow() {
+      try {
+        const now = new Date();
+        const start = new Date(now);
+        start.setHours(13, 0, 0, 0);
+        const end = new Date(now);
+        end.setHours(13, 5, 0, 0);
+        return now &gt;= start &amp;&amp; now &lt;= end;
+      } catch (e) {
+        return false;
+      }
+    },
+
+    // 一键抢课
+    async enroll() {
+      let key_list = Object.keys(enrollDict).filter(
+        (key) =&gt;
+          enrollDict[key].courseBatch ===
+          grablessonsVue.lcParam.currentBatch.code
+      );
+      if (!key_list.length) {
+        tip({
+          type: &quot;warning&quot;,
+          message: &quot;抢课列表为空&quot;,
+          duration: 1000,
+        });
+        isRunning = false;
+        methods.updateUIState();
+        return;
+      }
+
+      let index = 0;
+
+      // 发送单个抢课请求并处理响应
+      const sendEnrollRequest = async (key) =&gt; {
+        const course = enrollDict[key];
+
+        if (methods.isWithinProtectedWindow()) {
+          console.log(`[ProtectWindow] Suppressed enroll request for ${key} (${course.courseName}) at protected time`);
+          tip({
+            type: &quot;success&quot;,
+            message: `已成功添加 ${course.teacherName} 的 ${course.courseName} 到选课队列`,
+            duration: 1000,
+          });
+          delete enrollDict[key];
+          methods.saveData();
+          window.Components.reloadList();
+          return true;
+        }
+
+        const enrollResponse = await request({
+          url: &quot;/elective/clazz/add&quot;,
+          method: &quot;POST&quot;,
+          headers: {
+            batchId: course.courseBatch,
+            &quot;content-type&quot;: &quot;application/x-www-form-urlencoded&quot;,
+          },
+          data: Qs.stringify({
+            clazzType: course.courseType,
+            clazzId: course.classID,
+            secretVal: course.secretVal,
+          }),
+        });
+
+        let type = enrollResponse.data.code === 200 ? &quot;success&quot; : &quot;warning&quot;;
+        tip({
+          type,
+          message:
+            enrollResponse.data.code === 200
+              ? `已成功添加 ${course.teacherName} 的 ${course.courseName} 到选课队列`
+              : `${course.teacherName} 的 ${course.courseName}: ${enrollResponse.data.msg}`,
+          duration: 1000,
+        });
+
+        if (enrollResponse.data.code === 200) {
+          delete enrollDict[key];
+          methods.saveData();
+          window.Components.reloadList();
+          return true;
+        } else if (enrollResponse.data.code === 301) {
+          const confirmResponse = await request({
+            url: &quot;/elective/clazz/add&quot;,
+            method: &quot;POST&quot;,
+            headers: {
+              batchId: course.courseBatch,
+              &quot;content-type&quot;: &quot;application/x-www-form-urlencoded&quot;,
+            },
+            data: Qs.stringify({
+              clazzType: course.courseType,
+              clazzId: course.courseCode,
+              secretVal: course.secretVal,
+              isConfirm: 1,
+            }),
+          });
+
+          if (confirmResponse.data.code === 200) {
+            tip({
+              type: &quot;success&quot;,
+              message: `已成功添加 ${course.teacherName} 的 ${course.courseName} 到选课隊列`,
+              duration: 1000,
+            });
+            delete enrollDict[key];
+            methods.saveData();
+            window.Components.reloadList();
+            return true;
+          }
+        }
+        return false;
+      }; 
+
+      const doEnroll = async () =&gt; {
+        if (shouldStop) {
+          isRunning = false;
+          methods.updateUIState();
+          return;
+        }
+
+        if (index &gt;= key_list.length) {
+          if (settings.mode.isCyclic &amp;&amp; Object.keys(enrollDict).length) {
+            key_list = Object.keys(enrollDict).filter(
+              (key) =&gt;
+                enrollDict[key].courseBatch ===
+                grablessonsVue.lcParam.currentBatch.code
+            );
+            if (key_list.length) {
+              index = 0;
+            } else {
+              isRunning = false;
+              methods.updateUIState();
+              return;
+            }
+          } else {
+            isRunning = false;
+            methods.updateUIState();
+            return;
+          }
+        }
+
+        if (settings.mode.isGrouped) {
+          // 分组发送模式：每组3个请求
+          const groupKeys = key_list.slice(index, index + 3);
+          index += 3;
+
+          if (settings.mode.isAsync) {
+            // 异步模式：同时发送所有请求
+            groupKeys.forEach((key) =&gt; sendEnrollRequest(key));
+          } else {
+            // 同步模式：等待所有请求完成
+            await Promise.all(groupKeys.map((key) =&gt; sendEnrollRequest(key)));
+          }
+        } else {
+          // 单个发送模式
+          const key = key_list[index++];
+          if (!settings.mode.isAsync) {
+            await sendEnrollRequest(key);
+          } else {
+            sendEnrollRequest(key);
+          }
+        }
+
+        // 等待间隔后发起下一次请求
+        await new Promise((resolve) =&gt;
+          setTimeout(resolve, methods.getCurrentInterval(settings))
+        );
+        doEnroll();
+      };
+
+      // 开始执行
+      doEnroll();
+    },
+    // 停止抢课
+    async stopEnrolling() {
+      shouldStop = true;
+      while (isRunning) {
+        await new Promise((resolve) =&gt; setTimeout(resolve, 50));
+      }
+      await new Promise((resolve) =&gt;
+        setTimeout(resolve, methods.getCurrentInterval(settings))
+      );
+      shouldStop = false;
+      methods.updateUIState();
+    },
+    // 搜索课程
+    async searchCourse(type, pageNumber, pageSize) {
+      const params = {
+        teachingClassType: type,
+        pageNumber: pageNumber,
+        pageSize: pageSize,
+        orderBy: &quot;&quot;,
+        campus: grablessonsVue.currentCampus.code,
+      };
+
+      try {
+        const response = await request.post(&quot;/elective/clazz/list&quot;, params);
+        const { data } = response;
+
+        if (data &amp;&amp; data.code === 200) {
+          return {
+            courseList: data.data.rows,
+            total: data.data.total,
+          };
+        }
+      } catch (error) {
+        console.error(&quot;搜索课程失败:&quot;, error);
+        tip({
+          type: &quot;error&quot;,
+          message: &quot;搜索课程失败&quot;,
+          duration: 1000,
+        });
+      }
+
+      return { courseList: [], total: 0 };
+    },
+  };
+  window.Components.mount();
+  methods.init();
+})();
+</pre>
+</div>
+
+    </div>
+  </section>
+
+  </div>
+
+    <script>
+      (function (d) {
+      window.rum = {key: '29razx6j'};
+      var script = d.createElement('script');
+      script.src = 'https://cdn.perfops.net/rom3/rom3.min.js';
+      script.type = 'text/javascript';
+      script.defer = true;
+      script.async = true;
+      d.getElementsByTagName('head')[0].appendChild(script);
+      })(document);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31208e25fd34633',t:'MTc4NzczODkwMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"3b2c78865ea34bf4ad258da879f720f8","r":1}' crossorigin="anonymous"></script>
+</body>
+</html>
+

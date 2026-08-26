@@ -1,0 +1,45 @@
+# Secrets & local config
+config.yaml
+session.json
+*.local.yaml
+.env
+.env.*
+
+# Runtime
+*.log
+*.pid
+monitor.lock
+data/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# User-generated course dumps / personal data
+courses_list.json
+courses_list.csv
+courses_list.md
+pe_no_conflict.json
+pe_no_conflict.md
+selected_raw.json
+batches.json
+batches_debug.json
+circuit.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+*~

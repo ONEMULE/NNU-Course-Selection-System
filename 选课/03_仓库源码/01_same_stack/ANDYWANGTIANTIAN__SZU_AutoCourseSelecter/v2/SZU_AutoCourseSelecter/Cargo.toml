@@ -1,0 +1,9 @@
+[package]
+name = "SZU_AutoCourseSelecter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+iced = "0.12.1"
+quick-js = "0.4.1"
+base64 = "0.22.1"
