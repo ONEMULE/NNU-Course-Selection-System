@@ -477,7 +477,9 @@ class BrowserApi:
         status = int(result.get("status", 0))
         raw_text = result.get("text", "")
         if status in {401, 403}:
-            raise SessionExpiredError(f"服务端拒绝请求（HTTP {status}）")
+            raise SessionExpiredError(
+                f"服务端拒绝请求（HTTP {status}，接口 {path}）"
+            )
         if status == 0:
             raise SessionExpiredError("浏览器页面没有可用登录态，请重新登录")
         try:
@@ -540,6 +542,36 @@ class BrowserSession:
             raise AutomationError(
                 "等待登录态超时；请在打开的可见浏览器中完成登录和人机认证"
             ) from exc
+
+    async def goto_authenticated_page(
+        self,
+        path: str,
+        timeout_milliseconds: int = 60_000,
+    ) -> None:
+        """按 NNU 页面自身的方式带当前 token 打开受保护页面。
+
+        NNU 的 sidebar.js 会把 sessionStorage.token 拼到页面 URL；
+        这里在页面上下文内完成同样的导航，token 不回传给 Python。
+        """
+
+        await self.page.evaluate(
+            """
+            (targetPath) => {
+              const token = sessionStorage.getItem("token");
+              if (!token) {
+                throw new Error("missing-session-token");
+              }
+              const target = new URL(targetPath, window.location.origin);
+              target.searchParams.set("token", token);
+              window.location.assign(target.toString());
+            }
+            """,
+            path,
+        )
+        await self.page.wait_for_load_state(
+            "domcontentloaded",
+            timeout=timeout_milliseconds,
+        )
 
     async def read_context(self) -> SessionContext:
         data = await self.page.evaluate(
@@ -667,10 +699,8 @@ async def open_visible_browser(
         )
         await session.wait_until_ready(timeout_seconds=timeout_seconds)
         try:
-            await page.goto(
+            await session.goto_authenticated_page(
                 GRAB_URL,
-                wait_until="domcontentloaded",
-                timeout=60_000,
             )
         except Exception as exc:
             print(f"[提示] 选课页返回提示：{safe_message(exc)}")

@@ -32,6 +32,28 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/*default/grablessons.do",
         )
 
+    def test_authenticated_navigation_keeps_token_in_page_context(self) -> None:
+        class FakePage:
+            def __init__(self) -> None:
+                self.script = ""
+                self.path = ""
+                self.waited = False
+
+            async def evaluate(self, script, path):
+                self.script = script
+                self.path = path
+
+            async def wait_for_load_state(self, state, timeout):
+                self.waited = state == "domcontentloaded" and timeout == 60_000
+
+        page = FakePage()
+        session = MODULE.BrowserSession(page)
+        asyncio.run(session.goto_authenticated_page(MODULE.GRAB_URL))
+        self.assertEqual(page.path, MODULE.GRAB_URL)
+        self.assertIn('sessionStorage.getItem("token")', page.script)
+        self.assertIn("target.searchParams.set(\"token\", token)", page.script)
+        self.assertTrue(page.waited)
+
     def test_query_content_follows_frontend_order(self) -> None:
         self.assertEqual(
             MODULE.compose_query_content("人工智能", "A01", "B02"),
