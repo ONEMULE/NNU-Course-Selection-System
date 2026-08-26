@@ -10,6 +10,6 @@ The main materials are organized under [`选课`](选课/):
 - `03_仓库源码` — public repository source snapshots
 - `04_提取分析` — endpoint, field, fingerprint, and comparison outputs
 - `05_工具` — repeatable PowerShell collection and analysis helpers
-- `06_报告` — report workspace; the first report is `阶段一_系统与源码解析.md`
+- `06_报告` — report workspace; phase-one and `博雅课专项解析.md` are available
 
 Session-bearing browser captures and their resource folders are intentionally kept local and excluded by the top-level `.gitignore`. Sanitized copies are included for reproducible analysis.
