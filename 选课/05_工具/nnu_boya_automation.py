@@ -755,9 +755,10 @@ async def run_query_cycle(
     page_size: int,
     max_pages: int,
     request_delay: float,
+    campus_codes: Sequence[str] = ("2", "4"),
 ) -> tuple[list[QueryResult], list[Course]]:
     results: list[QueryResult] = []
-    for index, campus_code in enumerate(("2", "4")):
+    for index, campus_code in enumerate(campus_codes):
         result = await query_public_courses(
             api,
             context,
@@ -771,7 +772,7 @@ async def run_query_cycle(
             f"[查询] {result.campus_name}：服务端返回 {result.total_count} 条，"
             f"本次读取 {len(result.courses)} 条（访问 {result.pages_visited} 页）"
         )
-        if index == 0:
+        if index < len(campus_codes) - 1:
             await asyncio.sleep(request_delay)
 
     all_courses = [
@@ -1099,9 +1100,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="启用 volunteer.do 提交；必须同时指定课程筛选",
     )
     parser.add_argument(
+        "--auto-select",
+        action="store_true",
+        help=(
+            "配合 --watch 使用：只轮询仙林，发现第一门“不冲突+未满”"
+            "候选后受控提交"
+        ),
+    )
+    parser.add_argument(
         "--yes",
         action="store_true",
-        help="跳过终端二次输入；仅适用于已明确指定 --submit 的自动任务",
+        help=(
+            "跳过终端二次输入；仅适用于明确指定 --submit 或"
+            " --auto-select 的任务"
+        ),
     )
     parser.add_argument(
         "--need-book",
@@ -1127,8 +1139,16 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
     )
     if args.submit and not has_selector:
         parser.error("--submit 必须配合 --course-id、--course-number 或 --course-name")
-    if args.yes and not args.submit:
-        parser.error("--yes 只能与 --submit 一起使用")
+    if args.auto_select and args.submit:
+        parser.error("--auto-select 不需要再同时指定 --submit")
+    if args.auto_select and not args.watch:
+        parser.error("--auto-select 必须配合 --watch，脚本才会持续轮询")
+    if args.auto_select and has_selector:
+        parser.error("--auto-select 不接受 --course-id、--course-number 或 --course-name")
+    if args.auto_select and args.test_teaching_class_id:
+        parser.error("--auto-select 不接受固定的 --test-teaching-class-id")
+    if args.yes and not (args.submit or args.auto_select):
+        parser.error("--yes 只能与 --submit 或 --auto-select 一起使用")
     if args.watch and args.interval < 10:
         parser.error("--watch 的 --interval 不能小于 10 秒")
     if args.request_delay < 0.5:
@@ -1155,6 +1175,7 @@ async def async_main(args: argparse.Namespace) -> int:
                 "本工具仍只发送明确的 XGXK 博雅课查询"
             )
         api = BrowserApi(page)
+        campus_codes = ("2",) if args.auto_select else ("2", "4")
 
         while True:
             results, courses = await run_query_cycle(
@@ -1163,6 +1184,7 @@ async def async_main(args: argparse.Namespace) -> int:
                 page_size=args.page_size,
                 max_pages=args.max_pages,
                 request_delay=args.request_delay,
+                campus_codes=campus_codes,
             )
             if args.output:
                 write_snapshot(
@@ -1184,9 +1206,50 @@ async def async_main(args: argparse.Namespace) -> int:
                         )
                     )
             else:
-                print("[候选] 当前两个校区没有服务端返回的“无冲突 + 未满”教学班")
+                if args.auto_select:
+                    print("[等待] 仙林当前没有服务端返回的“无冲突 + 未满”教学班")
+                else:
+                    print("[候选] 当前两个校区没有服务端返回的“无冲突 + 未满”教学班")
 
-            if args.submit:
+            if args.auto_select:
+                safe_candidates = [
+                    course for course in courses if course.is_safe_candidate()
+                ]
+                if safe_candidates:
+                    candidate = safe_candidates[0]
+                    print(
+                        "[自动选课] 发现安全候选，将按服务端顺序尝试第一门："
+                        f" {candidate.short_label()}"
+                    )
+                    (
+                        context_for_submit,
+                        fresh_course,
+                        selected_need_book,
+                        selected_test_id,
+                    ) = await preflight_course(
+                        api,
+                        browser_session,
+                        session_context,
+                        candidate,
+                        page_size=args.page_size,
+                        max_pages=args.max_pages,
+                        request_delay=args.request_delay,
+                        need_book=args.need_book,
+                        test_teaching_class_id=None,
+                    )
+                    return await submit_course(
+                        api,
+                        context_for_submit,
+                        fresh_course,
+                        need_book=selected_need_book,
+                        test_teaching_class_id=selected_test_id,
+                        yes=args.yes,
+                    )
+                else:
+                    print(
+                        "[等待] 仙林本轮没有可安全提交的候选，继续轮询"
+                    )
+            elif args.submit:
                 matched = [
                     course
                     for course in courses

@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import importlib.util
 import json
 import sys
@@ -129,6 +130,55 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             '"token":"[REDACTED]"',
             MODULE.safe_message('{"token":"secret-value"}'),
         )
+
+    def test_auto_select_requires_watch_and_has_no_course_selector(self) -> None:
+        parser = MODULE.build_parser()
+        args = parser.parse_args(["--watch", "--auto-select", "--yes"])
+        MODULE.validate_args(parser, args)
+
+        with self.assertRaises(SystemExit):
+            invalid = parser.parse_args(["--auto-select"])
+            MODULE.validate_args(parser, invalid)
+
+        with self.assertRaises(SystemExit):
+            invalid = parser.parse_args(
+                ["--watch", "--auto-select", "--course-name", "测试"]
+            )
+            MODULE.validate_args(parser, invalid)
+
+    def test_single_campus_query_does_not_expand_to_other_campuses(self) -> None:
+        class FakeApi:
+            def __init__(self) -> None:
+                self.calls = []
+
+            async def post(self, path, payload):
+                self.calls.append((path, payload))
+                return {"code": "1", "totalCount": 0, "dataList": []}
+
+        api = FakeApi()
+        context = MODULE.SessionContext(
+            student_code="student",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="XGXK",
+        )
+        results, courses = asyncio.run(
+            MODULE.run_query_cycle(
+                api,
+                context,
+                page_size=10,
+                max_pages=2,
+                request_delay=0.5,
+                campus_codes=("2",),
+            )
+        )
+        self.assertEqual([result.campus_code for result in results], ["2"])
+        self.assertEqual(courses, [])
+        self.assertEqual(len(api.calls), 1)
+        self.assertIn('"campus":"2"', api.calls[0][1]["querySetting"])
 
 
 if __name__ == "__main__":
