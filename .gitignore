@@ -11,3 +11,9 @@
 # Independent clone metadata is kept locally as a recoverable backup;
 # the checked-out source is vendored into this top-level snapshot.
 /选课/99_quarantine/nested_git_metadata/
+
+# Local browser profile and runtime outputs for the automation tool.
+/选课/05_工具/.runtime/
+/选课/05_工具/__pycache__/
+/选课/05_工具/*.session.json
+/选课/05_工具/*.cookies.json

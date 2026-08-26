@@ -1,5 +1,7 @@
 # NNU Course Selection System
 
+The controlled automation entry point is 选课/05_工具/nnu_boya_automation.py. It only queries Xianlin (2) and Xianlin New North (4), defaults to read-only, and requires an exact course ID plus explicit flags before submitting.
+
 Research archive and source snapshot for analyzing the NNU course-selection system.
 
 The main materials are organized under [`选课`](选课/):
