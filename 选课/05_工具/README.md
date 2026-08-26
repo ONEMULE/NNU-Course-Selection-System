@@ -11,5 +11,6 @@
 7. `scan_repository_fingerprints.ps1`、`extract_repository_hits.ps1`：只读扫描源码字符串指纹。
 8. `build_repository_metadata.ps1`、`build_review_queue.ps1`、`build_official_materials_index.ps1`：重建分析索引。
 9. `scan_sensitive_materials.ps1`：登记潜在敏感字段模式，不输出匹配行。
+10. `extract_static_analysis.ps1`：从脱敏页面/脚本生成 sessionStorage、快照结构、静态调用图和源码对应矩阵。
 
 第三方代码目录永远按不可信输入处理；不要在该目录安装依赖、运行构建或执行脚本。

@@ -12,5 +12,9 @@
 - `repository_metadata.csv`：仓库 commit、时间、文件数、许可证文件和依赖清单。
 - `repository_review_queue.md`：按静态相似度排出的人工阅读顺序。
 - `sensitive_materials_scan.csv`：潜在敏感字段模式命中登记，不保存具体匹配行。
+- `session_storage_inventory.csv`：脱敏脚本中的浏览器会话存储键、读写动作和证据位置。
+- `snapshot_summary.csv` / `snapshot_article_summary.csv`：三份脱敏页面快照的结构统计。
+- `static_call_graph.csv`：从页面初始化到查询、选退课、状态轮询和结果刷新的静态调用图。
+- `source_correspondence_matrix.csv`：NNU 直接上下文与同栈公开源码的对应关系和结论边界。
 
 这些结果都是静态证据，不应被解释为已经验证真实系统的当前接口或安全属性。
