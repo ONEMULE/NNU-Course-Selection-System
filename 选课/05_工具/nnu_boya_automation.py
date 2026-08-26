@@ -37,9 +37,9 @@ for _stream in (sys.stdout, sys.stderr):
 
 
 BASE_URL = "https://xsxk.nnu.edu.cn/xsxkapp"
-ENTRY_URL = f"{BASE_URL}/*default/index.do"
-GRAB_URL = f"{BASE_URL}/*default/grablessons.do"
 API_PREFIX = "/sys/xsxkapp"
+ENTRY_URL = f"{BASE_URL}{API_PREFIX}/*default/index.do"
+GRAB_URL = f"{BASE_URL}{API_PREFIX}/*default/grablessons.do"
 
 PUBLIC_COURSE_PATH = f"{API_PREFIX}/elective/publicCourse.do"
 SELECTED_COURSE_PATH = f"{API_PREFIX}/elective/courseResult.do"

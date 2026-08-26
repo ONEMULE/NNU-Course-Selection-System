@@ -22,6 +22,16 @@ SPEC.loader.exec_module(MODULE)
 
 
 class NnuBoyaAutomationTests(unittest.TestCase):
+    def test_nnu_page_urls_include_sys_xsxkapp_prefix(self) -> None:
+        self.assertEqual(
+            MODULE.ENTRY_URL,
+            "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/*default/index.do",
+        )
+        self.assertEqual(
+            MODULE.GRAB_URL,
+            "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/*default/grablessons.do",
+        )
+
     def test_query_content_follows_frontend_order(self) -> None:
         self.assertEqual(
             MODULE.compose_query_content("人工智能", "A01", "B02"),
