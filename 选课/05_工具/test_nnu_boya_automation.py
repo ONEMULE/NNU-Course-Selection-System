@@ -10,6 +10,7 @@ import json
 import sys
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).with_name("nnu_boya_automation.py")
@@ -22,6 +23,67 @@ SPEC.loader.exec_module(MODULE)
 
 
 class NnuBoyaAutomationTests(unittest.TestCase):
+    def test_login_credentials_round_trip(self) -> None:
+        credentials = MODULE.LoginCredentials(
+            student_code="20261234",
+            password="test-password",
+        )
+        raw = MODULE.serialize_login_credentials(credentials)
+        restored = MODULE.parse_login_credentials(raw)
+        self.assertEqual(restored, credentials)
+
+    def test_invalid_login_credentials_are_rejected(self) -> None:
+        with self.assertRaises(MODULE.AutomationError):
+            MODULE.parse_login_credentials('{"studentCode":"20261234"}')
+        with self.assertRaises(MODULE.AutomationError):
+            MODULE.parse_login_credentials("not-json")
+
+    def test_login_form_autofill_only_fills_username_and_password(self) -> None:
+        class FakeLocator:
+            def __init__(self) -> None:
+                self.filled = None
+
+            async def wait_for(self, *, state, timeout):
+                self.wait_arguments = (state, timeout)
+
+            async def fill(self, value):
+                self.filled = value
+
+        class FakePage:
+            def __init__(self) -> None:
+                self.locators = {
+                    "#loginName": FakeLocator(),
+                    "#loginPwd": FakeLocator(),
+                }
+
+            def locator(self, selector):
+                return self.locators[selector]
+
+        page = FakePage()
+        credentials = MODULE.LoginCredentials(
+            student_code="20261234",
+            password="test-password",
+        )
+        with patch.object(
+            MODULE,
+            "load_login_credentials",
+            return_value=credentials,
+        ):
+            asyncio.run(MODULE.autofill_login_form(page))
+
+        self.assertEqual(page.locators["#loginName"].filled, "20261234")
+        self.assertEqual(page.locators["#loginPwd"].filled, "test-password")
+        self.assertEqual(set(page.locators), {"#loginName", "#loginPwd"})
+
+    def test_no_auto_fill_does_not_read_credentials(self) -> None:
+        class FakePage:
+            def locator(self, selector):
+                raise AssertionError("disabled autofill must not inspect the page")
+
+        with patch.object(MODULE, "load_login_credentials") as load:
+            asyncio.run(MODULE.autofill_login_form(FakePage(), enabled=False))
+        load.assert_not_called()
+
     def test_nnu_page_urls_include_sys_xsxkapp_prefix(self) -> None:
         self.assertEqual(
             MODULE.ENTRY_URL,
@@ -172,6 +234,17 @@ class NnuBoyaAutomationTests(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             invalid = parser.parse_args(["--auto-select"])
+            MODULE.validate_args(parser, invalid)
+
+    def test_credential_commands_are_separate_from_operations(self) -> None:
+        parser = MODULE.build_parser()
+        setup_args = parser.parse_args(["--setup-credentials"])
+        MODULE.validate_args(parser, setup_args)
+        clear_args = parser.parse_args(["--clear-credentials"])
+        MODULE.validate_args(parser, clear_args)
+
+        with self.assertRaises(SystemExit):
+            invalid = parser.parse_args(["--setup-credentials", "--watch"])
             MODULE.validate_args(parser, invalid)
 
         with self.assertRaises(SystemExit):

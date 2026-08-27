@@ -5,7 +5,7 @@
 设计原则：
 
 * 只查询仙林校区(code=2)和仙林新北(code=4)；
-* 登录、密码填写、人机认证由用户在可见浏览器中完成；
+* 可选从 Windows 凭据管理器读取并填入学号、密码；验证码/人机认证仍由用户完成；
 * 会话 token 只在页面上下文内使用，不导出、不写盘、不打印；
 * 默认只读查询；提交必须同时指定目标课程、--submit 和明确确认；
 * 提交前重新查询“不冲突 + 未满”，并刷新课程详情/容量；
@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import getpass
 import json
 import re
 import sys
@@ -40,6 +41,9 @@ BASE_URL = "https://xsxk.nnu.edu.cn/xsxkapp"
 API_PREFIX = "/sys/xsxkapp"
 ENTRY_URL = f"{BASE_URL}{API_PREFIX}/*default/index.do"
 GRAB_URL = f"{BASE_URL}{API_PREFIX}/*default/grablessons.do"
+
+CREDENTIAL_SERVICE = "NNU-Course-Selection-System"
+CREDENTIAL_ACCOUNT = "course-login"
 
 PUBLIC_COURSE_PATH = f"{API_PREFIX}/elective/publicCourse.do"
 SELECTED_COURSE_PATH = f"{API_PREFIX}/elective/courseResult.do"
@@ -75,6 +79,162 @@ class SessionExpiredError(AutomationError):
 
 class UnsafeSelectionError(AutomationError):
     """安全闸门拒绝提交。"""
+
+
+@dataclass(frozen=True)
+class LoginCredentials:
+    """只在当前进程内短暂保存的登录字段；不写入脚本或普通配置文件。"""
+
+    student_code: str
+    password: str
+
+
+def _load_keyring(*, required: bool) -> Any:
+    """加载 keyring；Windows 上由 keyring 选择系统凭据管理器后端。"""
+
+    try:
+        import keyring
+    except ModuleNotFoundError as exc:
+        if required:
+            raise AutomationError(
+                "缺少 keyring。先运行："
+                "python -m pip install -r 选课/05_工具/requirements-automation.txt"
+            ) from exc
+        return None
+
+    if sys.platform != "win32":
+        if required:
+            raise AutomationError("自动保存登录凭据仅支持 Windows 凭据管理器")
+        return None
+
+    try:
+        backend = keyring.get_keyring()
+    except Exception as exc:
+        if required:
+            raise AutomationError(
+                "无法初始化 Windows 凭据管理器后端"
+            ) from exc
+        return None
+    backend_type = type(backend)
+    if (
+        backend_type.__module__ != "keyring.backends.Windows"
+        or backend_type.__name__ != "WinVaultKeyring"
+    ):
+        if required:
+            raise AutomationError(
+                "当前 keyring 未使用 Windows 凭据管理器后端；"
+                "为避免明文保存，未读写登录凭据"
+            )
+        return None
+    return keyring
+
+
+def serialize_login_credentials(credentials: LoginCredentials) -> str:
+    """生成放入系统凭据库的单个密文值，不用于普通文件存储。"""
+
+    return json.dumps(
+        {
+            "studentCode": credentials.student_code,
+            "password": credentials.password,
+        },
+        ensure_ascii=False,
+        separators=(",", ":"),
+    )
+
+
+def parse_login_credentials(raw: str) -> LoginCredentials:
+    """校验并解析从系统凭据库取出的值，错误信息不回显原文。"""
+
+    try:
+        value = json.loads(raw)
+    except (TypeError, json.JSONDecodeError) as exc:
+        raise AutomationError("保存的登录凭据格式无效，请重新运行 --setup-credentials") from exc
+
+    if not isinstance(value, Mapping):
+        raise AutomationError("保存的登录凭据格式无效，请重新运行 --setup-credentials")
+    student_code = value.get("studentCode")
+    password = value.get("password")
+    if not isinstance(student_code, str) or not student_code.strip():
+        raise AutomationError("保存的学号凭据无效，请重新运行 --setup-credentials")
+    if not isinstance(password, str) or not password:
+        raise AutomationError("保存的密码凭据无效，请重新运行 --setup-credentials")
+    return LoginCredentials(student_code=student_code.strip(), password=password)
+
+
+def load_login_credentials() -> Optional[LoginCredentials]:
+    """读取系统凭据库中的登录字段；未配置时返回 None。"""
+
+    keyring = _load_keyring(required=False)
+    if keyring is None:
+        return None
+    try:
+        raw = keyring.get_password(CREDENTIAL_SERVICE, CREDENTIAL_ACCOUNT)
+    except Exception as exc:
+        raise AutomationError(
+            "无法读取 Windows 凭据管理器；将继续使用手动登录"
+        ) from exc
+    if raw is None:
+        return None
+    return parse_login_credentials(raw)
+
+
+def save_login_credentials(student_code: str, password: str) -> None:
+    """将登录字段保存到系统凭据库，不输出密码。"""
+
+    student_code = student_code.strip()
+    if not student_code:
+        raise AutomationError("学号不能为空")
+    if not password:
+        raise AutomationError("密码不能为空")
+    keyring = _load_keyring(required=True)
+    try:
+        keyring.set_password(
+            CREDENTIAL_SERVICE,
+            CREDENTIAL_ACCOUNT,
+            serialize_login_credentials(
+                LoginCredentials(student_code=student_code, password=password)
+            ),
+        )
+    except Exception as exc:
+        raise AutomationError(
+            "无法写入 Windows 凭据管理器；凭据未写入脚本"
+        ) from exc
+
+
+def delete_login_credentials() -> bool:
+    """删除已保存的登录字段，返回是否存在可删除的凭据。"""
+
+    keyring = _load_keyring(required=True)
+    try:
+        existing = keyring.get_password(CREDENTIAL_SERVICE, CREDENTIAL_ACCOUNT)
+        if existing is None:
+            return False
+        keyring.delete_password(CREDENTIAL_SERVICE, CREDENTIAL_ACCOUNT)
+    except Exception as exc:
+        raise AutomationError("无法删除 Windows 凭据管理器中的登录凭据") from exc
+    return True
+
+
+def setup_login_credentials() -> int:
+    """交互式设置系统凭据，不接受命令行密码。"""
+
+    student_code = input("学号（仅保存到 Windows 凭据管理器）：").strip()
+    if not student_code:
+        raise AutomationError("学号不能为空")
+    password = getpass.getpass("密码（输入时不显示）：")
+    confirmation = getpass.getpass("再次输入密码：")
+    try:
+        if password != confirmation:
+            raise AutomationError("两次输入的密码不一致")
+        save_login_credentials(student_code, password)
+    finally:
+        password = ""
+        confirmation = ""
+    print(
+        "[完成] 学号和密码已保存到 Windows 凭据管理器；"
+        "脚本不会打印或写入密码。"
+    )
+    return 0
 
 
 def safe_message(value: Any, limit: int = 360) -> str:
@@ -733,8 +893,52 @@ class BrowserSession:
         return updated
 
 
+async def autofill_login_form(page: Any, *, enabled: bool = True) -> None:
+    """把系统凭据库字段填入 NNU 登录框，但不填写验证码或点击登录。"""
+
+    if not enabled:
+        print("[提示] 本次运行已关闭学号/密码自动填充，请手动输入")
+        return
+
+    try:
+        username = page.locator("#loginName")
+        password = page.locator("#loginPwd")
+        await username.wait_for(state="visible", timeout=10_000)
+        await password.wait_for(state="visible", timeout=5_000)
+    except Exception:
+        print("[提示] 登录表单尚未出现，继续手动输入学号和密码")
+        return
+
+    try:
+        credentials = load_login_credentials()
+    except AutomationError as exc:
+        print(f"[提示] 自动填充未启用：{safe_message(exc)}")
+        return
+
+    if credentials is None:
+        print(
+            "[提示] 尚未设置自动填充凭据；请先运行 --setup-credentials，"
+            "本次继续手动登录"
+        )
+        return
+
+    try:
+        await username.fill(credentials.student_code)
+        await password.fill(credentials.password)
+    except Exception as exc:
+        print(f"[提示] 登录框自动填充失败：{safe_message(exc)}；请手动输入")
+        return
+
+    print(
+        "[准备] 已自动填入学号和密码；请手动填写验证码/完成人机认证，"
+        "脚本不会自动点击登录"
+    )
+
+
 async def open_visible_browser(
     timeout_seconds: int,
+    *,
+    auto_fill_credentials: bool = True,
 ) -> tuple[Any, Any, Any]:
     """启动全新可见浏览器；返回 (playwright, context, page)。"""
 
@@ -763,10 +967,11 @@ async def open_visible_browser(
         except Exception as exc:
             print(f"[提示] 登录入口加载提示：{safe_message(exc)}")
 
+        await autofill_login_form(page, enabled=auto_fill_credentials)
         session = BrowserSession(page)
         print(
             "[等待] 本次启动必须由本人在可见浏览器中手动登录并完成"
-            "人机认证；脚本不会读取或填写密码。"
+            "人机认证；脚本不会自动提交登录。"
         )
         await session.wait_until_ready(timeout_seconds=timeout_seconds)
         try:
@@ -1229,6 +1434,22 @@ def build_parser() -> argparse.ArgumentParser:
         default=300,
         help="等待人工登录/认证的秒数",
     )
+    credential_group = parser.add_mutually_exclusive_group()
+    credential_group.add_argument(
+        "--setup-credentials",
+        action="store_true",
+        help="交互式保存学号/密码到 Windows 凭据管理器",
+    )
+    credential_group.add_argument(
+        "--clear-credentials",
+        action="store_true",
+        help="删除 Windows 凭据管理器中已保存的学号/密码",
+    )
+    parser.add_argument(
+        "--no-auto-fill",
+        action="store_true",
+        help="本次运行不从 Windows 凭据管理器自动填充登录框",
+    )
     parser.add_argument("--course-id", default="", help="精确教学班 ID")
     parser.add_argument("--course-number", default="", help="精确课程号")
     parser.add_argument("--course-name", default="", help="课程名包含匹配")
@@ -1272,6 +1493,28 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> None:
+    if args.setup_credentials or args.clear_credentials:
+        has_operational_options = any(
+            (
+                args.watch,
+                args.course_id,
+                args.course_number,
+                args.course_name,
+                args.submit,
+                args.auto_select,
+                args.yes,
+                args.need_book is not None,
+                args.test_teaching_class_id,
+                args.output is not None,
+                args.no_auto_fill,
+            )
+        )
+        if has_operational_options:
+            parser.error(
+                "--setup-credentials/--clear-credentials 不能与查询或提交参数一起使用"
+            )
+        return
+
     has_selector = bool(
         args.course_id or args.course_number or args.course_name
     )
@@ -1308,6 +1551,7 @@ async def async_main(args: argparse.Namespace) -> int:
     try:
         playwright, context, page = await open_visible_browser(
             args.timeout,
+            auto_fill_credentials=not args.no_auto_fill,
         )
         browser_session = BrowserSession(page)
         session_context = await browser_session.read_context()
@@ -1518,6 +1762,25 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
     validate_args(parser, args)
+    if args.setup_credentials:
+        try:
+            return setup_login_credentials()
+        except AutomationError as exc:
+            print(f"[错误] {safe_message(exc)}", file=sys.stderr)
+            return 10
+        except KeyboardInterrupt:
+            print("\n[停止] 用户中断")
+            return 130
+    if args.clear_credentials:
+        try:
+            if delete_login_credentials():
+                print("[完成] 已删除 Windows 凭据管理器中的登录凭据")
+            else:
+                print("[提示] Windows 凭据管理器中没有已保存的登录凭据")
+            return 0
+        except AutomationError as exc:
+            print(f"[错误] {safe_message(exc)}", file=sys.stderr)
+            return 10
     return asyncio.run(async_main(args))
 
 
