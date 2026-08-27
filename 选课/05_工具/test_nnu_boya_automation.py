@@ -23,6 +23,44 @@ SPEC.loader.exec_module(MODULE)
 
 
 class NnuBoyaAutomationTests(unittest.TestCase):
+    def test_api_url_keeps_application_context(self) -> None:
+        self.assertEqual(
+            MODULE.build_api_url("/sys/xsxkapp/elective/courseResult.do"),
+            "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/elective/courseResult.do",
+        )
+        self.assertEqual(
+            MODULE.build_api_url(
+                "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/elective/courseResult.do"
+            ),
+            "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/elective/courseResult.do",
+        )
+
+    def test_browser_api_passes_full_application_url_to_page(self) -> None:
+        class FakePage:
+            def __init__(self) -> None:
+                self.arguments = None
+
+            async def evaluate(self, script, arguments):
+                self.arguments = arguments
+                return {"status": 200, "text": '{"code":"1"}'}
+
+        page = FakePage()
+        response = asyncio.run(
+            MODULE.BrowserApi(page).get(
+                MODULE.SELECTED_COURSE_PATH,
+                {"studentCode": "student", "electiveBatchCode": "batch"},
+            )
+        )
+        self.assertEqual(response["code"], "1")
+        self.assertEqual(
+            page.arguments["requestUrl"],
+            "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/elective/courseResult.do",
+        )
+
+    def test_timestamped_path_starts_with_timestamp_query(self) -> None:
+        path = MODULE.timestamped_path(MODULE.SELECTED_COURSE_PATH)
+        self.assertRegex(path, r"^/sys/xsxkapp/elective/courseResult\.do\?timestamp=\d+$")
+
     def test_login_credentials_round_trip(self) -> None:
         credentials = MODULE.LoginCredentials(
             student_code="20261234",
@@ -315,7 +353,7 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             MODULE.query_selected_course_count(api, context)
         )
         self.assertEqual(count, 2)
-        self.assertEqual(api.path, MODULE.SELECTED_COURSE_PATH)
+        self.assertTrue(api.path.startswith(MODULE.SELECTED_COURSE_PATH + "?timestamp="))
 
 
 if __name__ == "__main__":

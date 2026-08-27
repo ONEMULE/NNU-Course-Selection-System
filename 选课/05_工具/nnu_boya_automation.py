@@ -246,6 +246,22 @@ def safe_message(value: Any, limit: int = 360) -> str:
     return text.replace("\r", " ").replace("\n", " ")[:limit]
 
 
+def build_api_url(path: str) -> str:
+    """把 NNU API 相对路径挂到实际应用上下文 /xsxkapp 下。"""
+
+    if path.startswith(("http://", "https://")):
+        return path
+    return f"{BASE_URL}/{path.lstrip('/')}"
+
+
+def timestamped_path(path: str) -> str:
+    """按 NNU 页面习惯把缓存戳放在接口 URL 的 query 开头。"""
+
+    separator = "&" if "?" in path else "?"
+    timestamp = int(datetime.now().timestamp() * 1000)
+    return f"{path}{separator}timestamp={timestamp}"
+
+
 def request_diagnostic_message(value: Any) -> str:
     """只输出请求环境的脱敏状态，不输出 URL 查询值、Cookie 或 token。"""
 
@@ -598,7 +614,7 @@ def course_matches(
 
 
 FETCH_SCRIPT = """
-async ({path, method, params}) => {
+async ({requestUrl, method, params}) => {
   const token = sessionStorage.getItem("token");
   const diagnostics = (transport) => ({
     path: window.location.pathname,
@@ -620,7 +636,7 @@ async ({path, method, params}) => {
   // NNU 自己的前端使用 jQuery XHR；优先沿用同一传输方式，
   // 避免服务端根据 Fetch Metadata/请求头差异拒绝原生 fetch。
   if (typeof window.jQuery === "function") {
-    const url = new URL(path, window.location.origin).toString();
+    const url = new URL(requestUrl, window.location.origin).toString();
     return await new Promise((resolve) => {
       window.jQuery.ajax({
         url,
@@ -630,11 +646,11 @@ async ({path, method, params}) => {
           "X-Requested-With": "XMLHttpRequest",
           "token": token
         },
-        dataType: "text",
+        dataType: "json",
         success: (data, _textStatus, xhr) => {
           resolve({
             status: xhr.status || 200,
-            text: String(data || ""),
+            text: JSON.stringify(data == null ? null : data),
             diagnostics: diagnostics("jquery")
           });
         },
@@ -649,7 +665,7 @@ async ({path, method, params}) => {
     });
   }
 
-  const url = new URL(path, window.location.origin);
+  const url = new URL(requestUrl, window.location.origin);
   const options = {
     method: method || "GET",
     mode: "same-origin",
@@ -684,7 +700,7 @@ async ({path, method, params}) => {
 
 
 class BrowserApi:
-    """通过同源页面 fetch 调用 API，token 留在 sessionStorage 页面上下文。"""
+    """通过应用上下文内的页面 XHR 调用 API，token 留在页面上下文。"""
 
     def __init__(self, page: Any):
         self.page = page
@@ -699,7 +715,7 @@ class BrowserApi:
         result = await self.page.evaluate(
             FETCH_SCRIPT,
             {
-                "path": path,
+                "requestUrl": build_api_url(path),
                 "method": method,
                 "params": dict(params or {}),
             },
@@ -1104,11 +1120,10 @@ async def query_selected_course_count(
     """按 NNU 页面口径统计当前轮次已选的非实验课程数量。"""
 
     response = await api.get(
-        SELECTED_COURSE_PATH,
+        timestamped_path(SELECTED_COURSE_PATH),
         {
             "studentCode": context.student_code,
             "electiveBatchCode": context.batch_code,
-            "timestamp": str(int(datetime.now().timestamp() * 1000)),
         },
     )
     if as_text(response.get("code")) != "1":
@@ -1232,12 +1247,11 @@ async def preflight_course(
         course = merge_course_data(course, detail)
 
     capacity_response = await api.get(
-        CAPACITY_PATH,
+        timestamped_path(CAPACITY_PATH),
         {
             "teachingClassId": course.teaching_class_id,
             "capacitySuffix": course.capacity_suffix,
             "xh": context.student_code,
-            "timestamp": str(int(datetime.now().timestamp() * 1000)),
         },
     )
     if as_text(capacity_response.get("code")) != "1":
