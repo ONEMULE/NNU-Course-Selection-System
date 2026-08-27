@@ -8,6 +8,7 @@ import asyncio
 import importlib.util
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -181,6 +182,230 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertEqual(outer["data"]["checkCapacity"], "0")
         self.assertEqual(outer["pageNumber"], "3")
 
+    def test_all_school_query_payload_matches_qxkc_frontend(self) -> None:
+        payload = MODULE.build_all_school_query_payload(
+            student_code="student",
+            batch_code="batch",
+            campus_code="2",
+            keyword="人工智能",
+            category="01",
+            teaching_unit="19",
+            page_size=20,
+            page_number=2,
+        )
+        outer = json.loads(payload["querySetting"])
+        self.assertEqual(outer["data"]["teachingClassType"], "QXKC")
+        self.assertEqual(
+            outer["data"]["queryContent"],
+            "KKDWDM:19,XGXKLBDM:01,人工智能",
+        )
+        self.assertNotIn("checkConflict", outer["data"])
+        self.assertNotIn("checkCapacity", outer["data"])
+        self.assertEqual(outer["pageSize"], "20")
+        self.assertEqual(outer["pageNumber"], "2")
+
+    def test_school_course_parser_keeps_course_and_teaching_class_levels(self) -> None:
+        course = MODULE.SchoolCourse.from_api(
+            {
+                "courseNumber": "1001",
+                "courseName": "测试课程",
+                "courseIndex": "01",
+                "departmentName": "测试学院",
+                "courseNatureName": "选修",
+                "typeName": "全校课程",
+                "credit": "2",
+                "hours": "32",
+                "teacherName": "张三|T1,李四|T2",
+                "tcList": [
+                    {
+                        "teachingClassID": "tc-1",
+                        "courseIndex": "01",
+                        "teacherName": "张三",
+                        "teachingPlace": "1-16周 星期一 1-2节",
+                        "classCapacity": "40",
+                        "numberOfFirstVolunteer": "10",
+                        "isConflict": "0",
+                        "isFull": "0",
+                        "canSelect": "1",
+                        "canOperate": "1",
+                    }
+                ],
+            },
+            campus_code="2",
+            campus_name="仙林校区",
+        )
+        self.assertIsNotNone(course)
+        assert course is not None
+        self.assertEqual(course.teacher, "张三, 李四")
+        self.assertEqual(len(course.teaching_classes), 1)
+        self.assertTrue(course.teaching_classes[0].is_selectable_now())
+        rows = MODULE.school_course_csv_rows([course])
+        self.assertEqual(rows[0]["teachingClassId"], "tc-1")
+        self.assertEqual(rows[0]["selectableNow"], True)
+
+    def test_all_school_query_paginates_and_keeps_qxkc_path(self) -> None:
+        class FakeApi:
+            def __init__(self) -> None:
+                self.calls = []
+
+            async def post(self, path, payload):
+                self.calls.append((path, payload))
+                page = json.loads(payload["querySetting"])["pageNumber"]
+                if page == "0":
+                    return {
+                        "code": "1",
+                        "totalCount": 2,
+                        "dataList": [
+                            {
+                                "courseNumber": "1001",
+                                "courseName": "课程一",
+                                "tcList": [
+                                    {"teachingClassID": "tc-1"}
+                                ],
+                            }
+                        ],
+                    }
+                return {
+                    "code": "1",
+                    "totalCount": 2,
+                    "dataList": [
+                        {
+                            "courseNumber": "1002",
+                            "courseName": "课程二",
+                            "tcList": [
+                                {"teachingClassID": "tc-2"}
+                            ],
+                        }
+                    ],
+                }
+
+        api = FakeApi()
+        context = MODULE.SessionContext(
+            student_code="student",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="QXKC",
+        )
+        result = asyncio.run(
+            MODULE.query_all_school_courses(
+                api,
+                context,
+                campus_code="2",
+                page_size=1,
+                max_pages=3,
+                request_delay=0.5,
+            )
+        )
+        self.assertEqual(result.pages_visited, 2)
+        self.assertEqual([course.course_number for course in result.courses], ["1001", "1002"])
+        self.assertEqual(
+            [call[0] for call in api.calls],
+            [MODULE.ALL_SCHOOL_COURSE_PATH, MODULE.ALL_SCHOOL_COURSE_PATH],
+        )
+        first_query = json.loads(api.calls[0][1]["querySetting"])
+        self.assertEqual(first_query["data"]["teachingClassType"], "QXKC")
+
+    def test_export_files_are_structured_and_do_not_include_student_code(self) -> None:
+        context = MODULE.SessionContext(
+            student_code="student-secret",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="XGXK",
+        )
+        school_course = MODULE.SchoolCourse.from_api(
+            {
+                "courseNumber": "1001",
+                "courseName": "测试课程",
+                "tcList": [{"teachingClassID": "tc-1"}],
+            },
+            campus_code="2",
+            campus_name="仙林校区",
+        )
+        selected_course = MODULE.SelectedCourse.from_api(
+            {
+                "teachingClassID": "selected-1",
+                "courseNumber": "1001",
+                "courseName": "已选课程",
+                "isTest": "0",
+                "publicCourseTypeName": "人文与社会",
+            }
+        )
+        self.assertIsNotNone(school_course)
+        self.assertIsNotNone(selected_course)
+        assert school_course is not None
+        assert selected_course is not None
+        with tempfile.TemporaryDirectory() as directory:
+            MODULE.write_open_course_exports(
+                MODULE.Path(directory),
+                context,
+                [
+                    MODULE.SchoolQueryResult(
+                        campus_code="2",
+                        campus_name="仙林校区",
+                        total_count=1,
+                        pages_visited=1,
+                        courses=[school_course],
+                    )
+                ],
+                [school_course],
+            )
+            MODULE.write_selected_course_exports(
+                MODULE.Path(directory),
+                context,
+                [selected_course],
+            )
+            selected_json = (
+                MODULE.Path(directory) / "selected_courses.json"
+            ).read_text(encoding="utf-8")
+            open_csv = (
+                MODULE.Path(directory) / "all_open_courses.csv"
+            ).read_text(encoding="utf-8-sig")
+        self.assertIn("已选课程", selected_json)
+        self.assertNotIn("student-secret", selected_json)
+        self.assertIn("teachingClassId", open_csv)
+
+    def test_selected_course_parser_and_experiment_link_shape(self) -> None:
+        theory = MODULE.SelectedCourse.from_api(
+            {
+                "teachingClassID": "theory-1",
+                "campus": "2",
+                "campusName": "仙林校区",
+                "courseNumber": "1001",
+                "courseName": "博雅测试",
+                "courseIndex": "01",
+                "teacherName": "张三|T1",
+                "teachingPlace": "1-16周 星期一 1-2节",
+                "publicCourseTypeName": "人文与社会",
+                "credit": "2",
+                "isTest": "0",
+                "hasTest": "1",
+                "testTeachingClassID": "test-1",
+            }
+        )
+        experiment = MODULE.SelectedCourse.from_api(
+            {
+                "teachingClassID": "test-1",
+                "courseNumber": "1001",
+                "courseName": "博雅测试实验",
+                "isTest": "1",
+            }
+        )
+        self.assertIsNotNone(theory)
+        self.assertIsNotNone(experiment)
+        assert theory is not None
+        assert experiment is not None
+        rows = MODULE.selected_course_csv_rows([theory, experiment])
+        self.assertEqual(rows[0]["recordKind"], "theory")
+        self.assertEqual(rows[0]["isBoya"], True)
+        self.assertEqual(rows[1]["recordKind"], "experiment")
+        self.assertEqual(rows[1]["parentTeachingClassId"], "theory-1")
+
     def test_add_payload_matches_public_course_shape(self) -> None:
         payload = MODULE.build_add_payload(
             student_code="student",
@@ -272,6 +497,38 @@ class NnuBoyaAutomationTests(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             invalid = parser.parse_args(["--auto-select"])
+            MODULE.validate_args(parser, invalid)
+
+    def test_collection_modes_are_read_only_and_composable(self) -> None:
+        parser = MODULE.build_parser()
+        args = parser.parse_args(
+            ["--collect-open-courses", "--collect-selected-courses"]
+        )
+        MODULE.validate_args(parser, args)
+
+        filtered = parser.parse_args(
+            [
+                "--collect-open-courses",
+                "--school-keyword",
+                "人工智能",
+                "--school-category",
+                "01",
+                "--school-unit",
+                "19",
+            ]
+        )
+        MODULE.validate_args(parser, filtered)
+
+        with self.assertRaises(SystemExit):
+            invalid = parser.parse_args(
+                ["--collect-selected-courses", "--school-keyword", "测试"]
+            )
+            MODULE.validate_args(parser, invalid)
+
+        with self.assertRaises(SystemExit):
+            invalid = parser.parse_args(
+                ["--collect-open-courses", "--submit", "--course-id", "tc-1"]
+            )
             MODULE.validate_args(parser, invalid)
 
     def test_credential_commands_are_separate_from_operations(self) -> None:

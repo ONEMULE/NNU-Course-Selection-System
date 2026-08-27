@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""NNU 博雅课查询与受控选课工具。
+"""NNU 课程查询、已选课程采集与博雅课受控选课工具。
 
 设计原则：
 
 * 只查询仙林校区(code=2)和仙林新北(code=4)；
+* 可只读采集 QXKC 全校课程和当前批次已选课程，输出脱敏 JSON/CSV；
 * 可选从 Windows 凭据管理器读取并填入学号、密码；验证码/人机认证仍由用户完成；
 * 会话 token 只在页面上下文内使用，不导出、不写盘、不打印；
 * 默认只读查询；提交必须同时指定目标课程、--submit 和明确确认；
@@ -19,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import csv
 import getpass
 import json
 import re
@@ -46,6 +48,7 @@ CREDENTIAL_SERVICE = "NNU-Course-Selection-System"
 CREDENTIAL_ACCOUNT = "course-login"
 
 PUBLIC_COURSE_PATH = f"{API_PREFIX}/elective/publicCourse.do"
+ALL_SCHOOL_COURSE_PATH = f"{API_PREFIX}/elective/queryCourse.do"
 SELECTED_COURSE_PATH = f"{API_PREFIX}/elective/courseResult.do"
 TEST_COURSE_PATH = f"{API_PREFIX}/elective/testCourse.do"
 BATCH_OPEN_PATH = f"{API_PREFIX}/elective/batchisopen.do"
@@ -60,7 +63,9 @@ CAMPUS = {
 }
 
 BOYA_TEACHING_CLASS_TYPE = "XGXK"
+ALL_SCHOOL_TEACHING_CLASS_TYPE = "QXKC"
 AUTO_TARGET_COUNT = 4
+DEFAULT_EXPORT_DIR = Path(__file__).resolve().parent / ".runtime"
 
 TOKEN_PATTERN = re.compile(
     r"(?i)([\"']?token[\"']?\s*[=:]\s*[\"']?)[^&\s,}\"']+"
@@ -446,6 +451,67 @@ def build_query_payload(
     }
 
 
+def compose_all_school_query_content(
+    keyword: str = "",
+    category: str = "",
+    teaching_unit: str = "",
+) -> str:
+    """按 QXKC 页面源码的顺序构造全校课程查询条件。"""
+
+    parts: list[str] = []
+    keyword = keyword.strip()
+    category = category.strip()
+    teaching_unit = teaching_unit.strip()
+    if teaching_unit:
+        parts.append(f"KKDWDM:{teaching_unit}")
+    if category:
+        parts.append(f"XGXKLBDM:{category}")
+    if keyword:
+        parts.append(keyword)
+    return ",".join(parts)
+
+
+def build_all_school_query_payload(
+    *,
+    student_code: str,
+    batch_code: str,
+    campus_code: str,
+    keyword: str = "",
+    category: str = "",
+    teaching_unit: str = "",
+    page_size: int = 10,
+    page_number: int = 0,
+    order: str = "",
+) -> dict[str, str]:
+    """构造全校课程查询 ``queryCourse.do`` 的页面原生参数。"""
+
+    data = {
+        "studentCode": str(student_code),
+        "campus": str(campus_code),
+        "electiveBatchCode": str(batch_code),
+        "isMajor": "1",
+        "teachingClassType": ALL_SCHOOL_TEACHING_CLASS_TYPE,
+        "queryContent": compose_all_school_query_content(
+            keyword=keyword,
+            category=category,
+            teaching_unit=teaching_unit,
+        ),
+    }
+    outer = {
+        "data": data,
+        "pageSize": str(page_size),
+        "pageNumber": str(page_number),
+        "order": order or "",
+    }
+    return {
+        "querySetting": json.dumps(
+            outer,
+            ensure_ascii=False,
+            separators=(",", ":"),
+        )
+    }
+
+
 def build_add_payload(
     *,
     student_code: str,
@@ -649,6 +715,413 @@ class QueryResult:
     total_count: int
     pages_visited: int
     courses: list[Course]
+
+
+def teacher_names(value: Any) -> str:
+    """提取 QXKC 返回的 ``姓名|教师代码, ...`` 中的姓名。"""
+
+    text = as_text(value)
+    if not text:
+        return ""
+    names: list[str] = []
+    for part in text.split(","):
+        name = part.split("|", 1)[0].strip()
+        if name and name not in names:
+            names.append(name)
+    return ", ".join(names)
+
+
+@dataclass
+class SchoolTeachingClass:
+    """QXKC 全校课程中的一个可展开教学班。"""
+
+    campus_code: str
+    campus_name: str
+    teaching_class_id: str
+    course_number: str
+    course_index: str
+    teacher: str
+    teaching_place: str
+    class_capacity: Optional[int]
+    first_volunteer: Optional[int]
+    selected: Optional[int]
+    is_conflict: Any
+    conflict_desc: str
+    is_full: Any
+    is_choose: Any
+    can_select: Any
+    can_operate: Any
+    has_test: Any
+    need_book: Any
+    capacity_suffix: str
+    raw: Mapping[str, Any]
+
+    @classmethod
+    def from_api(
+        cls,
+        item: Mapping[str, Any],
+        *,
+        campus_code: str,
+        campus_name: str,
+        course_number: str,
+        course_index: str,
+    ) -> Optional["SchoolTeachingClass"]:
+        teaching_class_id = as_text(
+            first_value(item, "teachingClassID", "teachingClassId", "jxbid")
+        )
+        if not teaching_class_id:
+            return None
+        return cls(
+            campus_code=as_text(first_value(item, "campus")) or campus_code,
+            campus_name=as_text(first_value(item, "campusName")) or campus_name,
+            teaching_class_id=teaching_class_id,
+            course_number=(
+                as_text(first_value(item, "courseNumber", "courseNum"))
+                or course_number
+            ),
+            course_index=(
+                as_text(first_value(item, "courseIndex", "classIndex"))
+                or course_index
+            ),
+            teacher=teacher_names(
+                first_value(item, "teacherName", "teacher", "subTeacher")
+            ),
+            teaching_place=(
+                as_text(
+                    first_value(
+                        item,
+                        "teachingPlace",
+                        "teachPlace",
+                        "classroom",
+                        "place",
+                    )
+                )
+                or ""
+            ),
+            class_capacity=parse_int(
+                first_value(item, "classCapacity", "capacity")
+            ),
+            first_volunteer=parse_int(
+                first_value(item, "numberOfFirstVolunteer", "firstVolunteer")
+            ),
+            selected=parse_int(
+                first_value(item, "numberOfSelected", "selected")
+            ),
+            is_conflict=first_value(item, "isConflict"),
+            conflict_desc=as_text(
+                first_value(item, "conflictDesc", "conflictDescription")
+            )
+            or "",
+            is_full=first_value(item, "isFull"),
+            is_choose=first_value(item, "isChoose"),
+            can_select=first_value(item, "canSelect"),
+            can_operate=first_value(item, "canOperate"),
+            has_test=first_value(item, "hasTest"),
+            need_book=first_value(item, "needBook"),
+            capacity_suffix=as_text(first_value(item, "capacitySuffix")) or "",
+            raw=item,
+        )
+
+    def is_selectable_now(self) -> bool:
+        """按服务端显式状态给出当前是否可操作的保守标记。"""
+
+        for flag in (self.can_select, self.can_operate):
+            parsed = parse_flag(flag)
+            if parsed is False:
+                return False
+        if parse_flag(self.is_choose) is True:
+            return False
+        if parse_flag(self.is_conflict) is True:
+            return False
+        if parse_flag(self.is_full) is True:
+            return False
+        if self.class_capacity is not None:
+            for count in (self.first_volunteer, self.selected):
+                if count is not None and count >= self.class_capacity:
+                    return False
+        return True
+
+    def public_dict(self) -> dict[str, Any]:
+        return {
+            "campusCode": self.campus_code,
+            "campus": self.campus_name,
+            "teachingClassId": self.teaching_class_id,
+            "courseNumber": self.course_number,
+            "courseIndex": self.course_index,
+            "teacher": self.teacher,
+            "teachingPlace": self.teaching_place,
+            "classCapacity": self.class_capacity,
+            "numberOfFirstVolunteer": self.first_volunteer,
+            "numberOfSelected": self.selected,
+            "isConflict": self.is_conflict,
+            "conflictDesc": self.conflict_desc,
+            "isFull": self.is_full,
+            "isChoose": self.is_choose,
+            "canSelect": self.can_select,
+            "canOperate": self.can_operate,
+            "hasTest": self.has_test,
+            "needBook": self.need_book,
+            "capacitySuffix": self.capacity_suffix,
+            "selectableNow": self.is_selectable_now(),
+        }
+
+
+@dataclass
+class SchoolCourse:
+    """QXKC 返回的课程汇总及其教学班列表。"""
+
+    campus_code: str
+    campus_name: str
+    course_number: str
+    course_name: str
+    course_index: str
+    department_name: str
+    course_nature_name: str
+    course_type_name: str
+    credit: Any
+    hours: Any
+    teacher: str
+    selected: Any
+    course_flag: Any
+    teaching_classes: list[SchoolTeachingClass]
+    raw: Mapping[str, Any]
+
+    @classmethod
+    def from_api(
+        cls,
+        item: Mapping[str, Any],
+        *,
+        campus_code: str,
+        campus_name: str,
+    ) -> Optional["SchoolCourse"]:
+        course_number = as_text(
+            first_value(item, "courseNumber", "courseNum")
+        ) or ""
+        course_name = as_text(first_value(item, "courseName", "name")) or ""
+        course_index = as_text(
+            first_value(item, "courseIndex", "classIndex")
+        ) or ""
+        nested = item.get("tcList")
+        nested_items = (
+            [value for value in nested if isinstance(value, Mapping)]
+            if isinstance(nested, list)
+            else []
+        )
+        if not nested_items and first_value(
+            item, "teachingClassID", "teachingClassId", "jxbid"
+        ):
+            nested_items = [item]
+
+        teaching_classes: list[SchoolTeachingClass] = []
+        for nested_item in nested_items:
+            teaching_class = SchoolTeachingClass.from_api(
+                nested_item,
+                campus_code=campus_code,
+                campus_name=campus_name,
+                course_number=course_number,
+                course_index=course_index,
+            )
+            if teaching_class is not None:
+                teaching_classes.append(teaching_class)
+
+        teachers = teacher_names(first_value(item, "teacherName", "teacher"))
+        if not teachers:
+            teachers = ", ".join(
+                value.teacher
+                for value in teaching_classes
+                if value.teacher
+            )
+        return cls(
+            campus_code=campus_code,
+            campus_name=campus_name,
+            course_number=course_number,
+            course_name=course_name,
+            course_index=course_index,
+            department_name=as_text(
+                first_value(item, "departmentName", "department")
+            )
+            or "",
+            course_nature_name=as_text(
+                first_value(item, "courseNatureName", "nature")
+            )
+            or "",
+            course_type_name=as_text(
+                first_value(item, "courseTypeName", "typeName", "type")
+            )
+            or "",
+            credit=first_value(item, "credit"),
+            hours=first_value(item, "hours"),
+            teacher=teachers,
+            selected=first_value(item, "selected", "isChoose"),
+            course_flag=first_value(item, "courseFlag"),
+            teaching_classes=teaching_classes,
+            raw=item,
+        )
+
+    def key(self) -> str:
+        class_ids = tuple(
+            sorted(value.teaching_class_id for value in self.teaching_classes)
+        )
+        if class_ids:
+            return "tc:" + "|".join(class_ids)
+        return "course:" + "|".join(
+            (
+                self.campus_code,
+                self.course_number,
+                self.course_index,
+                self.course_name,
+            )
+        )
+
+    def public_dict(self) -> dict[str, Any]:
+        return {
+            "campusCode": self.campus_code,
+            "campus": self.campus_name,
+            "courseNumber": self.course_number,
+            "courseName": self.course_name,
+            "courseIndex": self.course_index,
+            "departmentName": self.department_name,
+            "courseNatureName": self.course_nature_name,
+            "courseTypeName": self.course_type_name,
+            "credit": self.credit,
+            "hours": self.hours,
+            "teacher": self.teacher,
+            "selected": self.selected,
+            "courseFlag": self.course_flag,
+            "teachingClasses": [
+                value.public_dict() for value in self.teaching_classes
+            ],
+        }
+
+
+@dataclass
+class SchoolQueryResult:
+    campus_code: str
+    campus_name: str
+    total_count: int
+    pages_visited: int
+    courses: list[SchoolCourse]
+
+
+@dataclass
+class SelectedCourse:
+    """courseResult.do 返回的一条当前轮次已选记录。"""
+
+    teaching_class_id: str
+    campus_code: str
+    campus_name: str
+    course_number: str
+    course_name: str
+    course_index: str
+    teacher: str
+    teaching_place: str
+    course_nature: Any
+    course_nature_name: str
+    course_type: Any
+    course_type_name: str
+    public_course_type: Any
+    public_course_type_name: str
+    credit: Any
+    hours: Any
+    school_term: str
+    is_test: Any
+    has_test: Any
+    test_teaching_class_id: str
+    need_book: Any
+    is_conflict: Any
+    conflict_desc: str
+    is_need_pay: Any
+    payment_status: str
+    raw: Mapping[str, Any]
+
+    @classmethod
+    def from_api(cls, item: Mapping[str, Any]) -> Optional["SelectedCourse"]:
+        teaching_class_id = as_text(
+            first_value(item, "teachingClassID", "teachingClassId", "jxbid")
+        )
+        if not teaching_class_id:
+            return None
+        return cls(
+            teaching_class_id=teaching_class_id,
+            campus_code=as_text(first_value(item, "campus")) or "",
+            campus_name=as_text(first_value(item, "campusName")) or "",
+            course_number=as_text(
+                first_value(item, "courseNumber", "courseNum")
+            )
+            or "",
+            course_name=as_text(first_value(item, "courseName", "name")) or "",
+            course_index=as_text(
+                first_value(item, "courseIndex", "classIndex")
+            )
+            or "",
+            teacher=teacher_names(
+                first_value(item, "teacherName", "teacher", "subTeacher")
+            ),
+            teaching_place=as_text(
+                first_value(item, "teachingPlace", "teachPlace", "classroom")
+            )
+            or "",
+            course_nature=first_value(item, "courseNature"),
+            course_nature_name=as_text(
+                first_value(item, "courseNatureName")
+            )
+            or "",
+            course_type=first_value(item, "courseType"),
+            course_type_name=as_text(first_value(item, "courseTypeName")) or "",
+            public_course_type=first_value(item, "publicCourseType"),
+            public_course_type_name=as_text(
+                first_value(item, "publicCourseTypeName")
+            )
+            or "",
+            credit=first_value(item, "credit"),
+            hours=first_value(item, "hours"),
+            school_term=as_text(first_value(item, "schoolTerm")) or "",
+            is_test=first_value(item, "isTest"),
+            has_test=first_value(item, "hasTest"),
+            test_teaching_class_id=as_text(
+                first_value(item, "testTeachingClassID", "testTeachingClassId")
+            )
+            or "",
+            need_book=first_value(item, "needBook"),
+            is_conflict=first_value(item, "isConflict"),
+            conflict_desc=as_text(
+                first_value(item, "conflictDesc", "conflictDescription")
+            )
+            or "",
+            is_need_pay=first_value(item, "isNeedPay"),
+            payment_status=as_text(first_value(item, "paymentStatus")) or "",
+            raw=item,
+        )
+
+    def public_dict(self) -> dict[str, Any]:
+        return {
+            "teachingClassId": self.teaching_class_id,
+            "campusCode": self.campus_code,
+            "campus": self.campus_name,
+            "courseNumber": self.course_number,
+            "courseName": self.course_name,
+            "courseIndex": self.course_index,
+            "teacher": self.teacher,
+            "teachingPlace": self.teaching_place,
+            "courseNature": self.course_nature,
+            "courseNatureName": self.course_nature_name,
+            "courseType": self.course_type,
+            "courseTypeName": self.course_type_name,
+            "publicCourseType": self.public_course_type,
+            "publicCourseTypeName": self.public_course_type_name,
+            "credit": self.credit,
+            "hours": self.hours,
+            "schoolTerm": self.school_term,
+            "isTest": self.is_test,
+            "hasTest": self.has_test,
+            "testTeachingClassId": self.test_teaching_class_id,
+            "needBook": self.need_book,
+            "isConflict": self.is_conflict,
+            "conflictDesc": self.conflict_desc,
+            "isNeedPay": self.is_need_pay,
+            "paymentStatus": self.payment_status,
+            "isBoya": selected_course_is_boya(self.raw) is True,
+        }
 
 
 def merge_course_data(
@@ -1176,11 +1649,139 @@ async def run_query_cycle(
     return results, all_courses
 
 
-async def query_selected_course_count(
+async def query_all_school_courses(
     api: BrowserApi,
     context: SessionContext,
-) -> int:
-    """统计当前轮次已选的博雅理论课数量，而不是全部已选课程。"""
+    *,
+    campus_code: str,
+    page_size: int,
+    max_pages: int,
+    request_delay: float,
+    keyword: str = "",
+    category: str = "",
+    teaching_unit: str = "",
+) -> SchoolQueryResult:
+    """通过 QXKC/queryCourse.do 分页读取当前批次全校课程。"""
+
+    if campus_code not in CAMPUS:
+        raise AutomationError(f"脚本只允许查询仙林/仙林新北，收到：{campus_code}")
+
+    courses: list[SchoolCourse] = []
+    seen_keys: set[str] = set()
+    total_count = 0
+    pages_visited = 0
+    page_number = 0
+
+    while True:
+        if pages_visited >= max_pages:
+            raise AutomationError(
+                f"{CAMPUS[campus_code]} 全校课程查询超过 max_pages={max_pages}，"
+                "为避免无限请求已停止"
+            )
+        payload = build_all_school_query_payload(
+            student_code=context.student_code,
+            batch_code=context.batch_code,
+            campus_code=campus_code,
+            keyword=keyword,
+            category=category,
+            teaching_unit=teaching_unit,
+            page_size=page_size,
+            page_number=page_number,
+        )
+        response = await api.post(ALL_SCHOOL_COURSE_PATH, payload)
+        if as_text(response.get("code")) != "1":
+            raise AutomationError(
+                f"{CAMPUS[campus_code]} 全校课程查询失败："
+                f"{safe_message(response.get('msg')) or '未知原因'}"
+            )
+
+        rows = response.get("dataList") or []
+        if not isinstance(rows, list):
+            raise AutomationError("queryCourse.do 的 dataList 不是数组")
+        parsed_total = parse_int(
+            response.get("totalCount", response.get("total"))
+        )
+        if parsed_total is not None:
+            total_count = parsed_total
+        elif total_count == 0:
+            total_count = len(rows)
+
+        pages_visited += 1
+        for item in rows:
+            if not isinstance(item, Mapping):
+                continue
+            course = SchoolCourse.from_api(
+                item,
+                campus_code=campus_code,
+                campus_name=CAMPUS[campus_code],
+            )
+            if course is None or course.key() in seen_keys:
+                continue
+            seen_keys.add(course.key())
+            courses.append(course)
+
+        if not rows or len(courses) >= total_count:
+            break
+        page_number += 1
+        await asyncio.sleep(request_delay)
+
+    return SchoolQueryResult(
+        campus_code=campus_code,
+        campus_name=CAMPUS[campus_code],
+        total_count=total_count,
+        pages_visited=pages_visited,
+        courses=courses,
+    )
+
+
+async def run_all_school_query_cycle(
+    api: BrowserApi,
+    context: SessionContext,
+    *,
+    page_size: int,
+    max_pages: int,
+    request_delay: float,
+    campus_codes: Sequence[str] = ("2", "4"),
+    keyword: str = "",
+    category: str = "",
+    teaching_unit: str = "",
+) -> tuple[list[SchoolQueryResult], list[SchoolCourse]]:
+    """按目标校区上下文查询 QXKC，并合并重复课程。"""
+
+    results: list[SchoolQueryResult] = []
+    courses: list[SchoolCourse] = []
+    seen_keys: set[str] = set()
+    for index, campus_code in enumerate(campus_codes):
+        result = await query_all_school_courses(
+            api,
+            context,
+            campus_code=campus_code,
+            page_size=page_size,
+            max_pages=max_pages,
+            request_delay=request_delay,
+            keyword=keyword,
+            category=category,
+            teaching_unit=teaching_unit,
+        )
+        results.append(result)
+        print(
+            f"[全校课程] {result.campus_name}：服务端返回 {result.total_count} 条，"
+            f"本次读取 {len(result.courses)} 条（访问 {result.pages_visited} 页）"
+        )
+        for course in result.courses:
+            if course.key() not in seen_keys:
+                seen_keys.add(course.key())
+                courses.append(course)
+        if index < len(campus_codes) - 1:
+            await asyncio.sleep(request_delay)
+    return results, courses
+
+
+async def fetch_selected_course_items(
+    api: BrowserApi,
+    context: SessionContext,
+) -> list[Mapping[str, Any]]:
+    """读取 courseResult.do 的当前批次已选课程原始行（仅留内存）。"""
 
     response = await api.get(
         timestamped_path(SELECTED_COURSE_PATH),
@@ -1191,13 +1792,41 @@ async def query_selected_course_count(
     )
     if as_text(response.get("code")) != "1":
         raise AutomationError(
-            "已选课程数量查询失败："
+            "已选课程查询失败："
             f"{safe_message(response.get('msg')) or '未知原因'}"
         )
     data_list = response.get("dataList") or []
     if not isinstance(data_list, list):
         raise AutomationError("courseResult.do 的 dataList 不是数组")
-    return count_boya_courses(data_list)
+    return [item for item in data_list if isinstance(item, Mapping)]
+
+
+async def query_selected_courses(
+    api: BrowserApi,
+    context: SessionContext,
+) -> list[SelectedCourse]:
+    """读取并整理当前选课批次的理论课/实验课记录。"""
+
+    records: list[SelectedCourse] = []
+    seen_ids: set[str] = set()
+    for item in await fetch_selected_course_items(api, context):
+        record = SelectedCourse.from_api(item)
+        if record is None or record.teaching_class_id in seen_ids:
+            continue
+        seen_ids.add(record.teaching_class_id)
+        records.append(record)
+    return records
+
+
+async def query_selected_course_count(
+    api: BrowserApi,
+    context: SessionContext,
+) -> int:
+    """统计当前轮次已选的博雅理论课数量，而不是全部已选课程。"""
+
+    return count_boya_courses(
+        await fetch_selected_course_items(api, context)
+    )
 
 
 def test_option_is_safe(item: Mapping[str, Any]) -> bool:
@@ -1254,6 +1883,286 @@ def write_snapshot(
         encoding="utf-8",
     )
     print(f"[保存] 已写入脱敏查询快照：{path}")
+
+
+def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+
+def _write_csv(
+    path: Path,
+    fieldnames: Sequence[str],
+    rows: Sequence[Mapping[str, Any]],
+) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(
+            handle,
+            fieldnames=list(fieldnames),
+            extrasaction="ignore",
+        )
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+SCHOOL_COURSE_CSV_FIELDS = (
+    "campusCode",
+    "campus",
+    "courseNumber",
+    "courseName",
+    "courseIndex",
+    "departmentName",
+    "courseNatureName",
+    "courseTypeName",
+    "credit",
+    "hours",
+    "courseTeacher",
+    "selected",
+    "courseFlag",
+    "teachingClassId",
+    "teachingClassIndex",
+    "teacher",
+    "teachingPlace",
+    "classCapacity",
+    "numberOfFirstVolunteer",
+    "numberOfSelected",
+    "isConflict",
+    "conflictDesc",
+    "isFull",
+    "isChoose",
+    "canSelect",
+    "canOperate",
+    "hasTest",
+    "needBook",
+    "capacitySuffix",
+    "selectableNow",
+)
+
+
+def school_course_csv_rows(
+    courses: Sequence[SchoolCourse],
+) -> list[dict[str, Any]]:
+    """把课程汇总和教学班展开成一行一个教学班的表格。"""
+
+    rows: list[dict[str, Any]] = []
+    for course in courses:
+        base = {
+            "campusCode": course.campus_code,
+            "campus": course.campus_name,
+            "courseNumber": course.course_number,
+            "courseName": course.course_name,
+            "courseIndex": course.course_index,
+            "departmentName": course.department_name,
+            "courseNatureName": course.course_nature_name,
+            "courseTypeName": course.course_type_name,
+            "credit": course.credit,
+            "hours": course.hours,
+            "courseTeacher": course.teacher,
+            "selected": course.selected,
+            "courseFlag": course.course_flag,
+        }
+        if not course.teaching_classes:
+            rows.append(dict(base))
+            continue
+        for teaching_class in course.teaching_classes:
+            detail = teaching_class.public_dict()
+            rows.append(
+                {
+                    **base,
+                    "teachingClassId": detail["teachingClassId"],
+                    "teachingClassIndex": detail["courseIndex"],
+                    "teacher": detail["teacher"],
+                    "teachingPlace": detail["teachingPlace"],
+                    "classCapacity": detail["classCapacity"],
+                    "numberOfFirstVolunteer": detail[
+                        "numberOfFirstVolunteer"
+                    ],
+                    "numberOfSelected": detail["numberOfSelected"],
+                    "isConflict": detail["isConflict"],
+                    "conflictDesc": detail["conflictDesc"],
+                    "isFull": detail["isFull"],
+                    "isChoose": detail["isChoose"],
+                    "canSelect": detail["canSelect"],
+                    "canOperate": detail["canOperate"],
+                    "hasTest": detail["hasTest"],
+                    "needBook": detail["needBook"],
+                    "capacitySuffix": detail["capacitySuffix"],
+                    "selectableNow": detail["selectableNow"],
+                }
+            )
+    return rows
+
+
+def write_open_course_exports(
+    export_dir: Path,
+    context: SessionContext,
+    results: Sequence[SchoolQueryResult],
+    courses: Sequence[SchoolCourse],
+    *,
+    keyword: str = "",
+    category: str = "",
+    teaching_unit: str = "",
+) -> tuple[Path, Path]:
+    """写入全校开放课程的脱敏 JSON 与可用表格 CSV。"""
+
+    export_dir = export_dir.expanduser().resolve()
+    export_dir.mkdir(parents=True, exist_ok=True)
+    json_path = export_dir / "all_open_courses.json"
+    csv_path = export_dir / "all_open_courses.csv"
+    payload = {
+        "observedAt": datetime.now(timezone.utc).isoformat(),
+        "batchName": context.batch_name,
+        "query": {
+            "endpoint": ALL_SCHOOL_COURSE_PATH,
+            "teachingClassType": ALL_SCHOOL_TEACHING_CLASS_TYPE,
+            "campuses": [result.campus_code for result in results],
+            "filters": {
+                "keyword": keyword,
+                "category": category,
+                "teachingUnit": teaching_unit,
+            },
+        },
+        "campusResults": [
+            {
+                "campusCode": result.campus_code,
+                "campus": result.campus_name,
+                "totalCount": result.total_count,
+                "pagesVisited": result.pages_visited,
+                "rowsRead": len(result.courses),
+            }
+            for result in results
+        ],
+        "courseCount": len(courses),
+        "teachingClassCount": sum(
+            len(course.teaching_classes) for course in courses
+        ),
+        "courses": [course.public_dict() for course in courses],
+    }
+    _write_json(json_path, payload)
+    _write_csv(
+        csv_path,
+        SCHOOL_COURSE_CSV_FIELDS,
+        school_course_csv_rows(courses),
+    )
+    print(f"[保存] 全校开放课程 JSON：{json_path}")
+    print(f"[保存] 全校开放课程 CSV：{csv_path}")
+    return json_path, csv_path
+
+
+SELECTED_COURSE_CSV_FIELDS = (
+    "recordKind",
+    "parentTeachingClassId",
+    "teachingClassId",
+    "campusCode",
+    "campus",
+    "courseNumber",
+    "courseName",
+    "courseIndex",
+    "teacher",
+    "teachingPlace",
+    "courseNature",
+    "courseNatureName",
+    "courseType",
+    "courseTypeName",
+    "publicCourseType",
+    "publicCourseTypeName",
+    "credit",
+    "hours",
+    "schoolTerm",
+    "isTest",
+    "hasTest",
+    "testTeachingClassId",
+    "needBook",
+    "isConflict",
+    "conflictDesc",
+    "isNeedPay",
+    "paymentStatus",
+    "isBoya",
+)
+
+
+def selected_course_csv_rows(
+    records: Sequence[SelectedCourse],
+) -> list[dict[str, Any]]:
+    parent_by_test_id = {
+        record.test_teaching_class_id: record.teaching_class_id
+        for record in records
+        if as_text(record.is_test) != "1" and record.test_teaching_class_id
+    }
+    rows: list[dict[str, Any]] = []
+    for record in records:
+        row = record.public_dict()
+        rows.append(
+            {
+                "recordKind": (
+                    "experiment"
+                    if as_text(record.is_test) == "1"
+                    else "theory"
+                ),
+                "parentTeachingClassId": parent_by_test_id.get(
+                    record.teaching_class_id, ""
+                ),
+                **row,
+            }
+        )
+    return rows
+
+
+def write_selected_course_exports(
+    export_dir: Path,
+    context: SessionContext,
+    records: Sequence[SelectedCourse],
+) -> tuple[Path, Path]:
+    """写入当前批次已选课程的脱敏 JSON 与 CSV。"""
+
+    export_dir = export_dir.expanduser().resolve()
+    export_dir.mkdir(parents=True, exist_ok=True)
+    json_path = export_dir / "selected_courses.json"
+    csv_path = export_dir / "selected_courses.csv"
+    theory = [record for record in records if as_text(record.is_test) != "1"]
+    experiments = [
+        record for record in records if as_text(record.is_test) == "1"
+    ]
+    experiment_by_id = {
+        record.teaching_class_id: record.public_dict()
+        for record in experiments
+    }
+    courses: list[dict[str, Any]] = []
+    for record in theory:
+        course = record.public_dict()
+        if record.test_teaching_class_id:
+            course["experimentCourse"] = experiment_by_id.get(
+                record.test_teaching_class_id
+            )
+        courses.append(course)
+    payload = {
+        "observedAt": datetime.now(timezone.utc).isoformat(),
+        "batchName": context.batch_name,
+        "selectedTheoryCount": len(theory),
+        "selectedExperimentCount": len(experiments),
+        "selectedBoyaTheoryCount": sum(
+            selected_course_is_boya(record.raw) is True for record in theory
+        ),
+        "courses": courses,
+        "experimentCourses": [record.public_dict() for record in experiments],
+    }
+    _write_json(json_path, payload)
+    _write_csv(
+        csv_path,
+        SELECTED_COURSE_CSV_FIELDS,
+        selected_course_csv_rows(records),
+    )
+    print(f"[保存] 当前已选课程 JSON：{json_path}")
+    print(f"[保存] 当前已选课程 CSV：{csv_path}")
+    print(
+        f"[已选课程] 理论课 {len(theory)} 门，实验记录 {len(experiments)} 条，"
+        f"其中博雅理论课 {payload['selectedBoyaTheoryCount']} 门"
+    )
+    return json_path, csv_path
 
 
 async def preflight_course(
@@ -1480,7 +2389,7 @@ async def submit_course(
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="NNU 博雅课：只查询仙林/仙林新北，默认只读"
+        description="NNU 课程查询与博雅课受控选课：只查询仙林/仙林新北"
     )
     parser.add_argument(
         "--watch",
@@ -1526,6 +2435,41 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--course-id", default="", help="精确教学班 ID")
     parser.add_argument("--course-number", default="", help="精确课程号")
     parser.add_argument("--course-name", default="", help="课程名包含匹配")
+    parser.add_argument(
+        "--collect-open-courses",
+        "--all-open-courses",
+        dest="collect_open_courses",
+        action="store_true",
+        help="只读采集当前批次 QXKC 全校课程并导出 JSON/CSV",
+    )
+    parser.add_argument(
+        "--collect-selected-courses",
+        "--selected-courses",
+        dest="collect_selected_courses",
+        action="store_true",
+        help="只读采集当前批次已选课程并导出 JSON/CSV",
+    )
+    parser.add_argument(
+        "--export-dir",
+        type=Path,
+        default=DEFAULT_EXPORT_DIR,
+        help="采集结果输出目录（默认：05_工具/.runtime）",
+    )
+    parser.add_argument(
+        "--school-keyword",
+        default="",
+        help="全校课程查询关键字，仅与 --collect-open-courses 一起使用",
+    )
+    parser.add_argument(
+        "--school-category",
+        default="",
+        help="全校课程通识类别代码（XGXKLBDM），仅用于采集",
+    )
+    parser.add_argument(
+        "--school-unit",
+        default="",
+        help="全校课程开课单位代码（KKDWDM），仅用于采集",
+    )
     parser.add_argument(
         "--submit",
         action="store_true",
@@ -1573,12 +2517,18 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
                 args.course_id,
                 args.course_number,
                 args.course_name,
+                args.collect_open_courses,
+                args.collect_selected_courses,
                 args.submit,
                 args.auto_select,
                 args.yes,
                 args.need_book is not None,
                 args.test_teaching_class_id,
                 args.output is not None,
+                args.export_dir != DEFAULT_EXPORT_DIR,
+                args.school_keyword,
+                args.school_category,
+                args.school_unit,
                 args.no_auto_fill,
             )
         )
@@ -1587,6 +2537,54 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
                 "--setup-credentials/--clear-credentials 不能与查询或提交参数一起使用"
             )
         return
+
+    if args.watch and args.interval < 10:
+        parser.error("--watch 的 --interval 不能小于 10 秒")
+    if args.request_delay < 0.5:
+        parser.error("--request-delay 不能小于 0.5 秒")
+    if not 1 <= args.page_size <= 100:
+        parser.error("--page-size 必须在 1 到 100 之间")
+    if args.max_pages < 1:
+        parser.error("--max-pages 必须大于 0")
+    if args.timeout < 30:
+        parser.error("--timeout 不能小于 30 秒")
+
+    collecting = args.collect_open_courses or args.collect_selected_courses
+    if collecting:
+        if any(
+            (
+                args.watch,
+                args.course_id,
+                args.course_number,
+                args.course_name,
+                args.submit,
+                args.auto_select,
+                args.yes,
+                args.need_book is not None,
+                args.test_teaching_class_id,
+                args.output is not None,
+            )
+        ):
+            parser.error(
+                "课程采集模式是只读一次性任务，不能与轮询、筛选提交或 --output 混用"
+            )
+        if (
+            (args.school_keyword or args.school_category or args.school_unit)
+            and not args.collect_open_courses
+        ):
+            parser.error(
+                "--school-keyword/--school-category/--school-unit "
+                "必须与 --collect-open-courses 一起使用"
+            )
+        return
+
+    if args.school_keyword or args.school_category or args.school_unit:
+        parser.error(
+            "--school-keyword/--school-category/--school-unit "
+            "必须与 --collect-open-courses 一起使用"
+        )
+    if args.export_dir != DEFAULT_EXPORT_DIR:
+        parser.error("--export-dir 必须与课程采集模式一起使用")
 
     has_selector = bool(
         args.course_id or args.course_number or args.course_name
@@ -1607,18 +2605,6 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
         parser.error("--auto-select 必须明确指定 --need-book 0 或 1")
     if args.yes and not (args.submit or args.auto_select):
         parser.error("--yes 只能与 --submit 或 --auto-select 一起使用")
-    if args.watch and args.interval < 10:
-        parser.error("--watch 的 --interval 不能小于 10 秒")
-    if args.request_delay < 0.5:
-        parser.error("--request-delay 不能小于 0.5 秒")
-    if not 1 <= args.page_size <= 100:
-        parser.error("--page-size 必须在 1 到 100 之间")
-    if args.max_pages < 1:
-        parser.error("--max-pages 必须大于 0")
-    if args.timeout < 30:
-        parser.error("--timeout 不能小于 30 秒")
-
-
 async def async_main(args: argparse.Namespace) -> int:
     playwright = context = page = None
     try:
@@ -1628,12 +2614,56 @@ async def async_main(args: argparse.Namespace) -> int:
         )
         browser_session = BrowserSession(page)
         session_context = await browser_session.read_context()
-        if session_context.teaching_class_type not in {"", "XGXK"}:
+        expected_teaching_class_type = (
+            ALL_SCHOOL_TEACHING_CLASS_TYPE
+            if args.collect_open_courses
+            else BOYA_TEACHING_CLASS_TYPE
+        )
+        if (
+            not args.collect_selected_courses
+            and session_context.teaching_class_type
+            not in {"", expected_teaching_class_type}
+        ):
             print(
-                "[提示] 当前页面教学班类型不是 XGXK；"
-                "本工具仍只发送明确的 XGXK 博雅课查询"
+                f"[提示] 当前页面教学班类型不是 {expected_teaching_class_type}；"
+                f"本工具仍只发送明确的 {expected_teaching_class_type} 查询"
             )
         api = BrowserApi(page)
+
+        if args.collect_open_courses or args.collect_selected_courses:
+            if args.collect_open_courses:
+                school_results, school_courses = await run_all_school_query_cycle(
+                    api,
+                    session_context,
+                    page_size=args.page_size,
+                    max_pages=args.max_pages,
+                    request_delay=args.request_delay,
+                    campus_codes=("2", "4"),
+                    keyword=args.school_keyword,
+                    category=args.school_category,
+                    teaching_unit=args.school_unit,
+                )
+                write_open_course_exports(
+                    args.export_dir,
+                    session_context,
+                    school_results,
+                    school_courses,
+                    keyword=args.school_keyword,
+                    category=args.school_category,
+                    teaching_unit=args.school_unit,
+                )
+            if args.collect_selected_courses:
+                selected_records = await query_selected_courses(
+                    api,
+                    session_context,
+                )
+                write_selected_course_exports(
+                    args.export_dir,
+                    session_context,
+                    selected_records,
+                )
+            return 0
+
         campus_codes = ("2",) if args.auto_select else ("2", "4")
 
         while True:
