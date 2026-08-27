@@ -333,9 +333,9 @@ class NnuBoyaAutomationTests(unittest.TestCase):
                 return {
                     "code": "1",
                     "dataList": [
-                        {"isTest": "0"},
-                        {"isTest": "1"},
-                        {},
+                        {"isTest": "0", "publicCourseType": "A01"},
+                        {"isTest": "1", "publicCourseType": "A02"},
+                        {"isTest": "0", "publicCourseTypeName": "-"},
                     ],
                 }
 
@@ -352,8 +352,44 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         count = asyncio.run(
             MODULE.query_selected_course_count(api, context)
         )
-        self.assertEqual(count, 2)
+        self.assertEqual(count, 1)
         self.assertTrue(api.path.startswith(MODULE.SELECTED_COURSE_PATH + "?timestamp="))
+
+    def test_boya_classifier_uses_explicit_public_markers(self) -> None:
+        self.assertTrue(
+            MODULE.selected_course_is_boya(
+                {"teachingClassType": "XGXK"}
+            )
+        )
+        self.assertTrue(
+            MODULE.selected_course_is_boya(
+                {"publicCourseTypeName": "人文艺术"}
+            )
+        )
+        self.assertTrue(
+            MODULE.selected_course_is_boya(
+                {"courseTypeName": "博雅教育课程"}
+            )
+        )
+        self.assertFalse(
+            MODULE.selected_course_is_boya(
+                {"teachingClassType": "FANKC"}
+            )
+        )
+        self.assertIsNone(MODULE.selected_course_is_boya({}))
+
+    def test_boya_count_does_not_count_normal_courses(self) -> None:
+        self.assertEqual(
+            MODULE.count_boya_courses(
+                [
+                    {"isTest": "0", "publicCourseType": "01"},
+                    {"isTest": "0", "courseTypeName": "方案内课程"},
+                    {"isTest": "1", "publicCourseType": "02"},
+                    {"isTest": "0", "courseType": "XGXK"},
+                ]
+            ),
+            2,
+        )
 
 
 if __name__ == "__main__":

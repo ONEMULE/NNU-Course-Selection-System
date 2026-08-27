@@ -59,6 +59,7 @@ CAMPUS = {
     "4": "仙林新北",
 }
 
+BOYA_TEACHING_CLASS_TYPE = "XGXK"
 AUTO_TARGET_COUNT = 4
 
 TOKEN_PATTERN = re.compile(
@@ -292,6 +293,68 @@ def first_value(item: Mapping[str, Any], *keys: str) -> Any:
         if key in item and item[key] is not None:
             return item[key]
     return None
+
+
+def _meaningful_classification_value(value: Any) -> Optional[str]:
+    """把分类字段中的空值/占位符统一视为“没有分类”。"""
+
+    text = as_text(value)
+    if text is None or text.casefold() in {"", "-", "null", "none", "nan"}:
+        return None
+    return text
+
+
+def selected_course_is_boya(item: Mapping[str, Any]) -> Optional[bool]:
+    """根据 NNU 已选结果字段判断一条理论课是否属于博雅课。
+
+    ``courseResult.do`` 的前端渲染没有把当前页面 tab 的
+    ``sessionStorage.teachingClassType`` 回传到结果行，所以不能用已选行数
+    直接当作博雅数量。优先使用明确的教学班类型；在该字段缺失时，使用
+    ``publicCourseType``/``publicCourseTypeName`` 这组博雅专有字段，再兼容
+    课程类型字段中出现的 XGXK/中文名称。没有任何分类证据时返回 None，调用
+    方会按“非博雅”处理，避免把普通课程计入目标数。
+    """
+
+    teaching_class_type = _meaningful_classification_value(
+        first_value(item, "teachingClassType", "teachingclasstype")
+    )
+    if teaching_class_type is not None:
+        return teaching_class_type.upper() == BOYA_TEACHING_CLASS_TYPE
+
+    public_type = _meaningful_classification_value(
+        first_value(item, "publicCourseType", "publiccoursetype")
+    )
+    public_type_name = _meaningful_classification_value(
+        first_value(item, "publicCourseTypeName", "publiccoursetypename")
+    )
+    if public_type is not None or public_type_name is not None:
+        return True
+
+    for value in (
+        first_value(item, "courseType", "coursetype"),
+        first_value(item, "courseTypeName", "coursetypename"),
+    ):
+        text = _meaningful_classification_value(value)
+        if text is None:
+            continue
+        if text.upper() == BOYA_TEACHING_CLASS_TYPE:
+            return True
+        if any(marker in text for marker in ("博雅", "校公选", "公共选修")):
+            return True
+
+    return None
+
+
+def count_boya_courses(data_list: Sequence[Any]) -> int:
+    """只统计 courseResult.do 中的博雅理论课，不统计实验行或普通课程。"""
+
+    count = 0
+    for item in data_list:
+        if not isinstance(item, Mapping) or as_text(item.get("isTest")) == "1":
+            continue
+        if selected_course_is_boya(item) is True:
+            count += 1
+    return count
 
 
 def parse_flag(value: Any) -> Optional[bool]:
@@ -1117,7 +1180,7 @@ async def query_selected_course_count(
     api: BrowserApi,
     context: SessionContext,
 ) -> int:
-    """按 NNU 页面口径统计当前轮次已选的非实验课程数量。"""
+    """统计当前轮次已选的博雅理论课数量，而不是全部已选课程。"""
 
     response = await api.get(
         timestamped_path(SELECTED_COURSE_PATH),
@@ -1134,11 +1197,7 @@ async def query_selected_course_count(
     data_list = response.get("dataList") or []
     if not isinstance(data_list, list):
         raise AutomationError("courseResult.do 的 dataList 不是数组")
-    return sum(
-        1
-        for item in data_list
-        if isinstance(item, Mapping) and as_text(item.get("isTest")) != "1"
-    )
+    return count_boya_courses(data_list)
 
 
 def test_option_is_safe(item: Mapping[str, Any]) -> bool:
@@ -1476,7 +1535,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--auto-select",
         action="store_true",
         help=(
-            "配合 --watch/--yes 使用：只轮询仙林，直到已选非实验课程达到 4 门；"
+            "配合 --watch/--yes 使用：只轮询仙林，直到已选博雅理论课达到 4 门；"
             "期间发现安全候选就自动提交"
         ),
     )
@@ -1584,12 +1643,12 @@ async def async_main(args: argparse.Namespace) -> int:
                     session_context,
                 )
                 print(
-                    f"[进度] 当前已选非实验课程：{selected_count}/"
+                    f"[进度] 当前已选博雅理论课：{selected_count}/"
                     f"{AUTO_TARGET_COUNT}"
                 )
                 if selected_count >= AUTO_TARGET_COUNT:
                     print(
-                        f"[完成] 已选课程数量已达到 {AUTO_TARGET_COUNT} 门，"
+                        f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
                         "停止自动选课"
                     )
                     return 0
@@ -1669,12 +1728,12 @@ async def async_main(args: argparse.Namespace) -> int:
                         session_context,
                     )
                     print(
-                        f"[进度] 本次操作后已选非实验课程：{selected_count}/"
+                        f"[进度] 本次操作后已选博雅理论课：{selected_count}/"
                         f"{AUTO_TARGET_COUNT}"
                     )
                     if selected_count >= AUTO_TARGET_COUNT:
                         print(
-                            f"[完成] 已选课程数量已达到 {AUTO_TARGET_COUNT} 门，"
+                            f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
                             "停止自动选课"
                         )
                         return 0
