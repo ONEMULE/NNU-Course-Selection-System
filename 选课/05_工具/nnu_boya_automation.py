@@ -506,13 +506,14 @@ class TerminalUI:
             if getattr(args, "no_auto_fill", False)
             else "credential-fill"
         )
-        auto_mark = self._paint(
-            "[AUTO-SELECT]",
-            "32;1" if current_mode == "AUTO-SELECT" else "33",
+        auto_selected = current_mode == "AUTO-SELECT"
+        auto_radio = self._paint(
+            "[*]" if auto_selected else "[ ]",
+            "32;1" if auto_selected else "90",
         )
-        watch_mark = self._paint(
-            "[WATCH]",
-            "36;1" if current_mode != "AUTO-SELECT" else "90",
+        watch_radio = self._paint(
+            "[*]" if not auto_selected else "[ ]",
+            "36;1" if not auto_selected else "90",
         )
         campus_2_mark = self._paint("[X]", "32;1") if campus_2 else self._paint("[ ]", "90")
         campus_4_mark = self._paint("[X]", "32;1") if campus_4 else self._paint("[ ]", "90")
@@ -529,6 +530,7 @@ class TerminalUI:
             ),
             self._paint(
                 "MOUSE click rows to change  |  wheel adjusts numeric values  |  "
+                "MODE-A/MODE-W single choice ([*]=selected)  |  "
                 "keys: S/W/E/2/4/B/I/D/P/M/T/L/Y/O  |  A apply / Q cancel",
                 "90",
             ),
@@ -543,12 +545,12 @@ class TerminalUI:
         self._config_row(
             lines,
             "mode-auto",
-            f"MODE-A   {auto_mark}  first safe Boya course; submit when < 4",
+            f"MODE-A   {auto_radio} AUTO-SELECT  first safe Boya course; submit when < 4",
         )
         self._config_row(
             lines,
             "mode-watch",
-            f"MODE-W   {watch_mark}        query only; no automatic submission",
+            f"MODE-W   {watch_radio} WATCH        query only; no automatic submission",
         )
         self._config_row(
             lines,

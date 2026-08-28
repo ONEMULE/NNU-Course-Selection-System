@@ -587,6 +587,8 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         ui.view = "config"
         screen = ui.render_config_text(args)
         self.assertIn("MOUSE click rows to change", screen)
+        self.assertIn("MODE-A   [*] AUTO-SELECT", screen)
+        self.assertIn("MODE-W   [ ] WATCH", screen)
         self.assertIn("CAMPUS-4", screen)
         self.assertIn("[ APPLY & START ]", screen)
         self.assertIn("book", ui._config_regions)
@@ -597,6 +599,21 @@ class NnuBoyaAutomationTests(unittest.TestCase):
 
         message = ui._change_config("campus-4", args)
         self.assertIn("locked", message)
+        self.assertEqual(ui._config_campus_codes, ["2"])
+
+        mode_watch_y = ui._config_regions["mode-watch"][2]
+        ui._handle_config_event(("click", "left", 2, mode_watch_y), args)
+        self.assertFalse(args.auto_select)
+        self.assertFalse(args.yes)
+        self.assertEqual(ui._config_campus_codes, ["2", "4"])
+        screen = ui.render_config_text(args)
+        self.assertIn("MODE-A   [ ] AUTO-SELECT", screen)
+        self.assertIn("MODE-W   [*] WATCH", screen)
+
+        mode_auto_y = ui._config_regions["mode-auto"][2]
+        ui._handle_config_event(("click", "left", 2, mode_auto_y), args)
+        self.assertTrue(args.auto_select)
+        self.assertTrue(args.yes)
         self.assertEqual(ui._config_campus_codes, ["2"])
 
         ui._change_config("mode-watch", args)
