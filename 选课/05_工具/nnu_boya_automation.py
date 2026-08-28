@@ -2394,13 +2394,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--watch",
         action="store_true",
-        help="没有目标时持续轮询；默认间隔 30 秒",
+        help="没有目标时持续轮询；默认间隔 1 秒",
     )
     parser.add_argument(
         "--interval",
         type=float,
-        default=30.0,
-        help="watch 模式轮询间隔，至少 10 秒",
+        default=1.0,
+        help="watch 模式轮询间隔，至少 1 秒",
     )
     parser.add_argument(
         "--request-delay",
@@ -2538,8 +2538,8 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
             )
         return
 
-    if args.watch and args.interval < 10:
-        parser.error("--watch 的 --interval 不能小于 10 秒")
+    if args.watch and args.interval < 1:
+        parser.error("--watch 的 --interval 不能小于 1 秒")
     if args.request_delay < 0.5:
         parser.error("--request-delay 不能小于 0.5 秒")
     if not 1 <= args.page_size <= 100:

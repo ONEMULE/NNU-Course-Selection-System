@@ -494,6 +494,14 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             ["--watch", "--auto-select", "--yes", "--need-book", "0"]
         )
         MODULE.validate_args(parser, args)
+        self.assertEqual(args.interval, 1.0)
+
+        one_second = parser.parse_args(["--watch", "--interval", "1"])
+        MODULE.validate_args(parser, one_second)
+
+        with self.assertRaises(SystemExit):
+            too_fast = parser.parse_args(["--watch", "--interval", "0.9"])
+            MODULE.validate_args(parser, too_fast)
 
         with self.assertRaises(SystemExit):
             invalid = parser.parse_args(["--auto-select"])
