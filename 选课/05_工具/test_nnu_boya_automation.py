@@ -586,11 +586,13 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         ui._config_args = args
         ui.view = "config"
         screen = ui.render_config_text(args)
-        self.assertIn("MOUSE click rows to change", screen)
-        self.assertIn("MODE-A   [*] AUTO-SELECT", screen)
-        self.assertIn("MODE-W   [ ] WATCH", screen)
-        self.assertIn("CAMPUS-4", screen)
-        self.assertIn("[ APPLY & START ]", screen)
+        self.assertIn("鼠标：左键切换/循环", screen)
+        self.assertIn("模式 A   [*] 自动选课", screen)
+        self.assertIn("模式 W   [ ] 只监控", screen)
+        self.assertIn("完整预设", screen)
+        self.assertIn("说明  自动：", screen)
+        self.assertIn("校区 4", screen)
+        self.assertIn("[ 应用并启动 ]", screen)
         self.assertIn("book", ui._config_regions)
 
         book_y = ui._config_regions["book"][2]
@@ -598,7 +600,7 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertEqual(args.need_book, "1")
 
         message = ui._change_config("campus-4", args)
-        self.assertIn("locked", message)
+        self.assertIn("锁定", message)
         self.assertEqual(ui._config_campus_codes, ["2"])
 
         mode_watch_y = ui._config_regions["mode-watch"][2]
@@ -606,15 +608,36 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertFalse(args.auto_select)
         self.assertFalse(args.yes)
         self.assertEqual(ui._config_campus_codes, ["2", "4"])
+        self.assertEqual(args.interval, MODULE.WATCH_PRESET["interval"])
+        self.assertEqual(args.request_delay, MODULE.WATCH_PRESET["request_delay"])
+        self.assertEqual(args.page_size, MODULE.WATCH_PRESET["page_size"])
+        self.assertEqual(args.max_pages, MODULE.WATCH_PRESET["max_pages"])
+        self.assertIsNone(args.output)
         screen = ui.render_config_text(args)
-        self.assertIn("MODE-A   [ ] AUTO-SELECT", screen)
-        self.assertIn("MODE-W   [*] WATCH", screen)
+        self.assertIn("模式 A   [ ] 自动选课", screen)
+        self.assertIn("模式 W   [*] 只监控", screen)
 
         mode_auto_y = ui._config_regions["mode-auto"][2]
         ui._handle_config_event(("click", "left", 2, mode_auto_y), args)
         self.assertTrue(args.auto_select)
         self.assertTrue(args.yes)
         self.assertEqual(ui._config_campus_codes, ["2"])
+        self.assertEqual(args.interval, MODULE.AUTO_SELECT_PRESET["interval"])
+        self.assertEqual(args.request_delay, MODULE.AUTO_SELECT_PRESET["request_delay"])
+        self.assertEqual(args.page_size, MODULE.AUTO_SELECT_PRESET["page_size"])
+        self.assertEqual(args.max_pages, MODULE.AUTO_SELECT_PRESET["max_pages"])
+        self.assertEqual(args.need_book, "0")
+        self.assertFalse(args.no_auto_fill)
+        self.assertIsNone(args.output)
+
+        args.interval = 10.0
+        args.page_size = 10
+        args.output = MODULE.DEFAULT_EXPORT_DIR / "custom.json"
+        preset_y = ui._config_regions["preset"][2]
+        ui._handle_config_event(("click", "left", 2, preset_y), args)
+        self.assertEqual(args.interval, MODULE.AUTO_SELECT_PRESET["interval"])
+        self.assertEqual(args.page_size, MODULE.AUTO_SELECT_PRESET["page_size"])
+        self.assertIsNone(args.output)
 
         ui._change_config("mode-watch", args)
         self.assertFalse(args.auto_select)
@@ -624,7 +647,7 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertEqual(ui._config_campus_codes, ["2"])
 
         output_message = ui._change_config("output", args)
-        self.assertEqual(output_message, "snapshot enabled")
+        self.assertEqual(output_message, "查询快照已开启")
         self.assertIsNotNone(args.output)
 
     def test_no_arguments_are_eligible_for_default_interactive_tui(self) -> None:

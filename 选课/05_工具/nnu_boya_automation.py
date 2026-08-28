@@ -75,6 +75,31 @@ ALL_SCHOOL_TEACHING_CLASS_TYPE = "QXKC"
 AUTO_TARGET_COUNT = 4
 DEFAULT_EXPORT_DIR = Path(__file__).resolve().parent / ".runtime"
 
+# The mode buttons load a complete, conservative runtime preset.  The values
+# are deliberately separate from argparse defaults so the TUI can explain and
+# re-apply one coherent configuration after the user has edited individual
+# controls.
+AUTO_SELECT_PRESET = {
+    "interval": 1.0,
+    "request_delay": 0.5,
+    "page_size": 50,
+    "max_pages": 50,
+    "timeout": 300,
+    "need_book": "0",
+    "no_auto_fill": False,
+    "output": None,
+}
+WATCH_PRESET = {
+    "interval": 1.0,
+    "request_delay": 0.5,
+    "page_size": 50,
+    "max_pages": 50,
+    "timeout": 300,
+    "need_book": None,
+    "no_auto_fill": False,
+    "output": None,
+}
+
 TOKEN_PATTERN = re.compile(
     r"(?i)([\"']?token[\"']?\s*[=:]\s*[\"']?)[^&\s,}\"']+"
 )
@@ -497,138 +522,183 @@ class TerminalUI:
 
         self._config_regions = {}
         current_mode = self._mode_for_args(args)
+        mode_name = {
+            "AUTO-SELECT": "自动选课",
+            "TARGET WATCH": "目标提交",
+            "WATCH": "只监控",
+        }.get(current_mode, current_mode)
         campus_2 = "2" in self._config_campus_codes
         campus_4 = "4" in self._config_campus_codes
-        need_book = getattr(args, "need_book", None) or "未设置"
-        confirmation = "YES" if getattr(args, "yes", False) else "MANUAL"
-        login_mode = (
-            "manual"
-            if getattr(args, "no_auto_fill", False)
-            else "credential-fill"
-        )
+        raw_need_book = getattr(args, "need_book", None)
+        need_book = {
+            "0": "不订教材",
+            "1": "订购教材",
+        }.get(raw_need_book, "未指定")
+        confirmation = "是" if getattr(args, "yes", False) else "否"
+        login_mode = "手动输入" if getattr(args, "no_auto_fill", False) else "自动填入"
+        snapshot = getattr(args, "output", None)
         auto_selected = current_mode == "AUTO-SELECT"
         auto_radio = self._paint(
-            "[*]" if auto_selected else "[ ]",
+            "[*] 自动选课" if auto_selected else "[ ] 自动选课",
             "32;1" if auto_selected else "90",
         )
         watch_radio = self._paint(
-            "[*]" if not auto_selected else "[ ]",
+            "[*] 只监控" if not auto_selected else "[ ] 只监控",
             "36;1" if not auto_selected else "90",
         )
-        campus_2_mark = self._paint("[X]", "32;1") if campus_2 else self._paint("[ ]", "90")
-        campus_4_mark = self._paint("[X]", "32;1") if campus_4 else self._paint("[ ]", "90")
-        locked_mark = self._paint("[LOCKED]", "33;1")
+        campus_2_mark = self._paint("[开]", "32;1") if campus_2 else self._paint("[关]", "90")
+        campus_4_mark = self._paint("[开]", "32;1") if campus_4 else self._paint("[关]", "90")
+        locked_mark = self._paint("[锁定]", "33;1")
+        preset_name = "自动选课" if auto_selected else "只监控"
+        preset_button = self._paint(f"[恢复{preset_name}预设]", "35;1")
+        snapshot_label = "关闭" if snapshot is None else "开启"
+        test_class_id = getattr(args, "test_teaching_class_id", "") or "无"
+        interval_value = self.interval.replace("s", "秒")
+        request_delay_value = self.request_delay.replace("s", "秒")
+        login_timeout_value = self.login_timeout.replace("s", "秒")
+        test_class_button = (
+            self._paint("[锁定]", "33;1")
+            if auto_selected
+            else self._paint(
+                "[编辑]" if getattr(args, "submit", False) else "[不可用]",
+                "36;1" if getattr(args, "submit", False) else "90",
+            )
+        )
         lines = [
             self._paint(
-                "NNU // BOYA CONTROL PANEL   |   MOUSE CONFIGURATION",
+                "NNU // 博雅课控制台   |   启动配置（鼠标可操作）",
                 "36;1",
             ),
             self._paint(
-                f"PHASE CONFIG       current={current_mode:<12} "
-                "apply-before-login",
+                f"阶段 CONFIG   当前模式={mode_name}({current_mode})  "
+                "点击应用后打开登录页",
                 "36",
             ),
             self._paint(
-                "MOUSE click rows to change  |  wheel adjusts numeric values  |  "
-                "MODE-A/MODE-W single choice ([*]=selected)  |  "
-                "keys: S/W/E/2/4/B/I/D/P/M/T/L/Y/O  |  A apply / Q cancel",
+                "鼠标：左键切换/循环·滚轮调数值  [*]当前  R预设  A/回车应用  Q/Esc退出",
+                "90",
+            ),
+            self._paint(
+                "快捷键：S/W模式·R预设·E目标·2/4校区·B教材·I/D/P/M/T参数",
+                "90",
+            ),
+            self._paint(
+                "         L登录填充·Y确认·O快照·X实验班",
                 "90",
             ),
         ]
         self._config_row(
             lines,
             "selector",
-            f"TARGET selector={_truncate_display(self.selector, 56)} "
-            f"query-type={self.expected_teaching_class_type}  "
-            "click/E to edit (auto|watch|id:|number:|name:)",
+            f"目标课程 [编辑] {_truncate_display(self.selector, 54)}  "
+            f"查询类型={self.expected_teaching_class_type}  点击/E编辑",
         )
         self._config_row(
             lines,
             "mode-auto",
-            f"MODE-A   {auto_radio} AUTO-SELECT  first safe Boya course; submit when < 4",
+            f"模式 A   {auto_radio}  首选安全博雅课；已选少于4门才提交 (S/点击)",
         )
         self._config_row(
             lines,
             "mode-watch",
-            f"MODE-W   {watch_radio} WATCH        query only; no automatic submission",
+            f"模式 W   {watch_radio}  只查询不提交，适合先观察 (W/点击)",
+        )
+        self._config_row(
+            lines,
+            "preset",
+            f"完整预设 {preset_button}  1秒·0.5秒·50条/页·50页·登录300秒·自动填充·快照关",
         )
         self._config_row(
             lines,
             "campus-2",
-            f"CAMPUS-2 {campus_2_mark}  仙林校区 (2)"
-            + ("  locked for AUTO-SELECT" if current_mode == "AUTO-SELECT" else ""),
+            f"校区 2   {campus_2_mark}  仙林校区 (2)"
+            + ("  自动模式锁定" if current_mode == "AUTO-SELECT" else "  点击切换"),
         )
         self._config_row(
             lines,
             "campus-4",
-            f"CAMPUS-4 {campus_4_mark}  仙林新北 (4)"
-            + ("  locked for AUTO-SELECT" if current_mode == "AUTO-SELECT" else ""),
+            f"校区 4   {campus_4_mark}  仙林新北 (4)"
+            + ("  自动模式锁定" if current_mode == "AUTO-SELECT" else "  点击切换"),
         )
         self._config_row(
             lines,
             "policy",
-            f"POLICY   {locked_mark} conflict=0  full=0  not-chosen=1  selected<limit",
+            f"安全规则 {locked_mark} 无冲突·未满·未选·已选<{AUTO_TARGET_COUNT}门（自动提交保护）",
         )
         self._config_row(
             lines,
             "book",
-            f"BOOK     need-book={need_book}  click to toggle 0=no book / 1=book",
+            f"教材选择 [{need_book}]  点击/B：切换不订教材/订购教材",
         )
         self._config_row(
             lines,
             "interval",
-            f"INTERVAL {self.interval}  click/wheel cycle 1/2/5/10 seconds "
-            "(minimum 1s)",
+            f"轮询间隔 [{interval_value}]  点击/滚轮：1·2·5·10秒（最低1秒）",
         )
         self._config_row(
             lines,
             "request-delay",
-            f"DELAY    {self.request_delay}  click/wheel cycle 0.5/1/2/5 seconds",
+            f"请求间隔 [{request_delay_value}]  点击/滚轮：0.5·1·2·5秒",
         )
         self._config_row(
             lines,
             "page-size",
-            f"PAGE     size={self.page_size}  click/wheel cycle 10/20/50/100",
+            f"每页数量 [{self.page_size}条]  点击/滚轮：10·20·50·100条",
         )
         self._config_row(
             lines,
             "max-pages",
-            f"PAGES    max={self.max_pages}  click/wheel cycle 10/50/100/200",
+            f"最大页数 [{self.max_pages}页]  点击/滚轮：10·50·100·200页",
         )
         self._config_row(
             lines,
             "timeout",
-            f"TIMEOUT  login={self.login_timeout}  click/wheel cycle 60/120/300/600s",
+            f"登录等待 [{login_timeout_value}]  点击/滚轮：60·120·300·600秒",
         )
         self._config_row(
             lines,
             "login",
-            f"LOGIN    {login_mode}  click to toggle credential fill",
+            f"登录填充 [{login_mode}]  点击/L切换；只填学号密码，认证始终人工",
         )
         self._config_row(
             lines,
             "confirm",
-            f"CONFIRM  {confirmation}  "
+            f"自动确认 [当前={confirmation}]  "
             + (
-                "locked by AUTO-SELECT safety gate"
+                "自动模式固定为是（安全锁定）"
                 if current_mode == "AUTO-SELECT"
-                else "click to toggle when --submit is enabled"
+                else "仅目标提交模式可点击切换"
             ),
         )
         self._config_row(
             lines,
             "output",
-            f"OUTPUT   snapshot={_truncate_display(self.snapshot, 48)} "
-            "click to toggle default snapshot / off",
+            f"快照输出 [{snapshot_label}]  点击/O：保存 .runtime/latest.json / 关闭",
+        )
+        self._config_row(
+            lines,
+            "test-class",
+            f"实验班ID {test_class_button} 当前={_truncate_display(test_class_id, 24)}  "
+            + (
+                "自动模式不使用实验班"
+                if auto_selected
+                else (
+                    "仅目标提交模式有效；点击/X编辑"
+                    if getattr(args, "submit", False)
+                    else "先编辑目标课程后才可设置"
+                )
+            ),
         )
         lines.extend(
             [
                 (
-                    f"AUTH     {login_mode}; CAPTCHA/human verification always manual; "
-                    f"test-class={_truncate_display(self.test_teaching_class_id, 24)}"
+                    "说明  自动：只查XGXK博雅；无冲突/未满/未选；已选<4门才提交。"
                 ),
                 (
-                    f"NOTICE   {_truncate_display(self.config_notice or 'ready', 92)}"
+                    "说明  预设后普通参数可调；安全规则/自动校区/自动确认锁定；认证始终人工。"
+                ),
+                (
+                    f"提示  {_truncate_display(self.config_notice or '准备就绪', 92)}"
                 ),
             ]
         )
@@ -636,7 +706,7 @@ class TerminalUI:
             lines,
             "apply",
             self._paint(
-                "[ APPLY & START ]  use current settings and open login browser",
+                "[ 应用并启动 ]  使用当前设置并打开登录浏览器",
                 "32;1",
             ),
         )
@@ -644,12 +714,12 @@ class TerminalUI:
             lines,
             "cancel",
             self._paint(
-                "[ CANCEL ]         exit without opening browser",
+                "[ 取消退出 ]      不打开浏览器并退出",
                 "31;1",
             ),
         )
         lines.append(
-            "SAFE     queries remain page-context XHR; submission still requires explicit AUTO-SELECT/submit mode"
+            "安全  查询使用页面上下文XHR；提交只能由自动选课或明确的目标提交模式触发。"
         )
         return "\n".join(self._box(lines))
 
@@ -658,27 +728,39 @@ class TerminalUI:
         self.configure(args, campus_codes=self._config_campus_codes)
 
     def _set_config_mode(self, args: Any, mode: str) -> str:
+        preset = AUTO_SELECT_PRESET if mode == "AUTO-SELECT" else WATCH_PRESET
+        args.interval = preset["interval"]
+        args.request_delay = preset["request_delay"]
+        args.page_size = preset["page_size"]
+        args.max_pages = preset["max_pages"]
+        args.timeout = preset["timeout"]
+        args.need_book = preset["need_book"]
+        args.no_auto_fill = preset["no_auto_fill"]
+        args.output = preset["output"]
+        args.course_id = ""
+        args.course_number = ""
+        args.course_name = ""
+        args.test_teaching_class_id = ""
         if mode == "AUTO-SELECT":
             args.watch = True
             args.auto_select = True
             args.submit = False
-            args.course_id = ""
-            args.course_number = ""
-            args.course_name = ""
-            args.test_teaching_class_id = ""
             args.yes = True
-            if getattr(args, "need_book", None) is None:
-                args.need_book = "0"
             self._config_campus_codes = ["2"]
-            return "AUTO-SELECT armed: scope locked to 仙林校区(2)"
+            return (
+                "已加载自动选课完整预设：1秒轮询、0.5秒请求间隔、每页50条、"
+                "最多50页、登录等待300秒、自动填充、关闭快照；范围锁定仙林校区(2)"
+            )
 
         args.watch = True
         args.auto_select = False
         args.submit = False
         args.yes = False
-        args.need_book = None
         self._config_campus_codes = ["2", "4"]
-        return "WATCH selected: automatic submission disarmed"
+        return (
+            "已加载只监控完整预设：1秒轮询、0.5秒请求间隔、每页50条、"
+            "最多50页、登录等待300秒、自动填充、关闭快照；不会自动提交"
+        )
 
     def _cycle_config_value(
         self,
@@ -697,68 +779,75 @@ class TerminalUI:
             message = self._set_config_mode(args, "AUTO-SELECT")
         elif key == "mode-watch":
             message = self._set_config_mode(args, "WATCH")
+        elif key == "preset":
+            message = self._set_config_mode(
+                args,
+                "AUTO-SELECT" if args.auto_select else "WATCH",
+            )
         elif key in {"campus-2", "campus-4"}:
             code = "2" if key == "campus-2" else "4"
             if args.auto_select:
-                return "AUTO-SELECT keeps request campus locked to 仙林校区(2)"
+                return "自动选课已锁定请求校区为仙林校区(2)"
             if code in self._config_campus_codes:
                 if len(self._config_campus_codes) == 1:
-                    return "at least one request campus must remain enabled"
+                    return "至少保留一个请求校区"
                 self._config_campus_codes.remove(code)
-                message = f"campus {CAMPUS[code]} disabled"
+                message = f"已关闭校区：{CAMPUS[code]}"
             else:
                 self._config_campus_codes.append(code)
                 self._config_campus_codes.sort()
-                message = f"campus {CAMPUS[code]} enabled"
+                message = f"已开启校区：{CAMPUS[code]}"
         elif key == "book":
             args.need_book = "1" if getattr(args, "need_book", None) != "1" else "0"
-            message = f"need-book={args.need_book}"
+            message = f"教材选择：{'订购' if args.need_book == '1' else '不订购'}"
         elif key == "interval":
             args.interval = self._cycle_config_value(
                 float(args.interval), (1.0, 2.0, 5.0, 10.0), delta
             )
-            message = f"interval={args.interval:.1f}s"
+            message = f"轮询间隔：{args.interval:.1f}秒"
         elif key == "request-delay":
             args.request_delay = self._cycle_config_value(
                 float(args.request_delay), (0.5, 1.0, 2.0, 5.0), delta
             )
-            message = f"request-delay={args.request_delay:.1f}s"
+            message = f"请求间隔：{args.request_delay:.1f}秒"
         elif key == "page-size":
             args.page_size = self._cycle_config_value(
                 int(args.page_size), (10, 20, 50, 100), delta
             )
-            message = f"page-size={args.page_size}"
+            message = f"每页数量：{args.page_size}条"
         elif key == "max-pages":
             args.max_pages = self._cycle_config_value(
                 int(args.max_pages), (10, 50, 100, 200), delta
             )
-            message = f"max-pages={args.max_pages}"
+            message = f"最大页数：{args.max_pages}页"
         elif key == "timeout":
             args.timeout = self._cycle_config_value(
                 int(args.timeout), (60, 120, 300, 600), delta
             )
-            message = f"login-timeout={args.timeout}s"
+            message = f"登录等待：{args.timeout}秒"
         elif key == "login":
             args.no_auto_fill = not args.no_auto_fill
-            message = "manual login fields" if args.no_auto_fill else "credential fill enabled"
+            message = "登录填充：手动输入" if args.no_auto_fill else "登录填充：自动填入"
         elif key == "confirm":
             if args.auto_select:
-                return "AUTO-SELECT confirmation is locked to YES"
+                return "自动选课确认已锁定为是"
             if not args.submit:
-                return "confirmation is only editable for an explicit submit task"
+                return "只监控模式不会提交，确认按钮不可用"
             args.yes = not args.yes
-            message = f"confirmation={'YES' if args.yes else 'MANUAL'}"
+            message = f"提交确认：{'自动确认' if args.yes else '每次询问'}"
         elif key == "policy":
-            return "safety policy is locked: conflict=0, full=0, capacity checked"
+            return "安全规则已锁定：无冲突、未满、未选、容量复核"
         elif key == "output":
             args.output = (
                 None
                 if getattr(args, "output", None)
                 else DEFAULT_EXPORT_DIR / "latest.json"
             )
-            message = "snapshot disabled" if args.output is None else "snapshot enabled"
+            message = "查询快照已关闭" if args.output is None else "查询快照已开启"
         elif key == "selector":
-            return "target selector opens a text editor; use auto, watch, id:, number:, or name:"
+            return "目标课程将打开编辑输入：auto、watch、id:、number: 或 name:"
+        elif key == "test-class":
+            return "实验班ID将打开编辑输入，仅目标提交模式有效"
         else:
             return ""
         self._config_refresh(args)
@@ -784,6 +873,7 @@ class TerminalUI:
             key_map = {
                 "s": "mode-auto",
                 "w": "mode-watch",
+                "r": "preset",
                 "e": "selector",
                 "2": "campus-2",
                 "4": "campus-4",
@@ -796,6 +886,7 @@ class TerminalUI:
                 "l": "login",
                 "y": "confirm",
                 "o": "output",
+                "x": "test-class",
                 "space": "book",
             }
             key = key_map.get(value)
@@ -803,7 +894,13 @@ class TerminalUI:
                 return None
             if key == "selector":
                 return "edit-selector"
-            message = self._change_config(key, args)
+            if key == "test-class":
+                if args.auto_select or not args.submit:
+                    message = self._change_config(key, args)
+                else:
+                    return "edit-test-class"
+            else:
+                message = self._change_config(key, args)
         elif kind == "click":
             key = self._config_hit(x, y)
             if key in {"apply", "cancel"}:
@@ -812,7 +909,13 @@ class TerminalUI:
                 return None
             if key == "selector":
                 return "edit-selector"
-            message = self._change_config(key, args)
+            if key == "test-class":
+                if args.auto_select or not args.submit:
+                    message = self._change_config(key, args)
+                else:
+                    return "edit-test-class"
+            else:
+                message = self._change_config(key, args)
         elif kind == "wheel":
             key = self._config_hit(x, y)
             if key not in {
@@ -848,15 +951,15 @@ class TerminalUI:
         try:
             choice = await asyncio.to_thread(
                 input,
-                "\n[TUI] target (auto|watch|id:<id>|number:<no>|name:<text>): ",
+                "\n[TUI] 目标课程（auto|watch|id:<ID>|number:<课程号>|name:<课程名>）：",
             )
         except (EOFError, KeyboardInterrupt):
-            self.config_notice = "target edit cancelled"
+            self.config_notice = "目标课程编辑已取消"
         else:
             spec = choice.strip()
             lowered = spec.lower()
             if not spec:
-                self.config_notice = "target unchanged"
+                self.config_notice = "目标课程未修改"
             elif lowered == "auto":
                 self.config_notice = self._set_config_mode(args, "AUTO-SELECT")
                 self._config_refresh(args)
@@ -864,7 +967,7 @@ class TerminalUI:
                 self.config_notice = self._set_config_mode(args, "WATCH")
                 self._config_refresh(args)
             elif ":" not in spec:
-                self.config_notice = "invalid target; use auto, watch, id:, number:, or name:"
+                self.config_notice = "目标格式错误：请输入 auto、watch、id:、number: 或 name:"
             else:
                 kind, value = spec.split(":", 1)
                 value = value.strip()
@@ -875,7 +978,7 @@ class TerminalUI:
                 }.get(kind.lower())
                 if field is None or not value:
                     self.config_notice = (
-                        "invalid target; use id:<id>, number:<no>, or name:<text>"
+                        "目标格式错误：请输入 id:<ID>、number:<课程号> 或 name:<课程名>"
                     )
                 else:
                     args.watch = True
@@ -887,14 +990,51 @@ class TerminalUI:
                     args.course_name = ""
                     setattr(args, field, value)
                     self._config_refresh(args)
-                    self.config_notice = f"target submit armed: {field}={value}"
+                    self.config_notice = f"已启用目标提交：{field}={value}"
         finally:
             self.resume_after_input()
             self.mouse_enabled = console_input.start()
             if not self.mouse_enabled:
                 self.config_notice = (
-                    "mouse input could not be restored; configuration cancelled"
+                    "鼠标输入无法恢复，配置已取消"
                 )
+        self.event(self.config_notice, "CFG", render=False)
+        self.render(force=True)
+        return self.mouse_enabled
+
+    async def _edit_test_class(
+        self,
+        args: Any,
+        console_input: ConsoleInput,
+    ) -> bool:
+        """编辑明确目标提交所需的实验教学班 ID；自动模式不允许猜选。"""
+
+        console_input.close()
+        self.mouse_enabled = False
+        self.pause_for_input()
+        try:
+            choice = await asyncio.to_thread(
+                input,
+                "\n[TUI] 实验教学班ID（留空清除，仅目标提交模式可用）：",
+            )
+        except (EOFError, KeyboardInterrupt):
+            self.config_notice = "实验班ID编辑已取消"
+        else:
+            value = choice.strip()
+            if args.auto_select:
+                self.config_notice = "自动选课模式不使用实验教学班ID"
+            elif not args.submit:
+                self.config_notice = "请先在目标课程中选择具体课程，实验班ID才可设置"
+            else:
+                args.test_teaching_class_id = value
+                self.config_notice = (
+                    "实验班ID已清除" if not value else f"已设置实验班ID：{value}"
+                )
+        finally:
+            self.resume_after_input()
+            self.mouse_enabled = console_input.start()
+            if not self.mouse_enabled:
+                self.config_notice = "鼠标输入无法恢复，配置已取消"
         self.event(self.config_notice, "CFG", render=False)
         self.render(force=True)
         return self.mouse_enabled
@@ -917,15 +1057,15 @@ class TerminalUI:
         self.expected_teaching_class_type = expected_teaching_class_type
         self.view = "config"
         self.phase = "CONFIG"
-        self.config_notice = "ready; click APPLY & START after reviewing settings"
+        self.config_notice = "准备就绪；检查设置后点击“应用并启动”"
         self.configure(args, campus_codes=self._config_campus_codes)
         console_input = ConsoleInput()
         self._config_input = console_input
         self.mouse_enabled = console_input.start()
         if self.mouse_enabled:
-            self.config_notice = "mouse enabled; click rows or use keyboard shortcuts"
+            self.config_notice = "鼠标已启用；可点击按钮或使用键盘快捷键"
         else:
-            self.config_notice = "mouse unavailable; use keyboard shortcuts or Enter/Q"
+            self.config_notice = "鼠标不可用；可使用键盘快捷键或回车/Q"
         self.render(force=True)
         applied = False
         cancelled = False
@@ -935,7 +1075,7 @@ class TerminalUI:
                 try:
                     choice = await asyncio.to_thread(
                         input,
-                        "\n[TUI] mouse unavailable; press Enter to apply, Q to cancel: ",
+                        "\n[TUI] 鼠标不可用；回车应用，Q取消：",
                     )
                 except (EOFError, KeyboardInterrupt):
                     cancelled = True
@@ -958,6 +1098,10 @@ class TerminalUI:
                             if not await self._edit_selector(args, console_input):
                                 cancelled = True
                                 break
+                        if action == "edit-test-class":
+                            if not await self._edit_test_class(args, console_input):
+                                cancelled = True
+                                break
                     if not applied and not cancelled:
                         await asyncio.sleep(0.05)
         finally:
@@ -970,13 +1114,13 @@ class TerminalUI:
 
         if cancelled:
             self.phase = "STOP"
-            self.event("configuration cancelled", "STOP", render=False)
+            self.event("配置已取消", "STOP", render=False)
             self.render(force=True)
             return None
         self.mode = self._mode_for_args(args)
         self.phase = "BOOT"
         self.configure(args, campus_codes=self._config_campus_codes)
-        self.event("configuration applied; opening login browser", "OK", render=False)
+        self.event("配置已应用；正在打开登录浏览器", "OK", render=False)
         self.render(force=True)
         return tuple(self._config_campus_codes)
 
@@ -3954,6 +4098,10 @@ async def async_main(args: argparse.Namespace) -> int:
     active_ui = ui if ui.enabled else None
     if active_ui is not None and not sys.stdin.isatty():
         active_ui.start()
+    if default_tui:
+        # Direct no-argument startup opens the same complete read-only preset
+        # that the user can later re-apply with the R/预设 control.
+        ui._set_config_mode(args, "WATCH")
     expected_teaching_class_type = (
         ALL_SCHOOL_TEACHING_CLASS_TYPE
         if args.collect_open_courses
