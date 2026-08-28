@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import csv
+import ctypes
 import getpass
 import json
 import os
@@ -141,6 +142,225 @@ def format_duration(seconds: float) -> str:
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
 
+class _ConsoleCoord(ctypes.Structure):
+    _fields_ = [("X", ctypes.c_short), ("Y", ctypes.c_short)]
+
+
+class _ConsoleChar(ctypes.Union):
+    _fields_ = [
+        ("UnicodeChar", ctypes.c_wchar),
+        ("AsciiChar", ctypes.c_char),
+    ]
+
+
+class _ConsoleKeyEvent(ctypes.Structure):
+    _fields_ = [
+        ("bKeyDown", ctypes.c_int32),
+        ("wRepeatCount", ctypes.c_ushort),
+        ("wVirtualKeyCode", ctypes.c_ushort),
+        ("wVirtualScanCode", ctypes.c_ushort),
+        ("uChar", _ConsoleChar),
+        ("dwControlKeyState", ctypes.c_uint32),
+    ]
+
+
+class _ConsoleMouseEvent(ctypes.Structure):
+    _fields_ = [
+        ("dwMousePosition", _ConsoleCoord),
+        ("dwButtonState", ctypes.c_uint32),
+        ("dwControlKeyState", ctypes.c_uint32),
+        ("dwEventFlags", ctypes.c_uint32),
+    ]
+
+
+class _ConsoleEventUnion(ctypes.Union):
+    _fields_ = [
+        ("KeyEvent", _ConsoleKeyEvent),
+        ("MouseEvent", _ConsoleMouseEvent),
+    ]
+
+
+class _ConsoleInputRecord(ctypes.Structure):
+    _fields_ = [
+        ("EventType", ctypes.c_ushort),
+        ("Event", _ConsoleEventUnion),
+    ]
+
+
+class ConsoleInput:
+    """Windows 控制台输入适配器：读取点击和按键并在退出时恢复模式。"""
+
+    STD_INPUT_HANDLE = -10
+    KEY_EVENT = 0x0001
+    MOUSE_EVENT = 0x0002
+    MOUSE_MOVED = 0x0001
+    DOUBLE_CLICK = 0x0002
+    MOUSE_WHEELED = 0x0004
+    LEFT_BUTTON_PRESSED = 0x0001
+    CTRL_PRESSED = 0x0008
+    VK_RETURN = 0x000D
+    VK_ESCAPE = 0x001B
+    VK_TAB = 0x0009
+    VK_SPACE = 0x0020
+    VK_UP = 0x0026
+    VK_DOWN = 0x0028
+    VK_LEFT = 0x0025
+    VK_RIGHT = 0x0027
+    ENABLE_MOUSE_INPUT = 0x0010
+    ENABLE_EXTENDED_FLAGS = 0x0080
+    ENABLE_QUICK_EDIT_MODE = 0x0040
+
+    def __init__(self) -> None:
+        self._kernel32: Any = None
+        self._handle: Any = None
+        self._original_mode: Optional[int] = None
+        self.active = False
+        self._left_button_down = False
+
+    def start(self) -> bool:
+        if os.name != "nt" or not sys.stdin.isatty():
+            return False
+        try:
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            kernel32.GetStdHandle.argtypes = [ctypes.c_int32]
+            kernel32.GetStdHandle.restype = ctypes.c_void_p
+            kernel32.GetConsoleMode.argtypes = [
+                ctypes.c_void_p,
+                ctypes.POINTER(ctypes.c_uint32),
+            ]
+            kernel32.GetConsoleMode.restype = ctypes.c_int32
+            kernel32.SetConsoleMode.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+            kernel32.SetConsoleMode.restype = ctypes.c_int32
+            kernel32.GetNumberOfConsoleInputEvents.argtypes = [
+                ctypes.c_void_p,
+                ctypes.POINTER(ctypes.c_uint32),
+            ]
+            kernel32.GetNumberOfConsoleInputEvents.restype = ctypes.c_int32
+            kernel32.ReadConsoleInputW.argtypes = [
+                ctypes.c_void_p,
+                ctypes.POINTER(_ConsoleInputRecord),
+                ctypes.c_uint32,
+                ctypes.POINTER(ctypes.c_uint32),
+            ]
+            kernel32.ReadConsoleInputW.restype = ctypes.c_int32
+
+            handle = kernel32.GetStdHandle(self.STD_INPUT_HANDLE)
+            invalid_handle = ctypes.c_void_p(-1).value
+            if handle in {None, invalid_handle}:
+                return False
+            mode = ctypes.c_uint32()
+            if not kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+                return False
+            new_mode = (
+                mode.value | self.ENABLE_EXTENDED_FLAGS | self.ENABLE_MOUSE_INPUT
+            ) & ~self.ENABLE_QUICK_EDIT_MODE
+            if not kernel32.SetConsoleMode(handle, new_mode):
+                return False
+        except (AttributeError, OSError, TypeError):
+            return False
+
+        self._kernel32 = kernel32
+        self._handle = handle
+        self._original_mode = mode.value
+        self._left_button_down = False
+        self.active = True
+        return True
+
+    def _key_name(self, event: _ConsoleKeyEvent) -> str:
+        if event.dwControlKeyState & self.CTRL_PRESSED and (
+            event.wVirtualKeyCode == ord("C")
+        ):
+            return "ctrl-c"
+        if event.wVirtualKeyCode == self.VK_RETURN:
+            return "enter"
+        if event.wVirtualKeyCode == self.VK_ESCAPE:
+            return "escape"
+        if event.wVirtualKeyCode == self.VK_TAB:
+            return "tab"
+        if event.wVirtualKeyCode == self.VK_SPACE:
+            return "space"
+        if event.wVirtualKeyCode == self.VK_UP:
+            return "up"
+        if event.wVirtualKeyCode == self.VK_DOWN:
+            return "down"
+        if event.wVirtualKeyCode == self.VK_LEFT:
+            return "left"
+        if event.wVirtualKeyCode == self.VK_RIGHT:
+            return "right"
+        char = event.uChar.UnicodeChar
+        if char == "\x03":
+            return "ctrl-c"
+        if char and ord(char) >= 32:
+            return char.lower()
+        return ""
+
+    def poll(self) -> list[tuple[str, str, int, int]]:
+        """非阻塞读取，事件格式为 (kind, value, x, y)。"""
+
+        if not self.active or self._kernel32 is None:
+            return []
+        events: list[tuple[str, str, int, int]] = []
+        pending = ctypes.c_uint32()
+        for _ in range(64):
+            if not self._kernel32.GetNumberOfConsoleInputEvents(
+                self._handle, ctypes.byref(pending)
+            ) or pending.value == 0:
+                break
+            record = _ConsoleInputRecord()
+            read = ctypes.c_uint32()
+            if not self._kernel32.ReadConsoleInputW(
+                self._handle, ctypes.byref(record), 1, ctypes.byref(read)
+            ) or read.value == 0:
+                break
+            if record.EventType == self.KEY_EVENT:
+                key_event = record.Event.KeyEvent
+                if key_event.bKeyDown:
+                    key = self._key_name(key_event)
+                    if key:
+                        events.append(("key", key, 0, 0))
+            elif record.EventType == self.MOUSE_EVENT:
+                mouse_event = record.Event.MouseEvent
+                flags = mouse_event.dwEventFlags
+                left_pressed = bool(
+                    mouse_event.dwButtonState & self.LEFT_BUTTON_PRESSED
+                )
+                if flags in {0, self.DOUBLE_CLICK}:
+                    if left_pressed and not self._left_button_down:
+                        events.append(
+                            (
+                                "click",
+                                "left",
+                                mouse_event.dwMousePosition.X + 1,
+                                mouse_event.dwMousePosition.Y + 1,
+                            )
+                        )
+                    self._left_button_down = left_pressed
+                elif flags == self.MOUSE_WHEELED:
+                    wheel_delta = ctypes.c_short(
+                        (mouse_event.dwButtonState >> 16) & 0xFFFF
+                    ).value
+                    events.append(
+                        (
+                            "wheel",
+                            "up" if wheel_delta > 0 else "down",
+                            mouse_event.dwMousePosition.X + 1,
+                            mouse_event.dwMousePosition.Y + 1,
+                        )
+                    )
+        return events
+
+    def close(self) -> None:
+        if self.active and self._kernel32 is not None and self._original_mode is not None:
+            try:
+                self._kernel32.SetConsoleMode(self._handle, self._original_mode)
+            except (OSError, TypeError):
+                pass
+        self.active = False
+        self._kernel32 = None
+        self._handle = None
+        self._original_mode = None
+
+
 class TerminalUI:
     """不刷屏的轻量 TUI；只保留固定数量的事件，避免日志无限增长。"""
 
@@ -202,6 +422,13 @@ class TerminalUI:
         self._last_render = 0.0
         self._has_rendered = False
         self._closed = False
+        self.view = "status"
+        self.mouse_enabled = False
+        self.config_notice = ""
+        self._config_regions: dict[str, tuple[int, int, int, int]] = {}
+        self._config_campus_codes: list[str] = []
+        self._config_input: Optional[ConsoleInput] = None
+        self._config_args: Any = None
 
     def configure(
         self,
@@ -244,6 +471,493 @@ class TerminalUI:
         self.policy = (
             "conflict=0 full=0 not-chosen=1 capacity=selected<limit"
         )
+
+    @staticmethod
+    def _mode_for_args(args: Any) -> str:
+        if getattr(args, "auto_select", False):
+            return "AUTO-SELECT"
+        if getattr(args, "submit", False) and getattr(args, "watch", False):
+            return "TARGET WATCH"
+        return "WATCH"
+
+    def _config_row(
+        self,
+        lines: list[str],
+        key: str,
+        text: str,
+    ) -> None:
+        row = len(lines)
+        lines.append(text)
+        # _box() adds one border row before content; terminal coordinates are 1-based.
+        terminal_row = row + 2
+        self._config_regions[key] = (1, 1000, terminal_row, terminal_row)
+
+    def render_config_text(self, args: Any) -> str:
+        """绘制启动前配置页；参数仍写回 argparse.Namespace，不显示凭据。"""
+
+        self._config_regions = {}
+        current_mode = self._mode_for_args(args)
+        campus_2 = "2" in self._config_campus_codes
+        campus_4 = "4" in self._config_campus_codes
+        need_book = getattr(args, "need_book", None) or "未设置"
+        confirmation = "YES" if getattr(args, "yes", False) else "MANUAL"
+        login_mode = (
+            "manual"
+            if getattr(args, "no_auto_fill", False)
+            else "credential-fill"
+        )
+        lines = [
+            self._paint(
+                "NNU // BOYA CONTROL PANEL   |   MOUSE CONFIGURATION",
+                "36;1",
+            ),
+            (
+                f"PHASE CONFIG       current={current_mode:<12} "
+                "apply-before-login"
+            ),
+            (
+                "MOUSE click rows to change  |  wheel adjusts numeric values  |  "
+                "keys: S/W/E/2/4/B/I/D/P/M/T/L/Y/O  |  A apply / Q cancel"
+            ),
+        ]
+        self._config_row(
+            lines,
+            "selector",
+            f"TARGET selector={_truncate_display(self.selector, 56)} "
+            f"query-type={self.expected_teaching_class_type}  "
+            "click/E to edit (auto|watch|id:|number:|name:)",
+        )
+        self._config_row(
+            lines,
+            "mode-auto",
+            "MODE-A   [AUTO-SELECT]  first safe Boya course; submit when < 4",
+        )
+        self._config_row(
+            lines,
+            "mode-watch",
+            "MODE-W   [WATCH]        query only; no automatic submission",
+        )
+        self._config_row(
+            lines,
+            "campus-2",
+            f"CAMPUS-2 [{'X' if campus_2 else ' '}]  仙林校区 (2)"
+            + ("  locked for AUTO-SELECT" if current_mode == "AUTO-SELECT" else ""),
+        )
+        self._config_row(
+            lines,
+            "campus-4",
+            f"CAMPUS-4 [{'X' if campus_4 else ' '}]  仙林新北 (4)"
+            + ("  locked for AUTO-SELECT" if current_mode == "AUTO-SELECT" else ""),
+        )
+        self._config_row(
+            lines,
+            "policy",
+            "POLICY   [LOCKED] conflict=0  full=0  not-chosen=1  selected<limit",
+        )
+        self._config_row(
+            lines,
+            "book",
+            f"BOOK     need-book={need_book}  click to toggle 0=no book / 1=book",
+        )
+        self._config_row(
+            lines,
+            "interval",
+            f"INTERVAL {self.interval}  click/wheel cycle 1/2/5/10 seconds "
+            "(minimum 1s)",
+        )
+        self._config_row(
+            lines,
+            "request-delay",
+            f"DELAY    {self.request_delay}  click/wheel cycle 0.5/1/2/5 seconds",
+        )
+        self._config_row(
+            lines,
+            "page-size",
+            f"PAGE     size={self.page_size}  click/wheel cycle 10/20/50/100",
+        )
+        self._config_row(
+            lines,
+            "max-pages",
+            f"PAGES    max={self.max_pages}  click/wheel cycle 10/50/100/200",
+        )
+        self._config_row(
+            lines,
+            "timeout",
+            f"TIMEOUT  login={self.login_timeout}  click/wheel cycle 60/120/300/600s",
+        )
+        self._config_row(
+            lines,
+            "login",
+            f"LOGIN    {login_mode}  click to toggle credential fill",
+        )
+        self._config_row(
+            lines,
+            "confirm",
+            f"CONFIRM  {confirmation}  "
+            + (
+                "locked by AUTO-SELECT safety gate"
+                if current_mode == "AUTO-SELECT"
+                else "click to toggle when --submit is enabled"
+            ),
+        )
+        self._config_row(
+            lines,
+            "output",
+            f"OUTPUT   snapshot={_truncate_display(self.snapshot, 48)} "
+            "click to toggle default snapshot / off",
+        )
+        lines.extend(
+            [
+                (
+                    f"AUTH     {login_mode}; CAPTCHA/human verification always manual; "
+                    f"test-class={_truncate_display(self.test_teaching_class_id, 24)}"
+                ),
+                (
+                    f"NOTICE   {_truncate_display(self.config_notice or 'ready', 92)}"
+                ),
+            ]
+        )
+        self._config_row(
+            lines,
+            "apply",
+            "[ APPLY & START ]  use current settings and open login browser",
+        )
+        self._config_row(
+            lines,
+            "cancel",
+            "[ CANCEL ]         exit without opening browser",
+        )
+        lines.append(
+            "SAFE     queries remain page-context XHR; submission still requires explicit AUTO-SELECT/submit mode"
+        )
+        return "\n".join(self._box(lines))
+
+    def _config_refresh(self, args: Any) -> None:
+        self.mode = self._mode_for_args(args)
+        self.configure(args, campus_codes=self._config_campus_codes)
+
+    def _set_config_mode(self, args: Any, mode: str) -> str:
+        if mode == "AUTO-SELECT":
+            args.watch = True
+            args.auto_select = True
+            args.submit = False
+            args.course_id = ""
+            args.course_number = ""
+            args.course_name = ""
+            args.test_teaching_class_id = ""
+            args.yes = True
+            if getattr(args, "need_book", None) is None:
+                args.need_book = "0"
+            self._config_campus_codes = ["2"]
+            return "AUTO-SELECT armed: scope locked to 仙林校区(2)"
+
+        args.watch = True
+        args.auto_select = False
+        args.submit = False
+        args.yes = False
+        args.need_book = None
+        self._config_campus_codes = ["2", "4"]
+        return "WATCH selected: automatic submission disarmed"
+
+    def _cycle_config_value(
+        self,
+        current: Any,
+        values: Sequence[Any],
+        delta: int,
+    ) -> Any:
+        try:
+            index = list(values).index(current)
+        except ValueError:
+            index = 0
+        return values[(index + (1 if delta >= 0 else -1)) % len(values)]
+
+    def _change_config(self, key: str, args: Any, *, delta: int = 1) -> str:
+        if key == "mode-auto":
+            message = self._set_config_mode(args, "AUTO-SELECT")
+        elif key == "mode-watch":
+            message = self._set_config_mode(args, "WATCH")
+        elif key in {"campus-2", "campus-4"}:
+            code = "2" if key == "campus-2" else "4"
+            if args.auto_select:
+                return "AUTO-SELECT keeps request campus locked to 仙林校区(2)"
+            if code in self._config_campus_codes:
+                if len(self._config_campus_codes) == 1:
+                    return "at least one request campus must remain enabled"
+                self._config_campus_codes.remove(code)
+                message = f"campus {CAMPUS[code]} disabled"
+            else:
+                self._config_campus_codes.append(code)
+                self._config_campus_codes.sort()
+                message = f"campus {CAMPUS[code]} enabled"
+        elif key == "book":
+            args.need_book = "1" if getattr(args, "need_book", None) != "1" else "0"
+            message = f"need-book={args.need_book}"
+        elif key == "interval":
+            args.interval = self._cycle_config_value(
+                float(args.interval), (1.0, 2.0, 5.0, 10.0), delta
+            )
+            message = f"interval={args.interval:.1f}s"
+        elif key == "request-delay":
+            args.request_delay = self._cycle_config_value(
+                float(args.request_delay), (0.5, 1.0, 2.0, 5.0), delta
+            )
+            message = f"request-delay={args.request_delay:.1f}s"
+        elif key == "page-size":
+            args.page_size = self._cycle_config_value(
+                int(args.page_size), (10, 20, 50, 100), delta
+            )
+            message = f"page-size={args.page_size}"
+        elif key == "max-pages":
+            args.max_pages = self._cycle_config_value(
+                int(args.max_pages), (10, 50, 100, 200), delta
+            )
+            message = f"max-pages={args.max_pages}"
+        elif key == "timeout":
+            args.timeout = self._cycle_config_value(
+                int(args.timeout), (60, 120, 300, 600), delta
+            )
+            message = f"login-timeout={args.timeout}s"
+        elif key == "login":
+            args.no_auto_fill = not args.no_auto_fill
+            message = "manual login fields" if args.no_auto_fill else "credential fill enabled"
+        elif key == "confirm":
+            if args.auto_select:
+                return "AUTO-SELECT confirmation is locked to YES"
+            if not args.submit:
+                return "confirmation is only editable for an explicit submit task"
+            args.yes = not args.yes
+            message = f"confirmation={'YES' if args.yes else 'MANUAL'}"
+        elif key == "policy":
+            return "safety policy is locked: conflict=0, full=0, capacity checked"
+        elif key == "output":
+            args.output = (
+                None
+                if getattr(args, "output", None)
+                else DEFAULT_EXPORT_DIR / "latest.json"
+            )
+            message = "snapshot disabled" if args.output is None else "snapshot enabled"
+        elif key == "selector":
+            return "target selector opens a text editor; use auto, watch, id:, number:, or name:"
+        else:
+            return ""
+        self._config_refresh(args)
+        return message
+
+    def _config_hit(self, x: int, y: int) -> Optional[str]:
+        for key, (left, right, top, bottom) in self._config_regions.items():
+            if left <= x <= right and top <= y <= bottom:
+                return key
+        return None
+
+    def _handle_config_event(
+        self,
+        event: tuple[str, str, int, int],
+        args: Any,
+    ) -> Optional[str]:
+        kind, value, x, y = event
+        if kind == "key":
+            if value in {"ctrl-c", "escape", "q"}:
+                return "cancel"
+            if value in {"enter", "a"}:
+                return "apply"
+            key_map = {
+                "s": "mode-auto",
+                "w": "mode-watch",
+                "e": "selector",
+                "2": "campus-2",
+                "4": "campus-4",
+                "b": "book",
+                "i": "interval",
+                "d": "request-delay",
+                "p": "page-size",
+                "m": "max-pages",
+                "t": "timeout",
+                "l": "login",
+                "y": "confirm",
+                "o": "output",
+                "space": "book",
+            }
+            key = key_map.get(value)
+            if key is None:
+                return None
+            if key == "selector":
+                return "edit-selector"
+            message = self._change_config(key, args)
+        elif kind == "click":
+            key = self._config_hit(x, y)
+            if key in {"apply", "cancel"}:
+                return key
+            if key is None:
+                return None
+            if key == "selector":
+                return "edit-selector"
+            message = self._change_config(key, args)
+        elif kind == "wheel":
+            key = self._config_hit(x, y)
+            if key not in {
+                "interval",
+                "request-delay",
+                "page-size",
+                "max-pages",
+                "timeout",
+            }:
+                return None
+            message = self._change_config(
+                key,
+                args,
+                delta=1 if value == "up" else -1,
+            )
+        else:
+            return None
+        self.config_notice = message
+        self.event(message, "CFG", render=False)
+        self.render(force=True)
+        return None
+
+    async def _edit_selector(
+        self,
+        args: Any,
+        console_input: ConsoleInput,
+    ) -> bool:
+        """鼠标点击目标行后进入短暂文本编辑，再恢复鼠标事件读取。"""
+
+        console_input.close()
+        self.mouse_enabled = False
+        self.pause_for_input()
+        try:
+            choice = await asyncio.to_thread(
+                input,
+                "\n[TUI] target (auto|watch|id:<id>|number:<no>|name:<text>): ",
+            )
+        except (EOFError, KeyboardInterrupt):
+            self.config_notice = "target edit cancelled"
+        else:
+            spec = choice.strip()
+            lowered = spec.lower()
+            if not spec:
+                self.config_notice = "target unchanged"
+            elif lowered == "auto":
+                self.config_notice = self._set_config_mode(args, "AUTO-SELECT")
+                self._config_refresh(args)
+            elif lowered in {"watch", "readonly", "read-only"}:
+                self.config_notice = self._set_config_mode(args, "WATCH")
+                self._config_refresh(args)
+            elif ":" not in spec:
+                self.config_notice = "invalid target; use auto, watch, id:, number:, or name:"
+            else:
+                kind, value = spec.split(":", 1)
+                value = value.strip()
+                field = {
+                    "id": "course_id",
+                    "number": "course_number",
+                    "name": "course_name",
+                }.get(kind.lower())
+                if field is None or not value:
+                    self.config_notice = (
+                        "invalid target; use id:<id>, number:<no>, or name:<text>"
+                    )
+                else:
+                    args.watch = True
+                    args.auto_select = False
+                    args.submit = True
+                    args.yes = False
+                    args.course_id = ""
+                    args.course_number = ""
+                    args.course_name = ""
+                    setattr(args, field, value)
+                    self._config_refresh(args)
+                    self.config_notice = f"target submit armed: {field}={value}"
+        finally:
+            self.resume_after_input()
+            self.mouse_enabled = console_input.start()
+            if not self.mouse_enabled:
+                self.config_notice = (
+                    "mouse input could not be restored; configuration cancelled"
+                )
+        self.event(self.config_notice, "CFG", render=False)
+        self.render(force=True)
+        return self.mouse_enabled
+
+    async def configure_interactively(
+        self,
+        args: Any,
+        *,
+        campus_codes: Sequence[str],
+        expected_teaching_class_type: str = BOYA_TEACHING_CLASS_TYPE,
+    ) -> Optional[tuple[str, ...]]:
+        """在打开浏览器前提供鼠标配置页；非交互终端直接沿用命令行参数。"""
+
+        selected_campuses = tuple(campus_codes)
+        if not self.enabled or not sys.stdin.isatty():
+            return selected_campuses
+
+        self._config_args = args
+        self._config_campus_codes = list(campus_codes)
+        self.expected_teaching_class_type = expected_teaching_class_type
+        self.view = "config"
+        self.phase = "CONFIG"
+        self.config_notice = "ready; click APPLY & START after reviewing settings"
+        self.configure(args, campus_codes=self._config_campus_codes)
+        console_input = ConsoleInput()
+        self._config_input = console_input
+        self.mouse_enabled = console_input.start()
+        if self.mouse_enabled:
+            self.config_notice = "mouse enabled; click rows or use keyboard shortcuts"
+        else:
+            self.config_notice = "mouse unavailable; use keyboard shortcuts or Enter/Q"
+        self.render(force=True)
+        applied = False
+        cancelled = False
+        try:
+            if not self.mouse_enabled:
+                self.pause_for_input()
+                try:
+                    choice = await asyncio.to_thread(
+                        input,
+                        "\n[TUI] mouse unavailable; press Enter to apply, Q to cancel: ",
+                    )
+                except (EOFError, KeyboardInterrupt):
+                    cancelled = True
+                else:
+                    cancelled = choice.strip().lower() in {"q", "quit", "cancel"}
+                    applied = not cancelled
+                finally:
+                    self.resume_after_input()
+            else:
+                while not applied and not cancelled:
+                    for event in console_input.poll():
+                        action = self._handle_config_event(event, args)
+                        if action == "apply":
+                            applied = True
+                            break
+                        if action == "cancel":
+                            cancelled = True
+                            break
+                        if action == "edit-selector":
+                            if not await self._edit_selector(args, console_input):
+                                cancelled = True
+                                break
+                    if not applied and not cancelled:
+                        await asyncio.sleep(0.05)
+        finally:
+            console_input.close()
+            self._config_input = None
+            self.mouse_enabled = False
+            self.view = "status"
+            self._config_args = None
+            self._config_regions = {}
+
+        if cancelled:
+            self.phase = "STOP"
+            self.event("configuration cancelled", "STOP", render=False)
+            self.render(force=True)
+            return None
+        self.mode = self._mode_for_args(args)
+        self.phase = "BOOT"
+        self.configure(args, campus_codes=self._config_campus_codes)
+        self.event("configuration applied; opening login browser", "OK", render=False)
+        self.render(force=True)
+        return tuple(self._config_campus_codes)
 
     def _paint(self, value: str, code: str) -> str:
         if not self.color:
@@ -478,7 +1192,10 @@ class TerminalUI:
         now = time.monotonic()
         if not force and now - self._last_render < 0.15:
             return
-        text = self.render_text()
+        if self.view == "config" and self._config_args is not None:
+            text = self.render_config_text(self._config_args)
+        else:
+            text = self.render_text()
         lines = text.splitlines()
         if self.color:
             for index in range(len(lines)):
@@ -523,6 +1240,9 @@ class TerminalUI:
         if not self.enabled or self._closed:
             return
         self._closed = True
+        if self._config_input is not None:
+            self._config_input.close()
+            self._config_input = None
         sys.stdout.write("\x1b[?25h\x1b[0m\n")
         sys.stdout.flush()
 
@@ -3175,7 +3895,27 @@ async def async_main(args: argparse.Namespace) -> int:
     active_ui = ui if ui.enabled else None
     if active_ui is not None:
         active_ui.start()
+    expected_teaching_class_type = (
+        ALL_SCHOOL_TEACHING_CLASS_TYPE
+        if args.collect_open_courses
+        else BOYA_TEACHING_CLASS_TYPE
+    )
+    campus_codes = ("2",) if args.auto_select else ("2", "4")
     try:
+        if active_ui is not None:
+            active_ui.configure(
+                args,
+                campus_codes=campus_codes,
+                expected_teaching_class_type=expected_teaching_class_type,
+            )
+            selected_campuses = await active_ui.configure_interactively(
+                args,
+                campus_codes=campus_codes,
+                expected_teaching_class_type=expected_teaching_class_type,
+            )
+            if selected_campuses is None:
+                return 130
+            campus_codes = selected_campuses
         playwright, context, page = await open_visible_browser(
             args.timeout,
             auto_fill_credentials=not args.no_auto_fill,
@@ -3185,11 +3925,6 @@ async def async_main(args: argparse.Namespace) -> int:
         session_context = await browser_session.read_context()
         if active_ui is not None:
             active_ui.set_session(context=session_context, render=False)
-        expected_teaching_class_type = (
-            ALL_SCHOOL_TEACHING_CLASS_TYPE
-            if args.collect_open_courses
-            else BOYA_TEACHING_CLASS_TYPE
-        )
         if (
             not args.collect_selected_courses
             and session_context.teaching_class_type
@@ -3241,15 +3976,6 @@ async def async_main(args: argparse.Namespace) -> int:
                     selected_records,
                 )
             return 0
-
-        campus_codes = ("2",) if args.auto_select else ("2", "4")
-        if active_ui is not None:
-            active_ui.configure(
-                args,
-                campus_codes=campus_codes,
-                expected_teaching_class_type=BOYA_TEACHING_CLASS_TYPE,
-            )
-            active_ui.render(force=True)
 
         while True:
             if active_ui is not None:

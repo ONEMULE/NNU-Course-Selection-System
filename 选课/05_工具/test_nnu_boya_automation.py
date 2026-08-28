@@ -569,6 +569,43 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertIn("interval=1.0s delay=0.5s page=50 max-pages=3", screen)
         self.assertIn("login=credential-fill", screen)
 
+    def test_terminal_ui_mouse_config_changes_only_safe_runtime_options(self) -> None:
+        parser = MODULE.build_parser()
+        args = parser.parse_args(
+            ["--watch", "--auto-select", "--yes", "--need-book", "0"]
+        )
+        MODULE.validate_args(parser, args)
+
+        ui = MODULE.TerminalUI("AUTO-SELECT", enabled=False)
+        ui._config_campus_codes = ["2"]
+        ui.configure(
+            args,
+            campus_codes=ui._config_campus_codes,
+            expected_teaching_class_type=MODULE.BOYA_TEACHING_CLASS_TYPE,
+        )
+        ui._config_args = args
+        ui.view = "config"
+        screen = ui.render_config_text(args)
+        self.assertIn("MOUSE click rows to change", screen)
+        self.assertIn("CAMPUS-4", screen)
+        self.assertIn("[ APPLY & START ]", screen)
+        self.assertIn("book", ui._config_regions)
+
+        book_y = ui._config_regions["book"][2]
+        ui._handle_config_event(("click", "left", 2, book_y), args)
+        self.assertEqual(args.need_book, "1")
+
+        message = ui._change_config("campus-4", args)
+        self.assertIn("locked", message)
+        self.assertEqual(ui._config_campus_codes, ["2"])
+
+        ui._change_config("mode-watch", args)
+        self.assertFalse(args.auto_select)
+        self.assertFalse(args.yes)
+        self.assertEqual(ui._config_campus_codes, ["2", "4"])
+        ui._change_config("campus-4", args)
+        self.assertEqual(ui._config_campus_codes, ["2"])
+
     def test_plain_output_flag_is_available(self) -> None:
         parser = MODULE.build_parser()
         args = parser.parse_args(["--watch", "--plain-output"])
