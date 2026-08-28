@@ -606,6 +606,21 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         ui._change_config("campus-4", args)
         self.assertEqual(ui._config_campus_codes, ["2"])
 
+        output_message = ui._change_config("output", args)
+        self.assertEqual(output_message, "snapshot enabled")
+        self.assertIsNotNone(args.output)
+
+    def test_no_arguments_are_eligible_for_default_interactive_tui(self) -> None:
+        parser = MODULE.build_parser()
+        args = parser.parse_args([])
+        self.assertTrue(MODULE.is_default_tui_request(args))
+
+        plain = parser.parse_args(["--plain-output"])
+        self.assertFalse(MODULE.is_default_tui_request(plain))
+
+        explicit_query = parser.parse_args(["--course-name", "人工智能"])
+        self.assertFalse(MODULE.is_default_tui_request(explicit_query))
+
     def test_plain_output_flag_is_available(self) -> None:
         parser = MODULE.build_parser()
         args = parser.parse_args(["--watch", "--plain-output"])

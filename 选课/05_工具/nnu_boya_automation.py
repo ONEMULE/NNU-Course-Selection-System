@@ -506,18 +506,31 @@ class TerminalUI:
             if getattr(args, "no_auto_fill", False)
             else "credential-fill"
         )
+        auto_mark = self._paint(
+            "[AUTO-SELECT]",
+            "32;1" if current_mode == "AUTO-SELECT" else "33",
+        )
+        watch_mark = self._paint(
+            "[WATCH]",
+            "36;1" if current_mode != "AUTO-SELECT" else "90",
+        )
+        campus_2_mark = self._paint("[X]", "32;1") if campus_2 else self._paint("[ ]", "90")
+        campus_4_mark = self._paint("[X]", "32;1") if campus_4 else self._paint("[ ]", "90")
+        locked_mark = self._paint("[LOCKED]", "33;1")
         lines = [
             self._paint(
                 "NNU // BOYA CONTROL PANEL   |   MOUSE CONFIGURATION",
                 "36;1",
             ),
-            (
+            self._paint(
                 f"PHASE CONFIG       current={current_mode:<12} "
-                "apply-before-login"
+                "apply-before-login",
+                "36",
             ),
-            (
+            self._paint(
                 "MOUSE click rows to change  |  wheel adjusts numeric values  |  "
-                "keys: S/W/E/2/4/B/I/D/P/M/T/L/Y/O  |  A apply / Q cancel"
+                "keys: S/W/E/2/4/B/I/D/P/M/T/L/Y/O  |  A apply / Q cancel",
+                "90",
             ),
         ]
         self._config_row(
@@ -530,29 +543,29 @@ class TerminalUI:
         self._config_row(
             lines,
             "mode-auto",
-            "MODE-A   [AUTO-SELECT]  first safe Boya course; submit when < 4",
+            f"MODE-A   {auto_mark}  first safe Boya course; submit when < 4",
         )
         self._config_row(
             lines,
             "mode-watch",
-            "MODE-W   [WATCH]        query only; no automatic submission",
+            f"MODE-W   {watch_mark}        query only; no automatic submission",
         )
         self._config_row(
             lines,
             "campus-2",
-            f"CAMPUS-2 [{'X' if campus_2 else ' '}]  仙林校区 (2)"
+            f"CAMPUS-2 {campus_2_mark}  仙林校区 (2)"
             + ("  locked for AUTO-SELECT" if current_mode == "AUTO-SELECT" else ""),
         )
         self._config_row(
             lines,
             "campus-4",
-            f"CAMPUS-4 [{'X' if campus_4 else ' '}]  仙林新北 (4)"
+            f"CAMPUS-4 {campus_4_mark}  仙林新北 (4)"
             + ("  locked for AUTO-SELECT" if current_mode == "AUTO-SELECT" else ""),
         )
         self._config_row(
             lines,
             "policy",
-            "POLICY   [LOCKED] conflict=0  full=0  not-chosen=1  selected<limit",
+            f"POLICY   {locked_mark} conflict=0  full=0  not-chosen=1  selected<limit",
         )
         self._config_row(
             lines,
@@ -620,12 +633,18 @@ class TerminalUI:
         self._config_row(
             lines,
             "apply",
-            "[ APPLY & START ]  use current settings and open login browser",
+            self._paint(
+                "[ APPLY & START ]  use current settings and open login browser",
+                "32;1",
+            ),
         )
         self._config_row(
             lines,
             "cancel",
-            "[ CANCEL ]         exit without opening browser",
+            self._paint(
+                "[ CANCEL ]         exit without opening browser",
+                "31;1",
+            ),
         )
         lines.append(
             "SAFE     queries remain page-context XHR; submission still requires explicit AUTO-SELECT/submit mode"
@@ -3875,8 +3894,46 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
         parser.error("--auto-select 必须明确指定 --need-book 0 或 1")
     if args.yes and not (args.submit or args.auto_select):
         parser.error("--yes 只能与 --submit 或 --auto-select 一起使用")
+
+
+def is_default_tui_request(args: argparse.Namespace) -> bool:
+    """判断是否是无操作参数的启动，让可见终端进入鼠标配置页。"""
+
+    return not any(
+        (
+            args.watch,
+            args.course_id,
+            args.course_number,
+            args.course_name,
+            args.collect_open_courses,
+            args.collect_selected_courses,
+            args.submit,
+            args.auto_select,
+            args.yes,
+            args.need_book is not None,
+            args.test_teaching_class_id,
+            args.output is not None,
+            args.export_dir != DEFAULT_EXPORT_DIR,
+            args.school_keyword,
+            args.school_category,
+            args.school_unit,
+            args.plain_output,
+            args.setup_credentials,
+            args.clear_credentials,
+        )
+    )
+
+
 async def async_main(args: argparse.Namespace) -> int:
     playwright = context = page = None
+    default_tui = (
+        is_default_tui_request(args)
+        and bool(sys.stdin.isatty())
+        and bool(sys.stdout.isatty())
+    )
+    if default_tui:
+        # 无参数默认是可操作的持续监控；是否提交由配置页再次明确选择。
+        args.watch = True
     mode = (
         "AUTO-SELECT"
         if args.auto_select
@@ -3887,13 +3944,13 @@ async def async_main(args: argparse.Namespace) -> int:
     ui = TerminalUI(
         mode,
         enabled=(
-            args.watch
+            (args.watch or default_tui)
             and not args.plain_output
             and bool(sys.stdout.isatty())
         ),
     )
     active_ui = ui if ui.enabled else None
-    if active_ui is not None:
+    if active_ui is not None and not sys.stdin.isatty():
         active_ui.start()
     expected_teaching_class_type = (
         ALL_SCHOOL_TEACHING_CLASS_TYPE
