@@ -534,6 +534,41 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertIn("courseResult", screen)
         self.assertIn("events=7/7", screen)
 
+    def test_terminal_ui_shows_scope_selector_policy_and_runtime_config(self) -> None:
+        parser = MODULE.build_parser()
+        args = parser.parse_args(
+            [
+                "--watch",
+                "--auto-select",
+                "--yes",
+                "--need-book",
+                "0",
+                "--interval",
+                "1",
+                "--request-delay",
+                "0.5",
+                "--page-size",
+                "50",
+                "--max-pages",
+                "3",
+            ]
+        )
+        MODULE.validate_args(parser, args)
+
+        ui = MODULE.TerminalUI("AUTO-SELECT", enabled=False)
+        ui.configure(
+            args,
+            campus_codes=("2", "4"),
+            expected_teaching_class_type=MODULE.BOYA_TEACHING_CLASS_TYPE,
+        )
+        screen = ui.render_text()
+        self.assertIn("request-campus=仙林校区(2), 仙林新北(4)", screen)
+        self.assertIn("AUTO: first safe Boya course", screen)
+        self.assertIn("conflict=0 full=0 not-chosen=1", screen)
+        self.assertIn("need-book=0 confirm=YES", screen)
+        self.assertIn("interval=1.0s delay=0.5s page=50 max-pages=3", screen)
+        self.assertIn("login=credential-fill", screen)
+
     def test_plain_output_flag_is_available(self) -> None:
         parser = MODULE.build_parser()
         args = parser.parse_args(["--watch", "--plain-output"])

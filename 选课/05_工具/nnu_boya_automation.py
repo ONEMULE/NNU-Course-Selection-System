@@ -166,6 +166,20 @@ class TerminalUI:
         self.batch_name = "-"
         self.campus_name = "-"
         self.teaching_class_type = "-"
+        self.expected_teaching_class_type = BOYA_TEACHING_CLASS_TYPE
+        self.target_campuses = "-"
+        self.selector = "-"
+        self.policy = "conflict=0 full=0 not-chosen=1 capacity=checked"
+        self.need_book = "-"
+        self.interval = "-"
+        self.request_delay = "-"
+        self.page_size = "-"
+        self.max_pages = "-"
+        self.login_timeout = "-"
+        self.login_mode = "-"
+        self.confirmation = "-"
+        self.test_teaching_class_id = "-"
+        self.snapshot = "-"
         self.tick = 0
         self.selected_boya = 0
         self.selected_status = "WAIT"
@@ -188,6 +202,48 @@ class TerminalUI:
         self._last_render = 0.0
         self._has_rendered = False
         self._closed = False
+
+    def configure(
+        self,
+        args: Any,
+        *,
+        campus_codes: Sequence[str],
+        expected_teaching_class_type: str = BOYA_TEACHING_CLASS_TYPE,
+    ) -> None:
+        """把本次运行的全部关键参数投影到 TUI，不显示凭据。"""
+
+        self.expected_teaching_class_type = expected_teaching_class_type
+        self.target_campuses = ", ".join(
+            f"{CAMPUS.get(code, code)}({code})" for code in campus_codes
+        ) or "-"
+        if getattr(args, "auto_select", False):
+            self.selector = "AUTO: first safe Boya course"
+        elif getattr(args, "course_id", ""):
+            self.selector = f"teachingClassId={args.course_id}"
+        elif getattr(args, "course_number", ""):
+            self.selector = f"courseNumber={args.course_number}"
+        elif getattr(args, "course_name", ""):
+            self.selector = f"courseName~{args.course_name}"
+        else:
+            self.selector = "READ-ONLY QUERY"
+        self.need_book = getattr(args, "need_book", None) or "-"
+        self.interval = f"{getattr(args, 'interval', 0):.1f}s"
+        self.request_delay = f"{getattr(args, 'request_delay', 0):.1f}s"
+        self.page_size = str(getattr(args, "page_size", "-"))
+        self.max_pages = str(getattr(args, "max_pages", "-"))
+        self.login_timeout = f"{getattr(args, 'timeout', 0)}s"
+        self.confirmation = "YES" if getattr(args, "yes", False) else "MANUAL"
+        self.test_teaching_class_id = (
+            getattr(args, "test_teaching_class_id", "") or "none"
+        )
+        output = getattr(args, "output", None)
+        self.snapshot = str(output) if output else "off"
+        self.login_mode = (
+            "manual" if getattr(args, "no_auto_fill", False) else "credential-fill"
+        )
+        self.policy = (
+            "conflict=0 full=0 not-chosen=1 capacity=selected<limit"
+        )
 
     def _paint(self, value: str, code: str) -> str:
         if not self.color:
@@ -334,12 +390,16 @@ class TerminalUI:
             next_poll = "NOW"
         else:
             next_poll = f"{max(0.0, self.next_poll_at - time.monotonic()):04.1f}s"
-        events = list(self.events)[-7:]
+        terminal_rows = shutil.get_terminal_size((108, 30)).lines
+        # Keep the fixed dashboard inside a small terminal whenever possible;
+        # one event is preferable to letting the screen scroll on every poll.
+        event_slots = max(1, min(7, terminal_rows - 19))
+        events = list(self.events)[-event_slots:]
         event_lines = [
             f"{stamp} [{level:<4}] {_truncate_display(message, 90)}"
             for stamp, level, message in events
         ]
-        while len(event_lines) < 7:
+        while len(event_lines) < event_slots:
             event_lines.insert(0, "-")
         lines = [
             self._paint(
@@ -353,27 +413,44 @@ class TerminalUI:
             ),
             (
                 f"SESSION  browser={self.browser_state:<10} auth={self.auth_state:<10} "
-                f"campus={self.campus_name}"
+                f"ui-campus={self.campus_name}"
             ),
             (
                 f"BATCH    {_truncate_display(self.batch_name, 54)}  "
-                f"pageType={self.teaching_class_type}"
+                f"pageType={self.teaching_class_type} "
+                f"expected={self.expected_teaching_class_type}"
             ),
             (
-                f"TARGET   BOYA THEORY {self._progress_bar()} "
-                f"{self.selected_boya}/{self.target_count}  "
-                f"selected-api={self.selected_status}"
+                f"SCOPE    request-campus={_truncate_display(self.target_campuses, 56)} "
+                f"query-type={self.expected_teaching_class_type}"
             ),
             (
-                f"SELECTED courseResult.do  status={self.selected_status:<4} "
-                f"boya-theory={self.selected_boya}/{self.target_count}"
+                f"SELECTOR {_truncate_display(self.selector, 92)}"
+            ),
+            (
+                f"POLICY   {self.policy}"
+            ),
+            (
+                f"PROGRESS BOYA THEORY {self._progress_bar()} "
+                f"{self.selected_boya}/{self.target_count}"
+            ),
+            (
+                f"SELECTED courseResult.do status={self.selected_status:<4} "
+                f"boya-theory={self.selected_boya}/{self.target_count} "
+                f"need-book={self.need_book} confirm={self.confirmation}"
             ),
             (
                 f"QUERY    XGXK/publicCourse.do  status={self.query_status:<4} "
                 f"returned={self.query_returned:<4} read={self.query_read:<4} "
                 f"pages={self.query_pages:<3} req={self.query_requests:<5}"
             ),
-            f"CAMPUS   {_truncate_display(self.query_campuses, 92)}",
+            (
+                f"CONFIG   interval={self.interval} delay={self.request_delay} "
+                f"page={self.page_size} max-pages={self.max_pages} "
+                f"login-timeout={self.login_timeout} login={self.login_mode} "
+                f"test-class={_truncate_display(self.test_teaching_class_id, 20)}"
+            ),
+            f"CAMPUS   result={_truncate_display(self.query_campuses, 92)}",
             (
                 f"CANDIDATE total={self.candidate_total:<3} "
                 f"safe={self.safe_candidate_total:<3}  "
@@ -382,7 +459,8 @@ class TerminalUI:
             (
                 f"SUBMIT   attempts={self.submit_attempts:<3} "
                 f"success={self.submit_successes:<3} failures={self.submit_failures:<3} "
-                f"last={_truncate_display(self.last_action, 44)}"
+                f"last={_truncate_display(self.last_action, 28)} "
+                f"snapshot={_truncate_display(self.snapshot, 24)}"
             ),
             (
                 f"HEALTH   errors={self.query_errors:<3}  memory=bounded-per-cycle  "
@@ -3165,6 +3243,13 @@ async def async_main(args: argparse.Namespace) -> int:
             return 0
 
         campus_codes = ("2",) if args.auto_select else ("2", "4")
+        if active_ui is not None:
+            active_ui.configure(
+                args,
+                campus_codes=campus_codes,
+                expected_teaching_class_type=BOYA_TEACHING_CLASS_TYPE,
+            )
+            active_ui.render(force=True)
 
         while True:
             if active_ui is not None:
@@ -3471,6 +3556,11 @@ async def async_main(args: argparse.Namespace) -> int:
         else:
             print(f"[错误] {message}", file=sys.stderr)
         return 10
+    except asyncio.CancelledError:
+        if active_ui is not None:
+            active_ui.phase = "STOP"
+            active_ui.event("user interrupted", "STOP")
+        return 130
     except KeyboardInterrupt:
         if active_ui is not None:
             active_ui.phase = "STOP"
@@ -3516,7 +3606,11 @@ def main() -> int:
         except AutomationError as exc:
             print(f"[错误] {safe_message(exc)}", file=sys.stderr)
             return 10
-    return asyncio.run(async_main(args))
+    try:
+        return asyncio.run(async_main(args))
+    except KeyboardInterrupt:
+        print("\n[停止] 用户中断")
+        return 130
 
 
 if __name__ == "__main__":
