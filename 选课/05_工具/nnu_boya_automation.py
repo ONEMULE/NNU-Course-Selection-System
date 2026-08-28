@@ -11,6 +11,8 @@
 * 默认只读查询；提交必须同时指定目标课程、--submit 和明确确认；
 * 提交前重新查询“不冲突 + 未满”，并刷新课程详情/容量；
 * 不自动重试 volunteer.do，避免网络不确定时重复提交。
+* watch 模式使用固定屏幕 TUI 展示运行时长、轮询、接口和任务进度；
+  事件历史有界，不连续刷屏。
 
 该工具依赖 Playwright，但不会修改第三方源码目录，也不会尝试绕过验证码或
 人机认证。每次启动都使用全新的临时浏览器会话，不复用上次的登录态。
@@ -23,8 +25,13 @@ import asyncio
 import csv
 import getpass
 import json
+import os
 import re
+import shutil
 import sys
+import time
+import unicodedata
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -85,6 +92,361 @@ class SessionExpiredError(AutomationError):
 
 class UnsafeSelectionError(AutomationError):
     """安全闸门拒绝提交。"""
+
+
+_ANSI_ESCAPE_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+
+
+def _display_width(value: Any) -> int:
+    """计算终端显示宽度，兼容中文和 ANSI 控制序列。"""
+
+    text = _ANSI_ESCAPE_PATTERN.sub("", str(value))
+    width = 0
+    for char in text:
+        width += 2 if unicodedata.east_asian_width(char) in {"W", "F"} else 1
+    return width
+
+
+def _truncate_display(value: Any, width: int) -> str:
+    """按终端显示宽度截断字符串，不让状态栏撑破布局。"""
+
+    text = _ANSI_ESCAPE_PATTERN.sub("", str(value))
+    if width <= 0:
+        return ""
+    if _display_width(text) <= width:
+        return text
+    suffix = "…"
+    suffix_width = _display_width(suffix)
+    remaining = max(0, width - suffix_width)
+    result: list[str] = []
+    current_width = 0
+    for char in text:
+        char_width = 2 if unicodedata.east_asian_width(char) in {"W", "F"} else 1
+        if current_width + char_width > remaining:
+            break
+        result.append(char)
+        current_width += char_width
+    return "".join(result) + suffix
+
+
+def _pad_display(value: Any, width: int) -> str:
+    text = _truncate_display(value, width)
+    return text + (" " * max(0, width - _display_width(text)))
+
+
+def format_duration(seconds: float) -> str:
+    total = max(0, int(seconds))
+    hours, remainder = divmod(total, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
+class TerminalUI:
+    """不刷屏的轻量 TUI；只保留固定数量的事件，避免日志无限增长。"""
+
+    def __init__(
+        self,
+        mode: str,
+        *,
+        enabled: Optional[bool] = None,
+        target_count: int = AUTO_TARGET_COUNT,
+    ) -> None:
+        if enabled is None:
+            enabled = bool(sys.stdout.isatty())
+        self.enabled = bool(enabled)
+        self.color = self.enabled and bool(sys.stdout.isatty()) and not os.environ.get(
+            "NO_COLOR"
+        )
+        self.mode = mode
+        self.target_count = target_count
+        self.started_at = time.monotonic()
+        self.phase = "BOOT"
+        self.browser_state = "STARTING"
+        self.auth_state = "WAITING"
+        self.batch_name = "-"
+        self.campus_name = "-"
+        self.teaching_class_type = "-"
+        self.tick = 0
+        self.selected_boya = 0
+        self.selected_status = "WAIT"
+        self.query_status = "WAIT"
+        self.query_returned = 0
+        self.query_read = 0
+        self.query_pages = 0
+        self.query_requests = 0
+        self.query_errors = 0
+        self.query_campuses = "-"
+        self.candidate_total = 0
+        self.safe_candidate_total = 0
+        self.candidate_label = "NONE"
+        self.submit_attempts = 0
+        self.submit_successes = 0
+        self.submit_failures = 0
+        self.last_action = "IDLE"
+        self.next_poll_at: Optional[float] = None
+        self.events: deque[tuple[str, str, str]] = deque(maxlen=7)
+        self._last_render = 0.0
+        self._has_rendered = False
+        self._closed = False
+
+    def _paint(self, value: str, code: str) -> str:
+        if not self.color:
+            return value
+        return f"\x1b[{code}m{value}\x1b[0m"
+
+    def set_phase(self, phase: str, *, render: bool = True) -> None:
+        self.phase = phase
+        if render:
+            self.render(force=True)
+
+    def set_session(
+        self,
+        *,
+        browser: Optional[str] = None,
+        auth: Optional[str] = None,
+        context: Optional["SessionContext"] = None,
+        render: bool = True,
+    ) -> None:
+        if browser is not None:
+            self.browser_state = browser
+        if auth is not None:
+            self.auth_state = auth
+        if context is not None:
+            self.batch_name = context.batch_name or "-"
+            self.campus_name = context.current_campus_name or "-"
+            self.teaching_class_type = context.teaching_class_type or "-"
+        if render:
+            self.render(force=True)
+
+    def event(
+        self,
+        message: str,
+        level: str = "INFO",
+        *,
+        render: bool = True,
+    ) -> None:
+        self.events.append(
+            (format_duration(time.monotonic() - self.started_at), level, message)
+        )
+        if render:
+            self.render(force=True)
+
+    def selected(self, count: int, *, status: str = "OK", render: bool = True) -> None:
+        self.selected_boya = max(0, count)
+        self.selected_status = status
+        if render:
+            self.render(force=True)
+
+    def query(
+        self,
+        result: "QueryResult",
+        *,
+        status: str = "OK",
+        render: bool = True,
+    ) -> None:
+        self.query_status = status
+        self.query_requests += 1
+        self.query_returned = result.total_count
+        self.query_read = len(result.courses)
+        self.query_pages = result.pages_visited
+        self.query_campuses = (
+            f"{result.campus_name} {result.total_count}/{len(result.courses)}"
+        )
+        if status != "OK":
+            self.query_errors += 1
+        if render:
+            self.render(force=True)
+
+    def cycle(
+        self,
+        results: Sequence["QueryResult"],
+        courses: Sequence["Course"],
+        *,
+        safe_candidates: Sequence["Course"] = (),
+        elapsed: Optional[float] = None,
+        render: bool = True,
+    ) -> None:
+        self.tick += 1
+        self.query_status = "OK"
+        self.query_returned = sum(result.total_count for result in results)
+        self.query_read = len(courses)
+        self.query_pages = sum(result.pages_visited for result in results)
+        self.query_campuses = ", ".join(
+            f"{result.campus_name} {result.total_count}/{len(result.courses)}"
+            for result in results
+        ) or "-"
+        self.candidate_total = len(courses)
+        self.safe_candidate_total = len(safe_candidates)
+        if safe_candidates:
+            self.candidate_label = safe_candidates[0].short_label()
+        else:
+            self.candidate_label = "NONE"
+        elapsed_label = "-" if elapsed is None else f"{elapsed:.2f}s"
+        self.event(
+            f"cycle #{self.tick:04d} complete | returned={self.query_returned} "
+            f"read={self.query_read} safe={self.safe_candidate_total} "
+            f"elapsed={elapsed_label}",
+            "POLL",
+            render=False,
+        )
+        if render:
+            self.render(force=True)
+
+    def action(self, message: str, *, level: str = "ACT", render: bool = True) -> None:
+        self.last_action = message
+        self.event(message, level, render=render)
+
+    def error(self, message: str, *, render: bool = True) -> None:
+        self.query_errors += 1
+        self.query_status = "ERR"
+        self.phase = "ERROR"
+        self.event(message, "ERR", render=render)
+
+    def submission(self, state: str, *, render: bool = True) -> None:
+        self.last_action = state
+        if state.startswith("SUCCESS"):
+            self.submit_successes += 1
+        elif state.startswith("FAILED"):
+            self.submit_failures += 1
+        if render:
+            self.render(force=True)
+
+    def _progress_bar(self) -> str:
+        width = 18
+        ratio = min(1.0, self.selected_boya / self.target_count) if self.target_count else 1
+        filled = int(width * ratio)
+        return "[" + ("█" * filled) + ("░" * (width - filled)) + "]"
+
+    def _box(self, lines: Sequence[str]) -> list[str]:
+        columns = shutil.get_terminal_size((108, 30)).columns
+        total_width = max(80, min(120, columns))
+        inner_width = total_width - 2
+        body_width = inner_width - 2
+        output = ["┌" + ("─" * inner_width) + "┐"]
+        for line in lines:
+            output.append("│ " + _pad_display(line, body_width) + " │")
+        output.append("└" + ("─" * inner_width) + "┘")
+        return output
+
+    def render_text(self) -> str:
+        elapsed = time.monotonic() - self.started_at
+        if self.next_poll_at is None:
+            next_poll = "NOW"
+        else:
+            next_poll = f"{max(0.0, self.next_poll_at - time.monotonic()):04.1f}s"
+        events = list(self.events)[-7:]
+        event_lines = [
+            f"{stamp} [{level:<4}] {_truncate_display(message, 90)}"
+            for stamp, level, message in events
+        ]
+        while len(event_lines) < 7:
+            event_lines.insert(0, "-")
+        lines = [
+            self._paint(
+                "NNU // BOYA WATCHDOG   |   LIVE COURSE SELECTION MONITOR",
+                "36;1",
+            ),
+            (
+                f"MODE {self.mode:<12} PHASE {self.phase:<12} "
+                f"UPTIME {format_duration(elapsed)}   CYCLE {self.tick:04d}   "
+                f"NEXT {next_poll}"
+            ),
+            (
+                f"SESSION  browser={self.browser_state:<10} auth={self.auth_state:<10} "
+                f"campus={self.campus_name}"
+            ),
+            (
+                f"BATCH    {_truncate_display(self.batch_name, 54)}  "
+                f"pageType={self.teaching_class_type}"
+            ),
+            (
+                f"TARGET   BOYA THEORY {self._progress_bar()} "
+                f"{self.selected_boya}/{self.target_count}  "
+                f"selected-api={self.selected_status}"
+            ),
+            (
+                f"SELECTED courseResult.do  status={self.selected_status:<4} "
+                f"boya-theory={self.selected_boya}/{self.target_count}"
+            ),
+            (
+                f"QUERY    XGXK/publicCourse.do  status={self.query_status:<4} "
+                f"returned={self.query_returned:<4} read={self.query_read:<4} "
+                f"pages={self.query_pages:<3} req={self.query_requests:<5}"
+            ),
+            f"CAMPUS   {_truncate_display(self.query_campuses, 92)}",
+            (
+                f"CANDIDATE total={self.candidate_total:<3} "
+                f"safe={self.safe_candidate_total:<3}  "
+                f"current={_truncate_display(self.candidate_label, 62)}"
+            ),
+            (
+                f"SUBMIT   attempts={self.submit_attempts:<3} "
+                f"success={self.submit_successes:<3} failures={self.submit_failures:<3} "
+                f"last={_truncate_display(self.last_action, 44)}"
+            ),
+            (
+                f"HEALTH   errors={self.query_errors:<3}  memory=bounded-per-cycle  "
+                f"events={len(self.events)}/7  transport=page-context-XHR"
+            ),
+            "─ ACTIVITY ─────────────────────────────────────────────────────────────",
+            *event_lines,
+            "CTRL     Ctrl+C stop  |  browser login/CAPTCHA is manual  |  no DOM scraping",
+        ]
+        return "\n".join(self._box(lines))
+
+    def render(self, *, force: bool = False) -> None:
+        if not self.enabled or self._closed:
+            return
+        now = time.monotonic()
+        if not force and now - self._last_render < 0.15:
+            return
+        text = self.render_text()
+        lines = text.splitlines()
+        if self.color:
+            for index in range(len(lines)):
+                if index in {1, 2}:
+                    lines[index] = self._paint(lines[index], "36")
+        prefix = "\x1b[H\x1b[J"
+        if not self._has_rendered:
+            prefix = "\x1b[2J\x1b[H\x1b[?25l"
+            self._has_rendered = True
+        sys.stdout.write(prefix + "\n".join(lines) + "\n")
+        sys.stdout.flush()
+        self._last_render = now
+
+    def start(self) -> None:
+        self.render(force=True)
+
+    def pause_for_input(self) -> None:
+        if self.enabled:
+            sys.stdout.write("\x1b[?25h\n")
+            sys.stdout.flush()
+
+    def resume_after_input(self) -> None:
+        if self.enabled:
+            self._has_rendered = True
+            self.render(force=True)
+
+    async def wait(self, seconds: float) -> None:
+        if not self.enabled:
+            await asyncio.sleep(seconds)
+            return
+        self.next_poll_at = time.monotonic() + max(0.0, seconds)
+        self.phase = "SLEEP"
+        while True:
+            remaining = self.next_poll_at - time.monotonic()
+            if remaining <= 0:
+                break
+            self.render()
+            await asyncio.sleep(min(0.2, remaining))
+        self.next_poll_at = None
+
+    def close(self) -> None:
+        if not self.enabled or self._closed:
+            return
+        self._closed = True
+        sys.stdout.write("\x1b[?25h\x1b[0m\n")
+        sys.stdout.flush()
 
 
 @dataclass(frozen=True)
@@ -1445,11 +1807,19 @@ class BrowserSession:
         return updated
 
 
-async def autofill_login_form(page: Any, *, enabled: bool = True) -> None:
+async def autofill_login_form(
+    page: Any,
+    *,
+    enabled: bool = True,
+    ui: Optional[TerminalUI] = None,
+) -> None:
     """把系统凭据库字段填入 NNU 登录框，但不填写验证码或点击登录。"""
 
     if not enabled:
-        print("[提示] 本次运行已关闭学号/密码自动填充，请手动输入")
+        if ui is not None:
+            ui.event("credential autofill disabled; enter login fields manually")
+        else:
+            print("[提示] 本次运行已关闭学号/密码自动填充，请手动输入")
         return
 
     try:
@@ -1458,13 +1828,20 @@ async def autofill_login_form(page: Any, *, enabled: bool = True) -> None:
         await username.wait_for(state="visible", timeout=10_000)
         await password.wait_for(state="visible", timeout=5_000)
     except Exception:
-        print("[提示] 登录表单尚未出现，继续手动输入学号和密码")
+        if ui is not None:
+            ui.event("login form not ready; enter login fields manually", "WARN")
+        else:
+            print("[提示] 登录表单尚未出现，继续手动输入学号和密码")
         return
 
     try:
         credentials = load_login_credentials()
     except AutomationError as exc:
-        print(f"[提示] 自动填充未启用：{safe_message(exc)}")
+        message = f"credential autofill unavailable: {safe_message(exc)}"
+        if ui is not None:
+            ui.event(message, "WARN")
+        else:
+            print(f"[提示] 自动填充未启用：{safe_message(exc)}")
         return
 
     if credentials is None:
@@ -1478,19 +1855,28 @@ async def autofill_login_form(page: Any, *, enabled: bool = True) -> None:
         await username.fill(credentials.student_code)
         await password.fill(credentials.password)
     except Exception as exc:
-        print(f"[提示] 登录框自动填充失败：{safe_message(exc)}；请手动输入")
+        message = f"login autofill failed: {safe_message(exc)}"
+        if ui is not None:
+            ui.event(message, "WARN")
+        else:
+            print(f"[提示] 登录框自动填充失败：{safe_message(exc)}；请手动输入")
         return
 
-    print(
-        "[准备] 已自动填入学号和密码；请手动填写验证码/完成人机认证，"
-        "脚本不会自动点击登录"
-    )
+    message = "credentials filled; manual CAPTCHA/human verification required"
+    if ui is not None:
+        ui.event(message)
+    else:
+        print(
+            "[准备] 已自动填入学号和密码；请手动填写验证码/完成人机认证，"
+            "脚本不会自动点击登录"
+        )
 
 
 async def open_visible_browser(
     timeout_seconds: int,
     *,
     auto_fill_credentials: bool = True,
+    ui: Optional[TerminalUI] = None,
 ) -> tuple[Any, Any, Any]:
     """启动全新可见浏览器；返回 (playwright, context, page)。"""
 
@@ -1517,22 +1903,46 @@ async def open_visible_browser(
                 timeout=60_000,
             )
         except Exception as exc:
-            print(f"[提示] 登录入口加载提示：{safe_message(exc)}")
+            message = f"login entry load warning: {safe_message(exc)}"
+            if ui is not None:
+                ui.event(message, "WARN")
+            else:
+                print(f"[提示] 登录入口加载提示：{safe_message(exc)}")
 
-        await autofill_login_form(page, enabled=auto_fill_credentials)
-        session = BrowserSession(page)
-        print(
-            "[等待] 本次启动必须由本人在可见浏览器中手动登录并完成"
-            "人机认证；脚本不会自动提交登录。"
+        await autofill_login_form(
+            page,
+            enabled=auto_fill_credentials,
+            ui=ui,
         )
+        session = BrowserSession(page)
+        if ui is not None:
+            ui.set_phase("LOGIN", render=False)
+            ui.set_session(browser="OPEN", auth="MANUAL", render=False)
+            ui.event("waiting for manual login and human verification")
+        else:
+            print(
+                "[等待] 本次启动必须由本人在可见浏览器中手动登录并完成"
+                "人机认证；脚本不会自动提交登录。"
+            )
         await session.wait_until_ready(timeout_seconds=timeout_seconds)
+        if ui is not None:
+            ui.set_phase("AUTH OK", render=False)
+            ui.set_session(auth="READY", render=False)
+            ui.event("login session ready")
         try:
             await session.goto_authenticated_page(
                 GRAB_URL,
             )
         except Exception as exc:
-            print(f"[提示] 选课页返回提示：{safe_message(exc)}")
+            message = f"course page navigation warning: {safe_message(exc)}"
+            if ui is not None:
+                ui.event(message, "WARN")
+            else:
+                print(f"[提示] 选课页返回提示：{safe_message(exc)}")
         await session.wait_until_ready(timeout_seconds=timeout_seconds)
+        if ui is not None:
+            ui.set_phase("READY", render=False)
+            ui.event("course page session ready")
         return playwright, context, page
     except Exception:
         await playwright.stop()
@@ -1622,6 +2032,7 @@ async def run_query_cycle(
     max_pages: int,
     request_delay: float,
     campus_codes: Sequence[str] = ("2", "4"),
+    ui: Optional[TerminalUI] = None,
 ) -> tuple[list[QueryResult], list[Course]]:
     results: list[QueryResult] = []
     for index, campus_code in enumerate(campus_codes):
@@ -1634,10 +2045,13 @@ async def run_query_cycle(
             request_delay=request_delay,
         )
         results.append(result)
-        print(
-            f"[查询] {result.campus_name}：服务端返回 {result.total_count} 条，"
-            f"本次读取 {len(result.courses)} 条（访问 {result.pages_visited} 页）"
-        )
+        if ui is not None:
+            ui.query(result, render=False)
+        else:
+            print(
+                f"[查询] {result.campus_name}：服务端返回 {result.total_count} 条，"
+                f"本次读取 {len(result.courses)} 条（访问 {result.pages_visited} 页）"
+            )
         if index < len(campus_codes) - 1:
             await asyncio.sleep(request_delay)
 
@@ -1852,6 +2266,8 @@ def write_snapshot(
     context: SessionContext,
     results: Sequence[QueryResult],
     courses: Sequence[Course],
+    *,
+    quiet: bool = False,
 ) -> None:
     payload = {
         "observedAt": datetime.now(timezone.utc).isoformat(),
@@ -1882,7 +2298,8 @@ def write_snapshot(
         json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    print(f"[保存] 已写入脱敏查询快照：{path}")
+    if not quiet:
+        print(f"[保存] 已写入脱敏查询快照：{path}")
 
 
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
@@ -2324,6 +2741,7 @@ async def submit_course(
     need_book: Optional[str],
     test_teaching_class_id: Optional[str],
     yes: bool,
+    ui: Optional[TerminalUI] = None,
 ) -> int:
     add_payload = build_add_payload(
         student_code=context.student_code,
@@ -2333,57 +2751,105 @@ async def submit_course(
         need_book=need_book,
         test_teaching_class_id=test_teaching_class_id,
     )
-    print("[提交前确认]")
-    print(f"  {course.short_label()}")
-    print(f"  教师：{course.teacher or '-'}")
-    print(f"  时间地点：{course.time or '-'} / {course.teaching_place or '-'}")
-    print(
-        f"  容量：{course.first_volunteer if course.first_volunteer is not None else '-'}"
-        f"/{course.class_capacity if course.class_capacity is not None else '-'}"
-    )
-    print(f"  教材：{'订购' if need_book == '1' else '不订购'}")
-    if test_teaching_class_id:
-        print(f"  实验教学班：{test_teaching_class_id}")
+    if ui is not None:
+        ui.set_phase("CONFIRM", render=False)
+        ui.action(
+            f"candidate ready: {course.short_label()}",
+            render=False,
+        )
+        ui.render(force=True)
+    else:
+        print("[提交前确认]")
+        print(f"  {course.short_label()}")
+        print(f"  教师：{course.teacher or '-'}")
+        print(f"  时间地点：{course.time or '-'} / {course.teaching_place or '-'}")
+        print(
+            f"  容量：{course.first_volunteer if course.first_volunteer is not None else '-'}"
+            f"/{course.class_capacity if course.class_capacity is not None else '-'}"
+        )
+        print(f"  教材：{'订购' if need_book == '1' else '不订购'}")
+        if test_teaching_class_id:
+            print(f"  实验教学班：{test_teaching_class_id}")
 
     if not yes:
-        answer = input(
-            f"若确认向 NNU 提交该教学班，请原样输入 "
-            f"{course.teaching_class_id}："
-        ).strip()
+        if ui is not None:
+            ui.pause_for_input()
+        try:
+            answer = input(
+                f"若确认向 NNU 提交该教学班，请原样输入 "
+                f"{course.teaching_class_id}："
+            ).strip()
+        finally:
+            if ui is not None:
+                ui.resume_after_input()
         if answer != course.teaching_class_id:
-            print("[停止] 确认文本不匹配，未提交")
+            if ui is not None:
+                ui.submission("CANCELLED", render=False)
+                ui.event("confirmation mismatch; no submission", "WARN")
+            else:
+                print("[停止] 确认文本不匹配，未提交")
             return 0
 
+    if ui is not None:
+        ui.submit_attempts += 1
+        ui.set_phase("SUBMIT", render=False)
+        ui.action("POST volunteer.do", render=True)
     response = await api.post(VOLUNTEER_PATH, add_payload)
     code = as_text(response.get("code"))
     if code != "1":
-        print(
-            "[结果] 服务端未接受提交："
-            f"{safe_message(response.get('msg')) or '未知原因'}"
-        )
+        message = safe_message(response.get("msg")) or "未知原因"
+        if ui is not None:
+            ui.submission(f"FAILED: {message}", render=False)
+            ui.event(f"server rejected submission: {message}", "ERR")
+        else:
+            print(f"[结果] 服务端未接受提交：{message}")
         return 2
 
-    print("[结果] volunteer.do 已接受，等待 studentstatus.do 最终状态")
+    if ui is not None:
+        ui.set_phase("STATUS", render=False)
+        ui.event("volunteer.do accepted; checking final status")
+    else:
+        print("[结果] volunteer.do 已接受，等待 studentstatus.do 最终状态")
     for attempt in range(1, 11):
         if attempt > 1:
-            await asyncio.sleep(1.0)
+            if ui is not None:
+                await ui.wait(1.0)
+                ui.set_phase("STATUS", render=False)
+            else:
+                await asyncio.sleep(1.0)
+        if ui is not None:
+            ui.action(f"status check {attempt}/10", render=True)
         status = await api.post(
             STUDENT_STATUS_PATH,
             {"studentCode": context.student_code},
         )
         status_code = as_text(status.get("code"))
         if status_code == "1":
-            print("[结果] 添加选课成功")
+            if ui is not None:
+                ui.submission("SUCCESS", render=False)
+                ui.set_phase("READY", render=False)
+                ui.event("course selection confirmed", "OK")
+            else:
+                print("[结果] 添加选课成功")
             return 0
         if status_code == "-1":
-            print(
-                "[结果] 添加选课失败："
-                f"{safe_message(status.get('msg')) or '未知原因'}"
-            )
+            message = safe_message(status.get("msg")) or "未知原因"
+            if ui is not None:
+                ui.submission(f"FAILED: {message}", render=False)
+                ui.event(f"course selection failed: {message}", "ERR")
+            else:
+                print(f"[结果] 添加选课失败：{message}")
             return 3
-        print(f"[等待] 操作状态仍在处理（第 {attempt}/10 次）")
+        if ui is not None:
+            ui.event(f"status pending ({attempt}/10)", "WAIT")
+        else:
+            print(f"[等待] 操作状态仍在处理（第 {attempt}/10 次）")
 
-    print("[结果] 状态轮询超时，请登录页面人工核对选课结果")
+    if ui is not None:
+        ui.submission("FAILED: STATUS TIMEOUT", render=False)
+        ui.event("status polling timeout; verify in browser", "ERR")
+    else:
+        print("[结果] 状态轮询超时，请登录页面人工核对选课结果")
     return 4
 
 
@@ -2431,6 +2897,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-auto-fill",
         action="store_true",
         help="本次运行不从 Windows 凭据管理器自动填充登录框",
+    )
+    parser.add_argument(
+        "--plain-output",
+        action="store_true",
+        help="禁用 watch 模式 TUI，保留传统逐行输出",
     )
     parser.add_argument("--course-id", default="", help="精确教学班 ID")
     parser.add_argument("--course-number", default="", help="精确课程号")
@@ -2530,6 +3001,7 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
                 args.school_category,
                 args.school_unit,
                 args.no_auto_fill,
+                args.plain_output,
             )
         )
         if has_operational_options:
@@ -2607,13 +3079,34 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
         parser.error("--yes 只能与 --submit 或 --auto-select 一起使用")
 async def async_main(args: argparse.Namespace) -> int:
     playwright = context = page = None
+    mode = (
+        "AUTO-SELECT"
+        if args.auto_select
+        else "TARGET WATCH"
+        if args.submit and args.watch
+        else "WATCH"
+    )
+    ui = TerminalUI(
+        mode,
+        enabled=(
+            args.watch
+            and not args.plain_output
+            and bool(sys.stdout.isatty())
+        ),
+    )
+    active_ui = ui if ui.enabled else None
+    if active_ui is not None:
+        active_ui.start()
     try:
         playwright, context, page = await open_visible_browser(
             args.timeout,
             auto_fill_credentials=not args.no_auto_fill,
+            ui=active_ui,
         )
         browser_session = BrowserSession(page)
         session_context = await browser_session.read_context()
+        if active_ui is not None:
+            active_ui.set_session(context=session_context, render=False)
         expected_teaching_class_type = (
             ALL_SCHOOL_TEACHING_CLASS_TYPE
             if args.collect_open_courses
@@ -2624,10 +3117,17 @@ async def async_main(args: argparse.Namespace) -> int:
             and session_context.teaching_class_type
             not in {"", expected_teaching_class_type}
         ):
-            print(
-                f"[提示] 当前页面教学班类型不是 {expected_teaching_class_type}；"
-                f"本工具仍只发送明确的 {expected_teaching_class_type} 查询"
+            message = (
+                f"page type is not {expected_teaching_class_type}; "
+                f"requests remain explicitly {expected_teaching_class_type}"
             )
+            if active_ui is not None:
+                active_ui.event(message, "WARN")
+            else:
+                print(
+                    f"[提示] 当前页面教学班类型不是 {expected_teaching_class_type}；"
+                    f"本工具仍只发送明确的 {expected_teaching_class_type} 查询"
+                )
         api = BrowserApi(page)
 
         if args.collect_open_courses or args.collect_selected_courses:
@@ -2667,22 +3167,42 @@ async def async_main(args: argparse.Namespace) -> int:
         campus_codes = ("2",) if args.auto_select else ("2", "4")
 
         while True:
+            if active_ui is not None:
+                active_ui.set_phase("SELECTED", render=False)
             if args.auto_select:
                 selected_count = await query_selected_course_count(
                     api,
                     session_context,
                 )
-                print(
-                    f"[进度] 当前已选博雅理论课：{selected_count}/"
-                    f"{AUTO_TARGET_COUNT}"
-                )
-                if selected_count >= AUTO_TARGET_COUNT:
-                    print(
-                        f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
-                        "停止自动选课"
+                if active_ui is not None:
+                    active_ui.selected(selected_count, status="OK", render=False)
+                    active_ui.event(
+                        f"selected Boya theory={selected_count}/{AUTO_TARGET_COUNT}",
+                        "STAT",
+                        render=False,
                     )
+                else:
+                    print(
+                        f"[进度] 当前已选博雅理论课：{selected_count}/"
+                        f"{AUTO_TARGET_COUNT}"
+                    )
+                if selected_count >= AUTO_TARGET_COUNT:
+                    if active_ui is not None:
+                        active_ui.set_phase("DONE", render=False)
+                        active_ui.event(
+                            f"target reached: {AUTO_TARGET_COUNT} Boya theory courses",
+                            "DONE",
+                        )
+                    else:
+                        print(
+                            f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
+                            "停止自动选课"
+                        )
                     return 0
 
+            if active_ui is not None:
+                active_ui.set_phase("QUERY", render=True)
+            cycle_started = time.monotonic()
             results, courses = await run_query_cycle(
                 api,
                 session_context,
@@ -2690,16 +3210,49 @@ async def async_main(args: argparse.Namespace) -> int:
                 max_pages=args.max_pages,
                 request_delay=args.request_delay,
                 campus_codes=campus_codes,
+                ui=active_ui,
             )
+            safe_candidates = [
+                course for course in courses if course.is_safe_candidate()
+            ]
+            if active_ui is not None:
+                active_ui.cycle(
+                    results,
+                    courses,
+                    safe_candidates=safe_candidates,
+                    elapsed=time.monotonic() - cycle_started,
+                    render=False,
+                )
             if args.output:
                 write_snapshot(
                     args.output,
                     session_context,
                     results,
                     courses,
+                    quiet=active_ui is not None,
                 )
 
-            if courses:
+            if active_ui is not None:
+                if courses:
+                    active_ui.event(
+                        f"courses returned; safe candidates={len(safe_candidates)}",
+                        "DATA",
+                        render=False,
+                    )
+                elif args.auto_select:
+                    active_ui.event(
+                        "no course returned by Boya query; continuing",
+                        "WAIT",
+                        render=False,
+                    )
+                else:
+                    active_ui.event(
+                        "no course returned by selected query",
+                        "WAIT",
+                        render=False,
+                    )
+                active_ui.render(force=True)
+            elif courses:
                 print("[候选]")
                 for course in courses:
                     print(
@@ -2717,15 +3270,18 @@ async def async_main(args: argparse.Namespace) -> int:
                     print("[候选] 当前两个校区没有服务端返回的“无冲突 + 未满”教学班")
 
             if args.auto_select:
-                safe_candidates = [
-                    course for course in courses if course.is_safe_candidate()
-                ]
                 if safe_candidates:
                     candidate = safe_candidates[0]
-                    print(
-                        "[自动选课] 发现安全候选，将按服务端顺序尝试第一门："
-                        f" {candidate.short_label()}"
-                    )
+                    if active_ui is not None:
+                        active_ui.set_phase("PREFLIGHT", render=False)
+                        active_ui.action(
+                            f"safe candidate selected: {candidate.short_label()}"
+                        )
+                    else:
+                        print(
+                            "[自动选课] 发现安全候选，将按服务端顺序尝试第一门："
+                            f" {candidate.short_label()}"
+                        )
                     (
                         context_for_submit,
                         fresh_course,
@@ -2749,28 +3305,54 @@ async def async_main(args: argparse.Namespace) -> int:
                         need_book=selected_need_book,
                         test_teaching_class_id=selected_test_id,
                         yes=args.yes,
+                        ui=active_ui,
                     )
                     if submit_result != 0:
                         return submit_result
                     session_context = await browser_session.read_context()
+                    if active_ui is not None:
+                        active_ui.set_session(
+                            context=session_context,
+                            render=False,
+                        )
                     selected_count = await query_selected_course_count(
                         api,
                         session_context,
                     )
-                    print(
-                        f"[进度] 本次操作后已选博雅理论课：{selected_count}/"
-                        f"{AUTO_TARGET_COUNT}"
-                    )
-                    if selected_count >= AUTO_TARGET_COUNT:
-                        print(
-                            f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
-                            "停止自动选课"
+                    if active_ui is not None:
+                        active_ui.selected(selected_count, status="OK", render=False)
+                        active_ui.event(
+                            f"after submit Boya theory={selected_count}/{AUTO_TARGET_COUNT}",
+                            "STAT",
+                            render=False,
                         )
+                    else:
+                        print(
+                            f"[进度] 本次操作后已选博雅理论课：{selected_count}/"
+                            f"{AUTO_TARGET_COUNT}"
+                        )
+                    if selected_count >= AUTO_TARGET_COUNT:
+                        if active_ui is not None:
+                            active_ui.set_phase("DONE", render=False)
+                            active_ui.event(
+                                f"target reached: {AUTO_TARGET_COUNT} Boya theory courses",
+                                "DONE",
+                            )
+                        else:
+                            print(
+                                f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
+                                "停止自动选课"
+                            )
                         return 0
                 else:
-                    print(
-                        "[等待] 仙林本轮没有可安全提交的候选，继续轮询"
-                    )
+                    if active_ui is not None:
+                        active_ui.event(
+                            "no safe candidate; continue polling",
+                            "WAIT",
+                            render=True,
+                        )
+                    else:
+                        print("[等待] 仙林本轮没有可安全提交的候选，继续轮询")
             elif args.submit:
                 matched = [
                     course
@@ -2786,6 +3368,11 @@ async def async_main(args: argparse.Namespace) -> int:
                     course for course in matched if course.is_safe_candidate()
                 ]
                 if len(safe_matched) == 1:
+                    if active_ui is not None:
+                        active_ui.set_phase("PREFLIGHT", render=False)
+                        active_ui.action(
+                            f"target matched: {safe_matched[0].short_label()}"
+                        )
                     (
                         context_for_submit,
                         fresh_course,
@@ -2813,26 +3400,58 @@ async def async_main(args: argparse.Namespace) -> int:
                         need_book=selected_need_book,
                         test_teaching_class_id=selected_test_id,
                         yes=args.yes,
+                        ui=active_ui,
                     )
                 if len(safe_matched) > 1:
-                    print("[停止] 目标筛选匹配多个教学班，未提交：")
-                    for course in safe_matched:
-                        print(f"  {course.short_label()}")
+                    if active_ui is not None:
+                        active_ui.set_phase("STOP", render=False)
+                        active_ui.event(
+                            f"multiple target matches ({len(safe_matched)}); no submission",
+                            "ERR",
+                        )
+                    else:
+                        print("[停止] 目标筛选匹配多个教学班，未提交：")
+                        for course in safe_matched:
+                            print(f"  {course.short_label()}")
                     return 5
                 if matched and not safe_matched:
-                    print("[停止] 目标课程存在，但当前不满足无冲突/未满，未提交")
+                    if active_ui is not None:
+                        active_ui.event(
+                            "target exists but is unsafe; no submission",
+                            "WAIT",
+                        )
+                    else:
+                        print("[停止] 目标课程存在，但当前不满足无冲突/未满，未提交")
                 elif args.watch:
-                    print("[等待] 目标课程尚未出现，继续按间隔查询")
+                    if active_ui is not None:
+                        active_ui.event("target not found; continue polling", "WAIT")
+                    else:
+                        print("[等待] 目标课程尚未出现，继续按间隔查询")
                 else:
-                    print("[停止] 没有唯一的安全目标课程，未提交")
+                    if active_ui is not None:
+                        active_ui.set_phase("STOP", render=False)
+                        active_ui.event("no unique safe target; no submission", "ERR")
+                    else:
+                        print("[停止] 没有唯一的安全目标课程，未提交")
 
             if not args.watch:
                 return 0
-            await asyncio.sleep(args.interval)
+            if active_ui is not None:
+                await active_ui.wait(args.interval)
+            else:
+                await asyncio.sleep(args.interval)
             session_context = await browser_session.read_context()
+            if active_ui is not None:
+                active_ui.set_session(context=session_context, render=False)
     except SessionExpiredError as exc:
-        print(f"[错误] {safe_message(exc)}", file=sys.stderr)
+        message = safe_message(exc)
+        if active_ui is not None:
+            active_ui.error(message)
+        else:
+            print(f"[错误] {message}", file=sys.stderr)
         if page is not None and sys.stdin.isatty():
+            if active_ui is not None:
+                active_ui.pause_for_input()
             try:
                 await asyncio.to_thread(
                     input,
@@ -2841,12 +3460,23 @@ async def async_main(args: argparse.Namespace) -> int:
                 )
             except (EOFError, KeyboardInterrupt):
                 pass
+            finally:
+                if active_ui is not None:
+                    active_ui.resume_after_input()
         return 10
     except AutomationError as exc:
-        print(f"[错误] {safe_message(exc)}", file=sys.stderr)
+        message = safe_message(exc)
+        if active_ui is not None:
+            active_ui.error(message)
+        else:
+            print(f"[错误] {message}", file=sys.stderr)
         return 10
     except KeyboardInterrupt:
-        print("\n[停止] 用户中断")
+        if active_ui is not None:
+            active_ui.phase = "STOP"
+            active_ui.event("user interrupted", "STOP")
+        else:
+            print("\n[停止] 用户中断")
         return 130
     finally:
         if context is not None:
@@ -2859,6 +3489,8 @@ async def async_main(args: argparse.Namespace) -> int:
                 await playwright.stop()
             except Exception:
                 pass
+        if active_ui is not None:
+            active_ui.close()
 
 
 def main() -> int:

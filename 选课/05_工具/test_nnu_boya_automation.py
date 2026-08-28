@@ -507,6 +507,39 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             invalid = parser.parse_args(["--auto-select"])
             MODULE.validate_args(parser, invalid)
 
+    def test_terminal_ui_is_bounded_and_shows_watch_metrics(self) -> None:
+        ui = MODULE.TerminalUI("AUTO-SELECT", enabled=False)
+        for index in range(20):
+            ui.event(f"event-{index}", render=False)
+        self.assertEqual(len(ui.events), 7)
+
+        ui.selected(2, render=False)
+        ui.cycle(
+            [
+                MODULE.QueryResult(
+                    campus_code="2",
+                    campus_name="仙林校区",
+                    total_count=1,
+                    pages_visited=1,
+                    courses=[],
+                )
+            ],
+            [],
+            elapsed=0.25,
+            render=False,
+        )
+        screen = ui.render_text()
+        self.assertIn("UPTIME", screen)
+        self.assertIn("BOYA THEORY", screen)
+        self.assertIn("courseResult", screen)
+        self.assertIn("events=7/7", screen)
+
+    def test_plain_output_flag_is_available(self) -> None:
+        parser = MODULE.build_parser()
+        args = parser.parse_args(["--watch", "--plain-output"])
+        MODULE.validate_args(parser, args)
+        self.assertTrue(args.plain_output)
+
     def test_collection_modes_are_read_only_and_composable(self) -> None:
         parser = MODULE.build_parser()
         args = parser.parse_args(
