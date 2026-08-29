@@ -780,6 +780,39 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertEqual(count, 1)
         self.assertTrue(api.path.startswith(MODULE.SELECTED_COURSE_PATH + "?timestamp="))
 
+    def test_batch_open_gate_uses_server_state(self) -> None:
+        class FakeApi:
+            def __init__(self, message: str) -> None:
+                self.message = message
+                self.calls = []
+
+            async def post(self, path, payload):
+                self.calls.append((path, payload))
+                return {"code": "1", "msg": self.message}
+
+        context = MODULE.SessionContext(
+            student_code="student",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="XGXK",
+        )
+        closed_api = FakeApi("0")
+        self.assertFalse(
+            asyncio.run(MODULE.query_batch_open(closed_api, context))
+        )
+        self.assertEqual(
+            closed_api.calls,
+            [(MODULE.BATCH_OPEN_PATH, {"xklcdm": "batch"})],
+        )
+
+        open_api = FakeApi("1")
+        self.assertTrue(
+            asyncio.run(MODULE.query_batch_open(open_api, context))
+        )
+
     def test_boya_classifier_uses_explicit_public_markers(self) -> None:
         self.assertTrue(
             MODULE.selected_course_is_boya(

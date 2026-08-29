@@ -8,8 +8,9 @@
 * 可只读采集 QXKC 全校课程和当前批次已选课程，输出脱敏 JSON/CSV；
 * 可选从 Windows 凭据管理器读取并填入学号、密码；验证码/人机认证仍由用户完成；
 * 会话 token 只在页面上下文内使用，不导出、不写盘、不打印；
-* 默认只读查询；提交必须同时指定目标课程、--submit 和明确确认；
+* 无参数启动先进入 TUI，默认加载博雅课自动选择预设；点击应用后才运行；
 * 提交前重新查询“不冲突 + 未满”，并刷新课程详情/容量；
+* 自动模式先等待服务端确认选课轮次开放，开放前只保持武装轮询；
 * 不自动重试 volunteer.do，避免网络不确定时重复提交。
 * watch 模式使用固定屏幕 TUI 展示运行时长、轮询、接口和任务进度；
   事件历史有界，不连续刷屏。
@@ -118,6 +119,10 @@ class SessionExpiredError(AutomationError):
 
 class UnsafeSelectionError(AutomationError):
     """安全闸门拒绝提交。"""
+
+
+class BatchNotOpenError(UnsafeSelectionError):
+    """服务端尚未确认当前选课轮次开放。"""
 
 
 _ANSI_ESCAPE_PATTERN = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
@@ -409,6 +414,7 @@ class TerminalUI:
         self.browser_state = "STARTING"
         self.auth_state = "WAITING"
         self.batch_name = "-"
+        self.batch_open_status = "N/A"
         self.campus_name = "-"
         self.teaching_class_type = "-"
         self.expected_teaching_class_type = BOYA_TEACHING_CLASS_TYPE
@@ -495,6 +501,9 @@ class TerminalUI:
         )
         self.policy = (
             "conflict=0 full=0 not-chosen=1 capacity=selected<limit"
+        )
+        self.batch_open_status = (
+            "CHECK" if getattr(args, "auto_select", False) else "N/A"
         )
 
     @staticmethod
@@ -1172,6 +1181,11 @@ class TerminalUI:
         if render:
             self.render(force=True)
 
+    def batch_open(self, is_open: bool, *, render: bool = True) -> None:
+        self.batch_open_status = "OPEN" if is_open else "WAIT"
+        if render:
+            self.render(force=True)
+
     def query(
         self,
         result: "QueryResult",
@@ -1297,7 +1311,8 @@ class TerminalUI:
             (
                 f"BATCH    {_truncate_display(self.batch_name, 54)}  "
                 f"pageType={self.teaching_class_type} "
-                f"expected={self.expected_teaching_class_type}"
+                f"expected={self.expected_teaching_class_type} "
+                f"open={self.batch_open_status}"
             ),
             (
                 f"SCOPE    request-campus={_truncate_display(self.target_campuses, 56)} "
@@ -3206,6 +3221,19 @@ async def query_selected_course_count(
     )
 
 
+async def query_batch_open(
+    api: BrowserApi,
+    context: SessionContext,
+) -> bool:
+    """以服务端轮次状态为准；列表提前可见不等于已经允许提交。"""
+
+    response = await api.post(
+        BATCH_OPEN_PATH,
+        {"xklcdm": context.batch_code},
+    )
+    return as_text(response.get("msg")) == "1"
+
+
 def test_option_is_safe(item: Mapping[str, Any]) -> bool:
     """复刻页面对实验教学班的冲突/限制/容量判断。"""
 
@@ -3685,12 +3713,8 @@ async def preflight_course(
     else:
         selected_need_book = None
 
-    batch_response = await api.post(
-        BATCH_OPEN_PATH,
-        {"xklcdm": context.batch_code},
-    )
-    if as_text(batch_response.get("msg")) != "1":
-        raise UnsafeSelectionError(
+    if not await query_batch_open(api, context):
+        raise BatchNotOpenError(
             "选课轮次当前未确认开放，未提交"
         )
     return context, course, selected_need_book, selected_test_id
@@ -4184,6 +4208,7 @@ async def async_main(args: argparse.Namespace) -> int:
                 )
             return 0
 
+        last_batch_open: Optional[bool] = None
         while True:
             if active_ui is not None:
                 active_ui.set_phase("SELECTED", render=False)
@@ -4217,6 +4242,39 @@ async def async_main(args: argparse.Namespace) -> int:
                             "停止自动选课"
                         )
                     return 0
+
+                batch_is_open = await query_batch_open(api, session_context)
+                if active_ui is not None:
+                    active_ui.batch_open(batch_is_open, render=False)
+                if batch_is_open != last_batch_open:
+                    if batch_is_open:
+                        message = "selection batch is OPEN; starting Boya query"
+                        if active_ui is not None:
+                            active_ui.event(message, "OPEN", render=False)
+                        else:
+                            print("[开放] 服务端已确认选课轮次开放，开始查询博雅课")
+                    else:
+                        message = (
+                            "armed; batch not open yet, submission is blocked"
+                        )
+                        if active_ui is not None:
+                            active_ui.event(message, "ARM", render=False)
+                        else:
+                            print("[待命] 选课轮次尚未开放；已武装，禁止提前提交")
+                last_batch_open = batch_is_open
+                if not batch_is_open:
+                    if active_ui is not None:
+                        active_ui.set_phase("ARMED", render=True)
+                        await active_ui.wait(args.interval)
+                    else:
+                        await asyncio.sleep(args.interval)
+                    session_context = await browser_session.read_context()
+                    if active_ui is not None:
+                        active_ui.set_session(
+                            context=session_context,
+                            render=False,
+                        )
+                    continue
 
             if active_ui is not None:
                 active_ui.set_phase("QUERY", render=True)
@@ -4300,22 +4358,35 @@ async def async_main(args: argparse.Namespace) -> int:
                             "[自动选课] 发现安全候选，将按服务端顺序尝试第一门："
                             f" {candidate.short_label()}"
                         )
-                    (
-                        context_for_submit,
-                        fresh_course,
-                        selected_need_book,
-                        selected_test_id,
-                    ) = await preflight_course(
-                        api,
-                        browser_session,
-                        session_context,
-                        candidate,
-                        page_size=args.page_size,
-                        max_pages=args.max_pages,
-                        request_delay=args.request_delay,
-                        need_book=args.need_book,
-                        test_teaching_class_id=None,
-                    )
+                    try:
+                        (
+                            context_for_submit,
+                            fresh_course,
+                            selected_need_book,
+                            selected_test_id,
+                        ) = await preflight_course(
+                            api,
+                            browser_session,
+                            session_context,
+                            candidate,
+                            page_size=args.page_size,
+                            max_pages=args.max_pages,
+                            request_delay=args.request_delay,
+                            need_book=args.need_book,
+                            test_teaching_class_id=None,
+                        )
+                    except BatchNotOpenError:
+                        last_batch_open = False
+                        if active_ui is not None:
+                            active_ui.batch_open(False, render=False)
+                            active_ui.set_phase("ARMED", render=False)
+                            active_ui.event(
+                                "batch closed during preflight; re-armed without submission",
+                                "ARM",
+                            )
+                        else:
+                            print("[待命] 提交预检时轮次尚未开放，重新进入武装等待")
+                        continue
                     submit_result = await submit_course(
                         api,
                         context_for_submit,
