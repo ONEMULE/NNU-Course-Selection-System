@@ -4078,11 +4078,11 @@ async def async_main(args: argparse.Namespace) -> int:
         and bool(sys.stdout.isatty())
     )
     if default_tui:
-        # 无参数默认是可操作的持续监控；是否提交由配置页再次明确选择。
+        # 无参数默认加载自动选课完整预设；提交仍须点击“应用并启动”。
         args.watch = True
     mode = (
         "AUTO-SELECT"
-        if args.auto_select
+        if args.auto_select or default_tui
         else "TARGET WATCH"
         if args.submit and args.watch
         else "WATCH"
@@ -4099,9 +4099,9 @@ async def async_main(args: argparse.Namespace) -> int:
     if active_ui is not None and not sys.stdin.isatty():
         active_ui.start()
     if default_tui:
-        # Direct no-argument startup opens the same complete read-only preset
-        # that the user can later re-apply with the R/预设 control.
-        ui._set_config_mode(args, "WATCH")
+        # Direct no-argument startup opens the complete auto-selection preset.
+        # The browser is still not opened until the user applies the TUI.
+        ui._set_config_mode(args, "AUTO-SELECT")
     expected_teaching_class_type = (
         ALL_SCHOOL_TEACHING_CLASS_TYPE
         if args.collect_open_courses
