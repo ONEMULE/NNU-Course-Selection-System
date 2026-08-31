@@ -37,7 +37,7 @@ from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Mapping, Optional, Sequence
+from typing import Any, Awaitable, Callable, Mapping, Optional, Sequence
 
 
 for _stream in (sys.stdout, sys.stderr):
@@ -74,14 +74,26 @@ CAMPUS = {
 BOYA_TEACHING_CLASS_TYPE = "XGXK"
 ALL_SCHOOL_TEACHING_CLASS_TYPE = "QXKC"
 AUTO_TARGET_COUNT = 4
+REQUIRED_OFFLINE_COURSE = "中国民歌"
+REQUIRED_OFFLINE_MODULE = "艺术鉴赏与审美体验"
+PREFERRED_AUTO_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    (REQUIRED_OFFLINE_MODULE, (REQUIRED_OFFLINE_COURSE,)),
+    ("创新与创业", ("创新创业基础", "智能文明")),
+    ("身心健康与生命关怀", ("揭秘大气污染",)),
+)
 DEFAULT_EXPORT_DIR = Path(__file__).resolve().parent / ".runtime"
+
+# 校园网偶发高延迟时，查询类请求允许有限重试；真正的选课提交永不自动重发。
+API_REQUEST_TIMEOUT_MS = 15_000
+API_QUERY_RETRIES = 3
+API_RETRY_BASE_SECONDS = 0.75
 
 # The mode buttons load a complete, conservative runtime preset.  The values
 # are deliberately separate from argparse defaults so the TUI can explain and
 # re-apply one coherent configuration after the user has edited individual
 # controls.
 AUTO_SELECT_PRESET = {
-    "interval": 1.0,
+    "interval": 0.1,
     "request_delay": 0.5,
     "page_size": 50,
     "max_pages": 50,
@@ -115,6 +127,14 @@ class AutomationError(RuntimeError):
 
 class SessionExpiredError(AutomationError):
     """登录态失效或服务端要求重新登录。"""
+
+
+class NetworkTransientError(AutomationError):
+    """可重试的短暂网络故障、超时或上游临时错误。"""
+
+
+class SubmissionUncertainError(AutomationError):
+    """提交请求可能已经到达服务端，但最终结果无法安全确认。"""
 
 
 class UnsafeSelectionError(AutomationError):
@@ -433,6 +453,7 @@ class TerminalUI:
         self.snapshot = "-"
         self.tick = 0
         self.selected_boya = 0
+        self.selected_credits: Optional[float] = None
         self.selected_status = "WAIT"
         self.query_status = "WAIT"
         self.query_returned = 0
@@ -444,6 +465,9 @@ class TerminalUI:
         self.candidate_total = 0
         self.safe_candidate_total = 0
         self.candidate_label = "NONE"
+        self.network_monitored = 0
+        self.network_leaders = "-"
+        self.priority_reason = "-"
         self.submit_attempts = 0
         self.submit_successes = 0
         self.submit_failures = 0
@@ -475,7 +499,10 @@ class TerminalUI:
             f"{CAMPUS.get(code, code)}({code})" for code in campus_codes
         ) or "-"
         if getattr(args, "auto_select", False):
-            self.selector = "AUTO: first safe Boya course"
+            self.selector = (
+                "AUTO: 中国民歌 > 创新创业基础|智能文明 > "
+                "揭秘大气污染 > 网络热度兜底"
+            )
         elif getattr(args, "course_id", ""):
             self.selector = f"teachingClassId={args.course_id}"
         elif getattr(args, "course_number", ""):
@@ -500,7 +527,7 @@ class TerminalUI:
             "manual" if getattr(args, "no_auto_fill", False) else "credential-fill"
         )
         self.policy = (
-            "conflict=0 full=0 not-chosen=1 capacity=selected<limit"
+            "safe-only + unique-2024-module + reserve-offline-slot"
         )
         self.batch_open_status = (
             "CHECK" if getattr(args, "auto_select", False) else "N/A"
@@ -605,7 +632,7 @@ class TerminalUI:
         self._config_row(
             lines,
             "mode-auto",
-            f"模式 A   {auto_radio}  首选安全博雅课；已选少于4门才提交 (S/点击)",
+            f"模式 A   {auto_radio}  指定课优先·2024模块互斥·网络热度兜底 (S/点击)",
         )
         self._config_row(
             lines,
@@ -632,7 +659,7 @@ class TerminalUI:
         self._config_row(
             lines,
             "policy",
-            f"安全规则 {locked_mark} 无冲突·未满·未选·已选<{AUTO_TARGET_COUNT}门（自动提交保护）",
+            f"安全规则 {locked_mark} 无冲突·未满·未选·不同模块·中国民歌保留位·<{AUTO_TARGET_COUNT}门",
         )
         self._config_row(
             lines,
@@ -642,7 +669,7 @@ class TerminalUI:
         self._config_row(
             lines,
             "interval",
-            f"轮询间隔 [{interval_value}]  点击/滚轮：1·2·5·10秒（最低1秒）",
+            f"轮询间隔 [{interval_value}]  点击/滚轮：0.1·0.2·0.5·1·2·5秒",
         )
         self._config_row(
             lines,
@@ -701,10 +728,10 @@ class TerminalUI:
         lines.extend(
             [
                 (
-                    "说明  自动：只查XGXK博雅；无冲突/未满/未选；已选<4门才提交。"
+                    "说明  优先：中国民歌 > 创新创业基础/智能文明 > 揭秘大气污染。"
                 ),
                 (
-                    "说明  预设后普通参数可调；安全规则/自动校区/自动确认锁定；认证始终人工。"
+                    "说明  严格不同2024模块；每轮监控网络人数增量；热度兜底；认证人工。"
                 ),
                 (
                     f"提示  {_truncate_display(self.config_notice or '准备就绪', 92)}"
@@ -757,7 +784,7 @@ class TerminalUI:
             args.yes = True
             self._config_campus_codes = ["2"]
             return (
-                "已加载自动选课完整预设：1秒轮询、0.5秒请求间隔、每页50条、"
+                "已加载自动选课完整预设：0.1秒轮询、0.5秒分页间隔、每页50条、"
                 "最多50页、登录等待300秒、自动填充、关闭快照；范围锁定仙林校区(2)"
             )
 
@@ -811,7 +838,7 @@ class TerminalUI:
             message = f"教材选择：{'订购' if args.need_book == '1' else '不订购'}"
         elif key == "interval":
             args.interval = self._cycle_config_value(
-                float(args.interval), (1.0, 2.0, 5.0, 10.0), delta
+                float(args.interval), (0.1, 0.2, 0.5, 1.0, 2.0, 5.0), delta
             )
             message = f"轮询间隔：{args.interval:.1f}秒"
         elif key == "request-delay":
@@ -845,7 +872,10 @@ class TerminalUI:
             args.yes = not args.yes
             message = f"提交确认：{'自动确认' if args.yes else '每次询问'}"
         elif key == "policy":
-            return "安全规则已锁定：无冲突、未满、未选、容量复核"
+            return (
+                "安全规则已锁定：无冲突、未满、未选、2024模块互斥、"
+                "中国民歌线下保留位、提交前容量复核"
+            )
         elif key == "output":
             args.output = (
                 None
@@ -1175,8 +1205,16 @@ class TerminalUI:
         if render:
             self.render(force=True)
 
-    def selected(self, count: int, *, status: str = "OK", render: bool = True) -> None:
+    def selected(
+        self,
+        count: int,
+        *,
+        credits: Optional[float] = None,
+        status: str = "OK",
+        render: bool = True,
+    ) -> None:
         self.selected_boya = max(0, count)
+        self.selected_credits = credits
         self.selected_status = status
         if render:
             self.render(force=True)
@@ -1241,6 +1279,26 @@ class TerminalUI:
         if render:
             self.render(force=True)
 
+    def network_metrics(
+        self,
+        courses: Sequence["Course"],
+        growth: Mapping[str, int],
+        ranked: Sequence["AutoCandidate"],
+        *,
+        render: bool = True,
+    ) -> None:
+        network_courses = [course for course in courses if course.is_network_course()]
+        leaders = network_growth_leaders(network_courses, growth, limit=3)
+        self.network_monitored = len(network_courses)
+        self.network_leaders = " | ".join(
+            f"{course.course_name} Δ+{growth.get(course.teaching_class_id, 0)} "
+            f"{course.demand_count()}/{course.class_capacity or '-'}"
+            for course in leaders
+        ) or "-"
+        self.priority_reason = ranked[0].reason if ranked else "WAIT"
+        if render:
+            self.render(force=True)
+
     def action(self, message: str, *, level: str = "ACT", render: bool = True) -> None:
         self.last_action = message
         self.event(message, level, render=render)
@@ -1266,6 +1324,11 @@ class TerminalUI:
         filled = int(width * ratio)
         return "[" + ("█" * filled) + ("░" * (width - filled)) + "]"
 
+    def _credit_progress(self) -> str:
+        if self.selected_credits is None:
+            return "?"
+        return f"{self.selected_credits:g}"
+
     def _box(self, lines: Sequence[str]) -> list[str]:
         columns = shutil.get_terminal_size((108, 30)).columns
         total_width = max(80, min(120, columns))
@@ -1286,7 +1349,7 @@ class TerminalUI:
         terminal_rows = shutil.get_terminal_size((108, 30)).lines
         # Keep the fixed dashboard inside a small terminal whenever possible;
         # one event is preferable to letting the screen scroll on every poll.
-        event_slots = max(1, min(7, terminal_rows - 19))
+        event_slots = max(1, min(7, terminal_rows - 20))
         events = list(self.events)[-event_slots:]
         event_lines = [
             f"{stamp} [{level:<4}] {_truncate_display(message, 90)}"
@@ -1326,7 +1389,8 @@ class TerminalUI:
             ),
             (
                 f"PROGRESS BOYA THEORY {self._progress_bar()} "
-                f"{self.selected_boya}/{self.target_count}"
+                f"{self.selected_boya}/{self.target_count}  "
+                f"CREDITS {self._credit_progress()}"
             ),
             (
                 f"SELECTED courseResult.do status={self.selected_status:<4} "
@@ -1349,6 +1413,11 @@ class TerminalUI:
                 f"CANDIDATE total={self.candidate_total:<3} "
                 f"safe={self.safe_candidate_total:<3}  "
                 f"current={_truncate_display(self.candidate_label, 62)}"
+            ),
+            (
+                f"NETWORK  monitored={self.network_monitored:<3} "
+                f"next={_truncate_display(self.priority_reason, 34)}  "
+                f"movers={_truncate_display(self.network_leaders, 48)}"
             ),
             (
                 f"SUBMIT   attempts={self.submit_attempts:<3} "
@@ -1726,6 +1795,16 @@ def parse_int(value: Any) -> Optional[int]:
         return None
 
 
+def parse_float(value: Any) -> Optional[float]:
+    text = as_text(value)
+    if text is None or text == "":
+        return None
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return None
+
+
 def compose_query_content(
     keyword: str = "",
     category: str = "",
@@ -1912,6 +1991,9 @@ class Course:
     course_number: str
     course_name: str
     course_index: str
+    course_flag: str
+    module_legacy: str
+    module_2024: str
     teacher: str
     teaching_place: str
     time: str
@@ -1954,6 +2036,15 @@ class Course:
             or "",
             course_index=as_text(
                 first_value(item, "courseIndex", "classIndex")
+            )
+            or "",
+            course_flag=as_text(first_value(item, "courseFlag")) or "",
+            module_legacy=as_text(
+                first_value(item, "publicCourseTypeName")
+            )
+            or "",
+            module_2024=as_text(
+                first_value(item, "publicCourseTypeName2")
             )
             or "",
             teacher=as_text(
@@ -2015,6 +2106,33 @@ class Course:
                     return False
         return True
 
+    def module_key(self) -> str:
+        """只返回 2024 博雅模块；旧分类不能用于模块互斥判断。"""
+
+        return self.module_2024.strip()
+
+    def is_network_course(self) -> bool:
+        return "网络" in self.course_flag
+
+    def is_offline_course(self) -> bool:
+        return not self.is_network_course() and self.teaching_place.strip() not in {
+            "",
+            "-",
+        }
+
+    def demand_count(self) -> int:
+        values = [
+            value
+            for value in (self.first_volunteer, self.selected)
+            if value is not None
+        ]
+        return max(values, default=0)
+
+    def occupancy_ratio(self) -> float:
+        if not self.class_capacity or self.class_capacity <= 0:
+            return 0.0
+        return self.demand_count() / self.class_capacity
+
     def public_dict(self) -> dict[str, Any]:
         """可写入日志/快照的脱敏课程字段，不含 raw 响应。"""
 
@@ -2025,6 +2143,9 @@ class Course:
             "courseNumber": self.course_number,
             "courseName": self.course_name,
             "courseIndex": self.course_index,
+            "courseFlag": self.course_flag,
+            "publicCourseTypeName": self.module_legacy,
+            "publicCourseTypeName2": self.module_2024,
             "teacher": self.teacher,
             "teachingPlace": self.teaching_place,
             "time": self.time,
@@ -2361,6 +2482,8 @@ class SelectedCourse:
     course_type_name: str
     public_course_type: Any
     public_course_type_name: str
+    public_course_type_name2: str
+    course_flag: str
     credit: Any
     hours: Any
     school_term: str
@@ -2413,6 +2536,11 @@ class SelectedCourse:
                 first_value(item, "publicCourseTypeName")
             )
             or "",
+            public_course_type_name2=as_text(
+                first_value(item, "publicCourseTypeName2")
+            )
+            or "",
+            course_flag=as_text(first_value(item, "courseFlag")) or "",
             credit=first_value(item, "credit"),
             hours=first_value(item, "hours"),
             school_term=as_text(first_value(item, "schoolTerm")) or "",
@@ -2449,6 +2577,8 @@ class SelectedCourse:
             "courseTypeName": self.course_type_name,
             "publicCourseType": self.public_course_type,
             "publicCourseTypeName": self.public_course_type_name,
+            "publicCourseTypeName2": self.public_course_type_name2,
+            "courseFlag": self.course_flag,
             "credit": self.credit,
             "hours": self.hours,
             "schoolTerm": self.school_term,
@@ -2462,6 +2592,245 @@ class SelectedCourse:
             "paymentStatus": self.payment_status,
             "isBoya": selected_course_is_boya(self.raw) is True,
         }
+
+    def is_boya_theory(self) -> bool:
+        return (
+            parse_flag(self.is_test) is not True
+            and selected_course_is_boya(self.raw) is True
+        )
+
+    def module_key(self) -> str:
+        return self.public_course_type_name2.strip()
+
+
+def hydrate_selected_modules(
+    records: Sequence[SelectedCourse],
+    courses: Sequence[Course],
+) -> None:
+    """用同轮 XGXK 清单补齐已选接口可能省略的 2024 模块字段。"""
+
+    by_id = {
+        course.teaching_class_id: course.module_key()
+        for course in courses
+        if course.teaching_class_id and course.module_key()
+    }
+    by_identity = {
+        (course.course_number, course.course_index, course.course_name):
+        course.module_key()
+        for course in courses
+        if course.module_key()
+    }
+    for record in records:
+        if record.public_course_type_name2.strip():
+            continue
+        module = by_id.get(record.teaching_class_id) or by_identity.get(
+            (record.course_number, record.course_index, record.course_name),
+            "",
+        )
+        if module:
+            record.public_course_type_name2 = module
+
+
+@dataclass(frozen=True)
+class AutoCandidate:
+    course: Course
+    reason: str
+    growth: int
+
+
+def selected_boya_theory_courses(
+    records: Sequence[SelectedCourse],
+) -> list[SelectedCourse]:
+    return [record for record in records if record.is_boya_theory()]
+
+
+def selected_boya_modules(
+    records: Sequence[SelectedCourse],
+) -> list[str]:
+    return [
+        record.module_key()
+        for record in selected_boya_theory_courses(records)
+    ]
+
+
+def selected_boya_credit_total(
+    records: Sequence[SelectedCourse],
+) -> Optional[float]:
+    """返回已选博雅理论课总学分；任何一门缺失学分时返回 None。"""
+
+    selected = selected_boya_theory_courses(records)
+    credits = [parse_float(record.credit) for record in selected]
+    if any(credit is None for credit in credits):
+        return None
+    return sum(credit for credit in credits if credit is not None)
+
+
+def auto_selection_goal_met(
+    records: Sequence[SelectedCourse],
+) -> bool:
+    selected = selected_boya_theory_courses(records)
+    modules = [record.module_key() for record in selected]
+    return (
+        len(selected) >= AUTO_TARGET_COUNT
+        and all(modules)
+        and len(set(modules)) == len(modules)
+        and any(
+            record.course_name == REQUIRED_OFFLINE_COURSE
+            for record in selected
+        )
+    )
+
+
+def network_demand_growth(
+    courses: Sequence[Course],
+    previous_counts: Mapping[str, int],
+) -> tuple[dict[str, int], dict[str, int]]:
+    """计算本轮网络博雅人数增量；返回的新快照完全替换旧快照。"""
+
+    current_counts = {
+        course.teaching_class_id: course.demand_count()
+        for course in courses
+        if course.is_network_course()
+    }
+    growth = {
+        teaching_class_id: max(
+            0,
+            count - previous_counts.get(teaching_class_id, count),
+        )
+        for teaching_class_id, count in current_counts.items()
+    }
+    return growth, current_counts
+
+
+def network_growth_leaders(
+    courses: Sequence[Course],
+    growth: Mapping[str, int],
+    *,
+    limit: int = 3,
+) -> list[Course]:
+    network_courses = [course for course in courses if course.is_network_course()]
+    return sorted(
+        network_courses,
+        key=lambda course: (
+            growth.get(course.teaching_class_id, 0),
+            course.occupancy_ratio(),
+            course.demand_count(),
+            course.course_name,
+        ),
+        reverse=True,
+    )[: max(0, limit)]
+
+
+def rank_auto_candidates(
+    courses: Sequence[Course],
+    selected_records: Sequence[SelectedCourse],
+    growth: Mapping[str, int],
+    *,
+    allow_network_fallback: bool = True,
+) -> list[AutoCandidate]:
+    """严格按用户优先级、2024 博雅模块互斥和网络热度排序。"""
+
+    selected_boya = selected_boya_theory_courses(selected_records)
+    occupied_modules = {
+        record.module_key()
+        for record in selected_boya
+        if record.module_key()
+    }
+    safe = [
+        course
+        for course in courses
+        if course.is_safe_candidate()
+        and course.module_key()
+        and course.module_key() not in occupied_modules
+    ]
+    ranked: list[AutoCandidate] = []
+    seen_ids: set[str] = set()
+
+    for priority, (module, preferred_names) in enumerate(
+        PREFERRED_AUTO_GROUPS,
+        start=1,
+    ):
+        if module in occupied_modules:
+            continue
+        for name in preferred_names:
+            matches = [
+                course
+                for course in safe
+                if course.course_name == name
+                and course.module_key() == module
+                and (
+                    course.is_offline_course()
+                    if name == REQUIRED_OFFLINE_COURSE
+                    else course.is_network_course()
+                )
+            ]
+            for course in sorted(
+                matches,
+                key=lambda item: (
+                    item.occupancy_ratio(),
+                    item.demand_count(),
+                ),
+                reverse=True,
+            ):
+                if course.teaching_class_id in seen_ids:
+                    continue
+                seen_ids.add(course.teaching_class_id)
+                ranked.append(
+                    AutoCandidate(
+                        course=course,
+                        reason=f"优先{priority}:{name}",
+                        growth=growth.get(course.teaching_class_id, 0),
+                    )
+                )
+
+    # 中国民歌模块始终保留给线下必选目标；若只剩最后一个名额且它尚未
+    # 选中，禁止任何网络兜底占用最后名额。
+    remaining_slots = AUTO_TARGET_COUNT - len(selected_boya)
+    reserve_offline_slot = REQUIRED_OFFLINE_MODULE not in occupied_modules
+    if reserve_offline_slot and remaining_slots <= 1:
+        return [
+            decision
+            for decision in ranked
+            if decision.course.course_name == REQUIRED_OFFLINE_COURSE
+            and decision.course.module_key() == REQUIRED_OFFLINE_MODULE
+            and decision.course.is_offline_course()
+        ]
+
+    # 第一轮只建立人数基线；没有前后两个样本时不能判断“上升最快”。
+    if not allow_network_fallback:
+        return ranked
+
+    fallback = [
+        course
+        for course in safe
+        if course.teaching_class_id not in seen_ids
+        and course.is_network_course()
+        and course.module_key() != REQUIRED_OFFLINE_MODULE
+    ]
+    fallback.sort(
+        key=lambda course: (
+            growth.get(course.teaching_class_id, 0),
+            course.occupancy_ratio(),
+            course.demand_count(),
+            course.course_name,
+        ),
+        reverse=True,
+    )
+    for course in fallback:
+        ranked.append(
+            AutoCandidate(
+                course=course,
+                reason=(
+                    "网络热度兜底:"
+                    f"{course.module_key()} Δ+"
+                    f"{growth.get(course.teaching_class_id, 0)} "
+                    f"{course.demand_count()}/"
+                    f"{course.class_capacity if course.class_capacity is not None else '-'}"
+                ),
+                growth=growth.get(course.teaching_class_id, 0),
+            )
+        )
+    return ranked
 
 
 def merge_course_data(
@@ -2490,7 +2859,7 @@ def course_matches(
 
 
 FETCH_SCRIPT = """
-async ({requestUrl, method, params}) => {
+async ({requestUrl, method, params, timeoutMs}) => {
   const token = sessionStorage.getItem("token");
   const diagnostics = (transport) => ({
     path: window.location.pathname,
@@ -2504,6 +2873,7 @@ async ({requestUrl, method, params}) => {
     return {
       status: 0,
       text: "missing-session",
+      errorType: "missing-session",
       diagnostics: diagnostics("none")
     };
   }
@@ -2518,6 +2888,7 @@ async ({requestUrl, method, params}) => {
         url,
         type: method || "GET",
         data: values,
+        timeout: timeoutMs,
         headers: {
           "X-Requested-With": "XMLHttpRequest",
           "token": token
@@ -2530,10 +2901,11 @@ async ({requestUrl, method, params}) => {
             diagnostics: diagnostics("jquery")
           });
         },
-        error: (xhr) => {
+        error: (xhr, textStatus) => {
           resolve({
             status: xhr.status || 0,
             text: String(xhr.responseText || ""),
+            errorType: textStatus === "timeout" ? "timeout" : (textStatus || "network"),
             diagnostics: diagnostics("jquery")
           });
         }
@@ -2542,10 +2914,13 @@ async ({requestUrl, method, params}) => {
   }
 
   const url = new URL(requestUrl, window.location.origin);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   const options = {
     method: method || "GET",
     mode: "same-origin",
     credentials: "include",
+    signal: controller.signal,
     headers: {
       "Accept": "application/json, text/javascript, */*; q=0.01",
       "X-Requested-With": "XMLHttpRequest",
@@ -2565,12 +2940,23 @@ async ({requestUrl, method, params}) => {
       Object.entries(values).map(([key, value]) => [key, String(value)])
     ).toString();
   }
-  const response = await fetch(url.toString(), options);
-  return {
-    status: response.status,
-    text: await response.text(),
-    diagnostics: diagnostics("fetch")
-  };
+  try {
+    const response = await fetch(url.toString(), options);
+    return {
+      status: response.status,
+      text: await response.text(),
+      diagnostics: diagnostics("fetch")
+    };
+  } catch (error) {
+    return {
+      status: 0,
+      text: "",
+      errorType: error && error.name === "AbortError" ? "timeout" : "network",
+      diagnostics: diagnostics("fetch")
+    };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 """
 
@@ -2578,8 +2964,20 @@ async ({requestUrl, method, params}) => {
 class BrowserApi:
     """通过应用上下文内的页面 XHR 调用 API，token 留在页面上下文。"""
 
-    def __init__(self, page: Any):
+    def __init__(
+        self,
+        page: Any,
+        *,
+        reauth_handler: Optional[Callable[[], Awaitable[None]]] = None,
+        request_timeout_ms: int = API_REQUEST_TIMEOUT_MS,
+        max_retries: int = API_QUERY_RETRIES,
+        retry_base_seconds: float = API_RETRY_BASE_SECONDS,
+    ):
         self.page = page
+        self.reauth_handler = reauth_handler
+        self.request_timeout_ms = max(1_000, int(request_timeout_ms))
+        self.max_retries = max(0, int(max_retries))
+        self.retry_base_seconds = max(0.0, float(retry_base_seconds))
 
     async def call(
         self,
@@ -2587,51 +2985,106 @@ class BrowserApi:
         *,
         method: str = "GET",
         params: Optional[Mapping[str, Any]] = None,
+        retryable: bool = True,
+        allow_reauth: bool = True,
     ) -> dict[str, Any]:
-        result = await self.page.evaluate(
-            FETCH_SCRIPT,
-            {
-                "requestUrl": build_api_url(path),
-                "method": method,
-                "params": dict(params or {}),
-            },
-        )
-        status = int(result.get("status", 0))
-        raw_text = result.get("text", "")
-        if status in {401, 403}:
-            raise SessionExpiredError(
-                f"服务端拒绝请求（HTTP {status}，接口 {path}；"
-                f"{request_diagnostic_message(result.get('diagnostics'))}）"
+        retry_index = 0
+        reauth_used = False
+        while True:
+            result = await self.page.evaluate(
+                FETCH_SCRIPT,
+                {
+                    "requestUrl": build_api_url(path),
+                    "method": method,
+                    "params": dict(params or {}),
+                    "timeoutMs": self.request_timeout_ms,
+                },
             )
-        if status == 0:
-            raise SessionExpiredError("浏览器页面没有可用登录态，请重新登录")
-        try:
-            payload = json.loads(raw_text)
-        except (TypeError, ValueError) as exc:
-            raise AutomationError(
-                f"服务返回非 JSON（HTTP {status}）"
-            ) from exc
-        if not isinstance(payload, dict):
-            raise AutomationError("服务返回结构不是对象")
-        if payload.get("loginURL"):
-            raise SessionExpiredError("服务端要求重新登录")
-        if as_text(payload.get("code")) == "302":
-            raise SessionExpiredError("登录态已失效（code=302）")
-        return payload
+            status = int(result.get("status", 0))
+            raw_text = result.get("text", "")
+            error_type = as_text(result.get("errorType")) or ""
+            try:
+                if status in {401, 403}:
+                    raise SessionExpiredError(
+                        f"服务端拒绝请求（HTTP {status}，接口 {path}；"
+                        f"{request_diagnostic_message(result.get('diagnostics'))}）"
+                    )
+                if status == 0:
+                    if error_type == "missing-session":
+                        raise SessionExpiredError(
+                            "浏览器页面没有可用登录态，请重新登录"
+                        )
+                    raise NetworkTransientError(
+                        f"接口 {path} 网络异常（{error_type or 'network'}；"
+                        f"{request_diagnostic_message(result.get('diagnostics'))}）"
+                    )
+                if status in {408, 429, 500, 502, 503, 504}:
+                    raise NetworkTransientError(
+                        f"接口 {path} 暂时不可用（HTTP {status}）"
+                    )
+                try:
+                    payload = json.loads(raw_text)
+                except (TypeError, ValueError) as exc:
+                    raise AutomationError(
+                        f"服务返回非 JSON（HTTP {status}）"
+                    ) from exc
+                if not isinstance(payload, dict):
+                    raise AutomationError("服务返回结构不是对象")
+                if payload.get("loginURL"):
+                    raise SessionExpiredError("服务端要求重新登录")
+                if as_text(payload.get("code")) == "302":
+                    raise SessionExpiredError("登录态已失效（code=302）")
+                return payload
+            except SessionExpiredError:
+                if (
+                    allow_reauth
+                    and not reauth_used
+                    and self.reauth_handler is not None
+                ):
+                    await self.reauth_handler()
+                    reauth_used = True
+                    retry_index = 0
+                    continue
+                raise
+            except NetworkTransientError:
+                if not retryable or retry_index >= self.max_retries:
+                    raise
+                delay = self.retry_base_seconds * (2 ** retry_index)
+                retry_index += 1
+                if delay > 0:
+                    await asyncio.sleep(delay)
 
     async def get(
         self,
         path: str,
         params: Optional[Mapping[str, Any]] = None,
+        *,
+        retryable: bool = True,
+        allow_reauth: bool = True,
     ) -> dict[str, Any]:
-        return await self.call(path, method="GET", params=params)
+        return await self.call(
+            path,
+            method="GET",
+            params=params,
+            retryable=retryable,
+            allow_reauth=allow_reauth,
+        )
 
     async def post(
         self,
         path: str,
         params: Optional[Mapping[str, Any]] = None,
+        *,
+        retryable: bool = True,
+        allow_reauth: bool = True,
     ) -> dict[str, Any]:
-        return await self.call(path, method="POST", params=params)
+        return await self.call(
+            path,
+            method="POST",
+            params=params,
+            retryable=retryable,
+            allow_reauth=allow_reauth,
+        )
 
 
 class BrowserSession:
@@ -2850,6 +3303,116 @@ async def autofill_login_form(
         )
 
 
+async def reauthenticate_visible_browser(
+    page: Any,
+    browser_session: BrowserSession,
+    *,
+    timeout_seconds: int,
+    auto_fill_credentials: bool,
+    ui: Optional[TerminalUI] = None,
+) -> SessionContext:
+    """在同一个可见浏览器中恢复登录态，成功后返回新的会话上下文。
+
+    只清理当前页面 sessionStorage 中的旧登录态，再回到登录入口；学号密码可
+    从 Windows 凭据管理器重新填入，但验证码/人机认证仍由用户本人完成。
+    """
+
+    if ui is not None:
+        ui.set_phase("REAUTH", render=False)
+        ui.set_session(auth="EXPIRED", render=False)
+        ui.event("session expired; reopening login page for manual re-auth", "AUTH")
+    else:
+        print("[登录] 当前会话已失效，正在原浏览器中重新打开登录页")
+
+    try:
+        await page.evaluate(
+            """
+            () => {
+              for (const key of [
+                "token", "studentInfo", "currentBatch", "currentCampus",
+                "teachingClassType", "electiveIsOpen"
+              ]) {
+                sessionStorage.removeItem(key);
+              }
+            }
+            """
+        )
+    except Exception:
+        # 页面可能刚被服务端重定向；导航到入口后仍会重新建立会话。
+        pass
+
+    try:
+        await page.goto(
+            ENTRY_URL,
+            wait_until="domcontentloaded",
+            timeout=60_000,
+        )
+    except Exception as exc:
+        message = f"re-auth login entry load warning: {safe_message(exc)}"
+        if ui is not None:
+            ui.event(message, "WARN")
+        else:
+            print(f"[提示] 重新登录入口加载提示：{safe_message(exc)}")
+
+    await autofill_login_form(
+        page,
+        enabled=auto_fill_credentials,
+        ui=ui,
+    )
+    if ui is not None:
+        ui.set_session(auth="MANUAL", render=False)
+        ui.event("complete CAPTCHA/human verification to resume", "AUTH")
+    else:
+        print("[等待] 请在保留的浏览器里完成验证码/人机认证；成功后脚本会自动继续")
+
+    try:
+        await browser_session.wait_until_ready(timeout_seconds=timeout_seconds)
+        await browser_session.goto_authenticated_page(GRAB_URL)
+        await browser_session.wait_until_ready(timeout_seconds=timeout_seconds)
+        context = await browser_session.read_context()
+    except AutomationError as exc:
+        raise SessionExpiredError(
+            "重新登录未在等待时间内恢复完整会话；浏览器将保留供人工检查"
+        ) from exc
+
+    if ui is not None:
+        ui.set_phase("READY", render=False)
+        ui.set_session(auth="READY", context=context, render=False)
+        ui.event("re-authentication complete; monitoring resumed", "AUTH")
+    else:
+        print("[恢复] 重新登录成功，继续原来的监控/选课任务")
+    return context
+
+
+async def hold_browser_for_manual_control(
+    page: Any,
+    *,
+    ui: Optional[TerminalUI],
+    message: str,
+    phase: str = "DONE_HOLD",
+) -> None:
+    """任务完成或结果不确定时保留浏览器，直到用户明确要求关闭。"""
+
+    if page is None or not sys.stdin.isatty():
+        return
+    if ui is not None:
+        ui.set_phase(phase, render=False)
+        ui.set_session(browser="OPEN", render=False)
+        ui.event(message, "HOLD", render=True)
+        ui.pause_for_input()
+    try:
+        await asyncio.to_thread(
+            input,
+            "\n[保持] 浏览器和当前登录页不会自动关闭，可直接人工检查/操作；"
+            "确认不再需要后按回车关闭脚本：",
+        )
+    except (EOFError, KeyboardInterrupt):
+        pass
+    finally:
+        if ui is not None:
+            ui.resume_after_input()
+
+
 async def open_visible_browser(
     timeout_seconds: int,
     *,
@@ -2935,6 +3498,8 @@ async def query_public_courses(
     page_size: int,
     max_pages: int,
     request_delay: float,
+    check_conflict: str = "0",
+    check_capacity: str = "0",
 ) -> QueryResult:
     if campus_code not in CAMPUS:
         raise AutomationError(f"脚本只允许查询仙林/仙林新北，收到：{campus_code}")
@@ -2955,8 +3520,8 @@ async def query_public_courses(
             student_code=context.student_code,
             batch_code=context.batch_code,
             campus_code=campus_code,
-            check_conflict="0",
-            check_capacity="0",
+            check_conflict=check_conflict,
+            check_capacity=check_capacity,
             page_size=page_size,
             page_number=page_number,
         )
@@ -3011,6 +3576,8 @@ async def run_query_cycle(
     request_delay: float,
     campus_codes: Sequence[str] = ("2", "4"),
     ui: Optional[TerminalUI] = None,
+    check_conflict: str = "0",
+    check_capacity: str = "0",
 ) -> tuple[list[QueryResult], list[Course]]:
     results: list[QueryResult] = []
     for index, campus_code in enumerate(campus_codes):
@@ -3021,6 +3588,8 @@ async def run_query_cycle(
             page_size=page_size,
             max_pages=max_pages,
             request_delay=request_delay,
+            check_conflict=check_conflict,
+            check_capacity=check_capacity,
         )
         results.append(result)
         if ui is not None:
@@ -3478,6 +4047,8 @@ SELECTED_COURSE_CSV_FIELDS = (
     "courseTypeName",
     "publicCourseType",
     "publicCourseTypeName",
+    "publicCourseTypeName2",
+    "courseFlag",
     "credit",
     "hours",
     "schoolTerm",
@@ -3720,6 +4291,22 @@ async def preflight_course(
     return context, course, selected_need_book, selected_test_id
 
 
+async def selected_course_present(
+    api: BrowserApi,
+    context: SessionContext,
+    teaching_class_id: str,
+) -> bool:
+    """用 courseResult.do 核验指定教学班是否已经出现在当前批次已选结果中。"""
+
+    for item in await fetch_selected_course_items(api, context):
+        current_id = as_text(
+            first_value(item, "teachingClassID", "teachingClassId", "JXBID")
+        )
+        if current_id == teaching_class_id:
+            return True
+    return False
+
+
 async def submit_course(
     api: BrowserApi,
     context: SessionContext,
@@ -3775,28 +4362,59 @@ async def submit_course(
                 ui.event("confirmation mismatch; no submission", "WARN")
             else:
                 print("[停止] 确认文本不匹配，未提交")
-            return 0
+            return 6
 
     if ui is not None:
         ui.submit_attempts += 1
         ui.set_phase("SUBMIT", render=False)
         ui.action("POST volunteer.do", render=True)
-    response = await api.post(VOLUNTEER_PATH, add_payload)
-    code = as_text(response.get("code"))
-    if code != "1":
-        message = safe_message(response.get("msg")) or "未知原因"
+    submission_uncertain = False
+    try:
+        # volunteer.do 是唯一的写请求：网络超时、5xx 或登录态异常时绝不
+        # 自动重发，避免“第一次已到达服务端、第二次又重复提交”。
+        response = await api.post(
+            VOLUNTEER_PATH,
+            add_payload,
+            retryable=False,
+            allow_reauth=False,
+        )
+    except (NetworkTransientError, SessionExpiredError) as exc:
+        submission_uncertain = True
+        response = None
+        message = safe_message(exc)
         if ui is not None:
-            ui.submission(f"FAILED: {message}", render=False)
-            ui.event(f"server rejected submission: {message}", "ERR")
+            ui.set_phase("VERIFY", render=False)
+            ui.event(
+                f"submission transport uncertain; no resend: {message}",
+                "WARN",
+            )
         else:
-            print(f"[结果] 服务端未接受提交：{message}")
-        return 2
+            print(
+                "[警告] 提交请求结果不确定，脚本不会重发 volunteer.do；"
+                "开始只读核验已选结果"
+            )
+
+    if response is not None:
+        code = as_text(response.get("code"))
+        if code != "1":
+            message = safe_message(response.get("msg")) or "未知原因"
+            if ui is not None:
+                ui.submission(f"FAILED: {message}", render=False)
+                ui.event(f"server rejected submission: {message}", "ERR")
+            else:
+                print(f"[结果] 服务端未接受提交：{message}")
+            return 2
 
     if ui is not None:
         ui.set_phase("STATUS", render=False)
-        ui.event("volunteer.do accepted; checking final status")
+        ui.event(
+            "checking final status without resubmitting volunteer.do"
+            if submission_uncertain
+            else "volunteer.do accepted; checking final status"
+        )
     else:
-        print("[结果] volunteer.do 已接受，等待 studentstatus.do 最终状态")
+        if not submission_uncertain:
+            print("[结果] volunteer.do 已接受，等待 studentstatus.do 最终状态")
     for attempt in range(1, 11):
         if attempt > 1:
             if ui is not None:
@@ -3806,12 +4424,48 @@ async def submit_course(
                 await asyncio.sleep(1.0)
         if ui is not None:
             ui.action(f"status check {attempt}/10", render=True)
-        status = await api.post(
-            STUDENT_STATUS_PATH,
-            {"studentCode": context.student_code},
-        )
+
+        # 对“提交请求本身超时/断网”的情况，courseResult.do 是更可靠的
+        # 只读事实来源；一旦目标教学班已出现即可确认成功。
+        try:
+            if submission_uncertain and await selected_course_present(
+                api,
+                context,
+                course.teaching_class_id,
+            ):
+                if ui is not None:
+                    ui.submission("SUCCESS: VERIFIED", render=False)
+                    ui.set_phase("READY", render=False)
+                    ui.event("uncertain submission verified in courseResult.do", "OK")
+                else:
+                    print("[结果] 已通过 courseResult.do 确认目标课程选课成功")
+                return 0
+
+            status = await api.post(
+                STUDENT_STATUS_PATH,
+                {"studentCode": context.student_code},
+            )
+        except NetworkTransientError as exc:
+            message = safe_message(exc)
+            if ui is not None:
+                ui.event(
+                    f"verification network error ({attempt}/10): {message}",
+                    "WARN",
+                )
+            else:
+                print(f"[等待] 结果核验网络异常（{attempt}/10），继续只读重试")
+            continue
         status_code = as_text(status.get("code"))
         if status_code == "1":
+            if submission_uncertain:
+                # studentstatus.do 可能反映最近一次操作；运输层不确定时仍以
+                # courseResult.do 出现目标教学班为最终确认，避免误报成功。
+                if ui is not None:
+                    ui.event(
+                        "studentstatus reports success; waiting for courseResult verification",
+                        "WAIT",
+                    )
+                continue
             if ui is not None:
                 ui.submission("SUCCESS", render=False)
                 ui.set_phase("READY", render=False)
@@ -3819,7 +4473,7 @@ async def submit_course(
             else:
                 print("[结果] 添加选课成功")
             return 0
-        if status_code == "-1":
+        if status_code == "-1" and not submission_uncertain:
             message = safe_message(status.get("msg")) or "未知原因"
             if ui is not None:
                 ui.submission(f"FAILED: {message}", render=False)
@@ -3833,11 +4487,12 @@ async def submit_course(
             print(f"[等待] 操作状态仍在处理（第 {attempt}/10 次）")
 
     if ui is not None:
-        ui.submission("FAILED: STATUS TIMEOUT", render=False)
-        ui.event("status polling timeout; verify in browser", "ERR")
-    else:
-        print("[结果] 状态轮询超时，请登录页面人工核对选课结果")
-    return 4
+        ui.submission("UNCERTAIN: VERIFY MANUALLY", render=False)
+        ui.event("status verification timeout; browser will remain open", "ERR")
+    raise SubmissionUncertainError(
+        "提交后 10 次只读核验仍无法确认最终结果；未重发 volunteer.do，"
+        "请在保留的浏览器中人工核对"
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -3847,13 +4502,13 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--watch",
         action="store_true",
-        help="没有目标时持续轮询；默认间隔 1 秒",
+        help="没有目标时持续轮询；默认间隔 0.1 秒",
     )
     parser.add_argument(
         "--interval",
         type=float,
-        default=1.0,
-        help="watch 模式轮询间隔，至少 1 秒",
+        default=0.1,
+        help="watch 模式轮询间隔，至少 0.1 秒",
     )
     parser.add_argument(
         "--request-delay",
@@ -3937,8 +4592,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--auto-select",
         action="store_true",
         help=(
-            "配合 --watch/--yes 使用：只轮询仙林，直到已选博雅理论课达到 4 门；"
-            "期间发现安全候选就自动提交"
+            "配合 --watch/--yes 使用：只轮询仙林；按中国民歌、创新创业基础/"
+            "智能文明、揭秘大气污染优先，严格保证 2024 模块互异并以网络热度兜底"
         ),
     )
     parser.add_argument(
@@ -3997,8 +4652,8 @@ def validate_args(parser: argparse.ArgumentParser, args: argparse.Namespace) -> 
             )
         return
 
-    if args.watch and args.interval < 1:
-        parser.error("--watch 的 --interval 不能小于 1 秒")
+    if args.watch and args.interval < 0.1:
+        parser.error("--watch 的 --interval 不能小于 0.1 秒")
     if args.request_delay < 0.5:
         parser.error("--request-delay 不能小于 0.5 秒")
     if not 1 <= args.page_size <= 100:
@@ -4154,6 +4809,30 @@ async def async_main(args: argparse.Namespace) -> int:
         )
         browser_session = BrowserSession(page)
         session_context = await browser_session.read_context()
+        last_batch_open: Optional[bool] = None
+        previous_network_counts: dict[str, int] = {}
+        last_course_snapshot: list[Course] = []
+
+        async def recover_session() -> None:
+            nonlocal session_context
+            nonlocal last_batch_open
+            nonlocal previous_network_counts
+            nonlocal last_course_snapshot
+
+            session_context = await reauthenticate_visible_browser(
+                page,
+                browser_session,
+                timeout_seconds=args.timeout,
+                auto_fill_credentials=not args.no_auto_fill,
+                ui=active_ui,
+            )
+            # 新 token/轮次上下文建立后，不沿用旧会话的轮次状态和人数增量。
+            last_batch_open = None
+            previous_network_counts = {}
+            last_course_snapshot = []
+            if active_ui is not None:
+                active_ui.set_session(context=session_context, render=False)
+
         if active_ui is not None:
             active_ui.set_session(context=session_context, render=False)
         if (
@@ -4172,7 +4851,7 @@ async def async_main(args: argparse.Namespace) -> int:
                     f"[提示] 当前页面教学班类型不是 {expected_teaching_class_type}；"
                     f"本工具仍只发送明确的 {expected_teaching_class_type} 查询"
                 )
-        api = BrowserApi(page)
+        api = BrowserApi(page, reauth_handler=recover_session)
 
         if args.collect_open_courses or args.collect_selected_courses:
             if args.collect_open_courses:
@@ -4208,28 +4887,56 @@ async def async_main(args: argparse.Namespace) -> int:
                 )
             return 0
 
-        last_batch_open: Optional[bool] = None
         while True:
             if active_ui is not None:
                 active_ui.set_phase("SELECTED", render=False)
             if args.auto_select:
-                selected_count = await query_selected_course_count(
+                selected_records = await query_selected_courses(
                     api,
                     session_context,
                 )
+                hydrate_selected_modules(selected_records, last_course_snapshot)
+                selected_boya = selected_boya_theory_courses(selected_records)
+                selected_count = len(selected_boya)
+                selected_modules = selected_boya_modules(selected_records)
+                selected_credit_total = selected_boya_credit_total(selected_records)
+                if all(selected_modules) and (
+                    len(set(selected_modules)) != len(selected_modules)
+                ):
+                    raise UnsafeSelectionError(
+                        "当前已选博雅课存在 2024 模块重复，"
+                        "为避免违反不同模块要求，自动模式已停止"
+                    )
                 if active_ui is not None:
-                    active_ui.selected(selected_count, status="OK", render=False)
+                    active_ui.selected(
+                        selected_count,
+                        credits=selected_credit_total,
+                        status="OK",
+                        render=False,
+                    )
                     active_ui.event(
-                        f"selected Boya theory={selected_count}/{AUTO_TARGET_COUNT}",
+                        f"selected Boya theory={selected_count}/{AUTO_TARGET_COUNT} "
+                        f"credits={selected_credit_total if selected_credit_total is not None else '?'}",
                         "STAT",
                         render=False,
                     )
                 else:
+                    credit_label = (
+                        "?"
+                        if selected_credit_total is None
+                        else f"{selected_credit_total:g}"
+                    )
                     print(
                         f"[进度] 当前已选博雅理论课：{selected_count}/"
-                        f"{AUTO_TARGET_COUNT}"
+                        f"{AUTO_TARGET_COUNT}；学分：{credit_label}"
                     )
-                if selected_count >= AUTO_TARGET_COUNT:
+                if selected_count >= AUTO_TARGET_COUNT and all(selected_modules):
+                    if not auto_selection_goal_met(selected_records):
+                        raise UnsafeSelectionError(
+                            f"已选博雅课已达到 {AUTO_TARGET_COUNT} 门，但未同时满足"
+                            "中国民歌必选和 2024 模块互异，"
+                            "不能再自动追加课程"
+                        )
                     if active_ui is not None:
                         active_ui.set_phase("DONE", render=False)
                         active_ui.event(
@@ -4241,6 +4948,11 @@ async def async_main(args: argparse.Namespace) -> int:
                             f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
                             "停止自动选课"
                         )
+                    await hold_browser_for_manual_control(
+                        page,
+                        ui=active_ui,
+                        message="自动选课目标已完成；停止自动提交并保留浏览器供人工检查",
+                    )
                     return 0
 
                 batch_is_open = await query_batch_open(api, session_context)
@@ -4287,18 +4999,84 @@ async def async_main(args: argparse.Namespace) -> int:
                 request_delay=args.request_delay,
                 campus_codes=campus_codes,
                 ui=active_ui,
+                check_conflict="" if args.auto_select else "0",
+                check_capacity="" if args.auto_select else "0",
             )
+            last_course_snapshot = list(courses)
             safe_candidates = [
                 course for course in courses if course.is_safe_candidate()
             ]
+            if args.auto_select:
+                hydrate_selected_modules(selected_records, courses)
+                selected_modules = selected_boya_modules(selected_records)
+                if (
+                    any(not module for module in selected_modules)
+                    or len(set(selected_modules)) != len(selected_modules)
+                ):
+                    raise UnsafeSelectionError(
+                        "无法确认全部已选博雅课的 2024 模块，或检测到模块重复；"
+                        "为避免误选，自动模式已停止"
+                    )
+                if selected_count >= AUTO_TARGET_COUNT:
+                    if not auto_selection_goal_met(selected_records):
+                        raise UnsafeSelectionError(
+                            f"已选博雅课已达到 {AUTO_TARGET_COUNT} 门，但未同时满足"
+                            "中国民歌必选和 2024 模块互异，"
+                            "不能再自动追加课程"
+                        )
+                    if active_ui is not None:
+                        active_ui.set_phase("DONE", render=False)
+                        active_ui.event(
+                            f"target reached: {AUTO_TARGET_COUNT} courses, "
+                            "unique modules, "
+                            "offline 中国民歌 selected",
+                            "DONE",
+                        )
+                    else:
+                        print(
+                            f"[完成] 已选 {AUTO_TARGET_COUNT} 门不同模块博雅课，"
+                            "且包含线下中国民歌"
+                        )
+                    await hold_browser_for_manual_control(
+                        page,
+                        ui=active_ui,
+                        message="自动选课目标已完成；停止自动提交并保留浏览器供人工检查",
+                    )
+                    return 0
+                has_network_baseline = bool(previous_network_counts)
+                growth, previous_network_counts = network_demand_growth(
+                    courses,
+                    previous_network_counts,
+                )
+                ranked_candidates = rank_auto_candidates(
+                    courses,
+                    selected_records,
+                    growth,
+                    allow_network_fallback=has_network_baseline,
+                )
+            else:
+                growth = {}
+                ranked_candidates = []
+            display_candidates = (
+                [decision.course for decision in ranked_candidates]
+                if args.auto_select
+                else safe_candidates
+            )
             if active_ui is not None:
                 active_ui.cycle(
                     results,
                     courses,
-                    safe_candidates=safe_candidates,
+                    safe_candidates=display_candidates,
                     elapsed=time.monotonic() - cycle_started,
                     render=False,
                 )
+                if args.auto_select:
+                    active_ui.network_metrics(
+                        courses,
+                        growth,
+                        ranked_candidates,
+                        render=False,
+                    )
             if args.output:
                 write_snapshot(
                     args.output,
@@ -4346,17 +5124,20 @@ async def async_main(args: argparse.Namespace) -> int:
                     print("[候选] 当前两个校区没有服务端返回的“无冲突 + 未满”教学班")
 
             if args.auto_select:
-                if safe_candidates:
-                    candidate = safe_candidates[0]
+                submitted = False
+                batch_rearmed = False
+                occupied_modules = set(selected_modules)
+                for decision in ranked_candidates:
+                    candidate = decision.course
                     if active_ui is not None:
                         active_ui.set_phase("PREFLIGHT", render=False)
                         active_ui.action(
-                            f"safe candidate selected: {candidate.short_label()}"
+                            f"{decision.reason}: {candidate.short_label()}"
                         )
                     else:
                         print(
-                            "[自动选课] 发现安全候选，将按服务端顺序尝试第一门："
-                            f" {candidate.short_label()}"
+                            f"[自动选课] {decision.reason}："
+                            f"{candidate.short_label()}"
                         )
                     try:
                         (
@@ -4377,6 +5158,7 @@ async def async_main(args: argparse.Namespace) -> int:
                         )
                     except BatchNotOpenError:
                         last_batch_open = False
+                        batch_rearmed = True
                         if active_ui is not None:
                             active_ui.batch_open(False, render=False)
                             active_ui.set_phase("ARMED", render=False)
@@ -4386,7 +5168,38 @@ async def async_main(args: argparse.Namespace) -> int:
                             )
                         else:
                             print("[待命] 提交预检时轮次尚未开放，重新进入武装等待")
+                        break
+                    except UnsafeSelectionError as exc:
+                        message = (
+                            f"skip {candidate.course_name}: "
+                            f"{safe_message(exc)}"
+                        )
+                        if active_ui is not None:
+                            active_ui.event(message, "SKIP", render=False)
+                        else:
+                            print(f"[跳过] {message}")
                         continue
+
+                    fresh_module = fresh_course.module_key()
+                    if (
+                        not fresh_module
+                        or fresh_module != candidate.module_key()
+                        or fresh_module in occupied_modules
+                        or (
+                            candidate.course_name == REQUIRED_OFFLINE_COURSE
+                            and not fresh_course.is_offline_course()
+                        )
+                    ):
+                        message = (
+                            f"skip {candidate.course_name}: module/offline "
+                            "constraint changed during preflight"
+                        )
+                        if active_ui is not None:
+                            active_ui.event(message, "SKIP", render=False)
+                        else:
+                            print(f"[跳过] {message}")
+                        continue
+
                     submit_result = await submit_course(
                         api,
                         context_for_submit,
@@ -4396,52 +5209,108 @@ async def async_main(args: argparse.Namespace) -> int:
                         yes=args.yes,
                         ui=active_ui,
                     )
+                    if submit_result == 3:
+                        message = (
+                            f"server rejected {candidate.course_name}; "
+                            "trying the next ranked candidate"
+                        )
+                        if active_ui is not None:
+                            active_ui.event(message, "SKIP", render=False)
+                        else:
+                            print(f"[跳过] {message}")
+                        continue
                     if submit_result != 0:
                         return submit_result
+                    submitted = True
+                    break
+
+                if batch_rearmed:
+                    continue
+                if submitted:
                     session_context = await browser_session.read_context()
                     if active_ui is not None:
                         active_ui.set_session(
                             context=session_context,
                             render=False,
                         )
-                    selected_count = await query_selected_course_count(
+                    selected_records = await query_selected_courses(
                         api,
                         session_context,
                     )
+                    hydrate_selected_modules(
+                        selected_records,
+                        [*courses, fresh_course],
+                    )
+                    selected_boya = selected_boya_theory_courses(selected_records)
+                    selected_count = len(selected_boya)
+                    selected_modules = selected_boya_modules(selected_records)
+                    selected_credit_total = selected_boya_credit_total(selected_records)
+                    if (
+                        any(not module for module in selected_modules)
+                        or len(set(selected_modules)) != len(selected_modules)
+                    ):
+                        raise UnsafeSelectionError(
+                            "提交后检测到模块缺失或重复，自动模式已停止"
+                        )
                     if active_ui is not None:
-                        active_ui.selected(selected_count, status="OK", render=False)
+                        active_ui.selected(
+                            selected_count,
+                            credits=selected_credit_total,
+                            status="OK",
+                            render=False,
+                        )
                         active_ui.event(
-                            f"after submit Boya theory={selected_count}/{AUTO_TARGET_COUNT}",
+                            f"after submit Boya theory={selected_count}/{AUTO_TARGET_COUNT} "
+                            f"credits={selected_credit_total if selected_credit_total is not None else '?'} "
+                            f"modules={','.join(selected_modules)}",
                             "STAT",
                             render=False,
                         )
                     else:
+                        credit_label = (
+                            "?"
+                            if selected_credit_total is None
+                            else f"{selected_credit_total:g}"
+                        )
                         print(
                             f"[进度] 本次操作后已选博雅理论课：{selected_count}/"
-                            f"{AUTO_TARGET_COUNT}"
+                            f"{AUTO_TARGET_COUNT}；学分：{credit_label}；"
+                            f"模块：{','.join(selected_modules)}"
                         )
                     if selected_count >= AUTO_TARGET_COUNT:
+                        if not auto_selection_goal_met(selected_records):
+                            raise UnsafeSelectionError(
+                                f"达到 {AUTO_TARGET_COUNT} 门后仍未满足"
+                                "中国民歌必选和模块互异，已停止"
+                            )
                         if active_ui is not None:
                             active_ui.set_phase("DONE", render=False)
                             active_ui.event(
-                                f"target reached: {AUTO_TARGET_COUNT} Boya theory courses",
+                                f"target reached: {AUTO_TARGET_COUNT} courses, "
+                                "unique modules, "
+                                "offline 中国民歌 selected",
                                 "DONE",
                             )
                         else:
                             print(
-                                f"[完成] 已选博雅理论课数量已达到 {AUTO_TARGET_COUNT} 门，"
-                                "停止自动选课"
+                                f"[完成] 已选 {AUTO_TARGET_COUNT} 门不同模块博雅课，"
+                                "且包含线下中国民歌"
                             )
+                        await hold_browser_for_manual_control(
+                            page,
+                            ui=active_ui,
+                            message="自动选课目标已完成；停止自动提交并保留浏览器供人工检查",
+                        )
                         return 0
                 else:
                     if active_ui is not None:
                         active_ui.event(
-                            "no safe candidate; continue polling",
+                            "no candidate satisfies priority/module rules; continue polling",
                             "WAIT",
                             render=True,
                         )
                     else:
-                        print("[等待] 仙林本轮没有可安全提交的候选，继续轮询")
+                        print("[等待] 本轮没有满足优先级与模块约束的安全候选，继续轮询")
             elif args.submit:
                 matched = [
                     course
@@ -4482,7 +5351,7 @@ async def async_main(args: argparse.Namespace) -> int:
                             ),
                         )
                     )
-                    return await submit_course(
+                    submit_result = await submit_course(
                         api,
                         context_for_submit,
                         fresh_course,
@@ -4491,6 +5360,13 @@ async def async_main(args: argparse.Namespace) -> int:
                         yes=args.yes,
                         ui=active_ui,
                     )
+                    if submit_result == 0:
+                        await hold_browser_for_manual_control(
+                            page,
+                            ui=active_ui,
+                            message="目标课程提交已确认成功；保留浏览器供人工检查",
+                        )
+                    return submit_result
                 if len(safe_matched) > 1:
                     if active_ui is not None:
                         active_ui.set_phase("STOP", render=False)
@@ -4532,26 +5408,31 @@ async def async_main(args: argparse.Namespace) -> int:
             session_context = await browser_session.read_context()
             if active_ui is not None:
                 active_ui.set_session(context=session_context, render=False)
+    except SubmissionUncertainError as exc:
+        message = safe_message(exc)
+        if active_ui is not None:
+            active_ui.error(message)
+        else:
+            print(f"[警告] {message}", file=sys.stderr)
+        await hold_browser_for_manual_control(
+            page,
+            ui=active_ui,
+            message="提交结果无法自动确认；未重复提交，请人工核对当前页面",
+            phase="VERIFY_HOLD",
+        )
+        return 11
     except SessionExpiredError as exc:
         message = safe_message(exc)
         if active_ui is not None:
             active_ui.error(message)
         else:
             print(f"[错误] {message}", file=sys.stderr)
-        if page is not None and sys.stdin.isatty():
-            if active_ui is not None:
-                active_ui.pause_for_input()
-            try:
-                await asyncio.to_thread(
-                    input,
-                    "[提示] 浏览器已保留用于检查登录状态；"
-                    "按回车后关闭浏览器并退出：",
-                )
-            except (EOFError, KeyboardInterrupt):
-                pass
-            finally:
-                if active_ui is not None:
-                    active_ui.resume_after_input()
+        await hold_browser_for_manual_control(
+            page,
+            ui=active_ui,
+            message="自动重新登录未能恢复；保留浏览器供人工处理",
+            phase="REAUTH_HOLD",
+        )
         return 10
     except AutomationError as exc:
         message = safe_message(exc)

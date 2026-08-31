@@ -24,6 +24,60 @@ SPEC.loader.exec_module(MODULE)
 
 
 class NnuBoyaAutomationTests(unittest.TestCase):
+    @staticmethod
+    def _boya_course(
+        name: str,
+        module: str,
+        *,
+        teaching_class_id: str | None = None,
+        network: bool = True,
+        selected: int = 0,
+        capacity: int = 100,
+    ):
+        course = MODULE.Course.from_api(
+            {
+                "teachingClassID": teaching_class_id or f"tc-{name}",
+                "courseNumber": f"no-{name}",
+                "courseName": name,
+                "courseIndex": "01",
+                "courseFlag": "超星网络博雅" if network else "",
+                "publicCourseTypeName": module,
+                "publicCourseTypeName2": module,
+                "teachingPlace": "-" if network else "星期三 10-11节 学明楼103",
+                "classCapacity": str(capacity),
+                "numberOfFirstVolunteer": str(selected),
+                "isConflict": "0",
+                "isFull": "0",
+                "isChoose": "0",
+                "hasTest": "0",
+            },
+            "2",
+            "仙林校区",
+        )
+        if course is None:
+            raise AssertionError("测试课程解析失败")
+        return course
+
+    @staticmethod
+    def _selected_boya(name: str, module: str, *, credit: str | None = "2"):
+        payload = {
+            "teachingClassID": f"selected-{name}",
+            "courseNumber": f"no-{name}",
+            "courseName": name,
+            "isTest": "0",
+            "teachingClassType": "XGXK",
+            "publicCourseTypeName": module,
+            "publicCourseTypeName2": module,
+        }
+        if credit is not None:
+            payload["credit"] = credit
+        record = MODULE.SelectedCourse.from_api(
+            payload
+        )
+        if record is None:
+            raise AssertionError("测试已选课程解析失败")
+        return record
+
     def test_api_url_keeps_application_context(self) -> None:
         self.assertEqual(
             MODULE.build_api_url("/sys/xsxkapp/elective/courseResult.do"),
@@ -57,6 +111,92 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             page.arguments["requestUrl"],
             "https://xsxk.nnu.edu.cn/xsxkapp/sys/xsxkapp/elective/courseResult.do",
         )
+        self.assertEqual(page.arguments["timeoutMs"], MODULE.API_REQUEST_TIMEOUT_MS)
+
+    def test_browser_api_retries_transient_query_but_not_forever(self) -> None:
+        class FakePage:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            async def evaluate(self, script, arguments):
+                self.calls += 1
+                if self.calls < 3:
+                    return {
+                        "status": 0,
+                        "text": "",
+                        "errorType": "timeout",
+                        "diagnostics": {"path": "/grablessons.do"},
+                    }
+                return {"status": 200, "text": '{"code":"1"}'}
+
+        page = FakePage()
+        response = asyncio.run(
+            MODULE.BrowserApi(
+                page,
+                max_retries=3,
+                retry_base_seconds=0,
+            ).get(MODULE.SELECTED_COURSE_PATH)
+        )
+        self.assertEqual(response["code"], "1")
+        self.assertEqual(page.calls, 3)
+
+    def test_browser_api_reauths_once_then_retries_read_request(self) -> None:
+        class FakePage:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            async def evaluate(self, script, arguments):
+                self.calls += 1
+                if self.calls == 1:
+                    return {"status": 200, "text": '{"code":"302"}'}
+                return {"status": 200, "text": '{"code":"1"}'}
+
+        reauth_calls = []
+
+        async def reauth():
+            reauth_calls.append("reauth")
+
+        page = FakePage()
+        response = asyncio.run(
+            MODULE.BrowserApi(
+                page,
+                reauth_handler=reauth,
+                retry_base_seconds=0,
+            ).get(MODULE.SELECTED_COURSE_PATH)
+        )
+        self.assertEqual(response["code"], "1")
+        self.assertEqual(reauth_calls, ["reauth"])
+        self.assertEqual(page.calls, 2)
+
+    def test_browser_api_does_not_retry_unsafe_write(self) -> None:
+        class FakePage:
+            def __init__(self) -> None:
+                self.calls = 0
+
+            async def evaluate(self, script, arguments):
+                self.calls += 1
+                return {
+                    "status": 0,
+                    "text": "",
+                    "errorType": "network",
+                    "diagnostics": {"path": "/grablessons.do"},
+                }
+
+        page = FakePage()
+        with self.assertRaises(MODULE.NetworkTransientError):
+            asyncio.run(
+                MODULE.BrowserApi(
+                    page,
+                    max_retries=3,
+                    retry_base_seconds=0,
+                ).post(
+                    MODULE.VOLUNTEER_PATH,
+                    {},
+                    retryable=False,
+                    allow_reauth=False,
+                )
+            )
+        self.assertEqual(page.calls, 1)
 
     def test_timestamped_path_starts_with_timestamp_query(self) -> None:
         path = MODULE.timestamped_path(MODULE.SELECTED_COURSE_PATH)
@@ -463,6 +603,272 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             )
         )
 
+    def test_auto_candidate_priority_and_module_rules(self) -> None:
+        courses = [
+            self._boya_course(
+                "网络热门课",
+                "国际视野与文明互鉴",
+                selected=99,
+            ),
+            self._boya_course(
+                "揭秘大气污染",
+                "身心健康与生命关怀",
+            ),
+            self._boya_course(
+                "智能文明",
+                "创新与创业",
+            ),
+            self._boya_course(
+                "创新创业基础",
+                "创新与创业",
+            ),
+            self._boya_course(
+                "中国民歌",
+                "艺术鉴赏与审美体验",
+                network=False,
+                selected=59,
+                capacity=60,
+            ),
+        ]
+        growth = {
+            courses[0].teaching_class_id: 20,
+        }
+        ranked = MODULE.rank_auto_candidates(courses, [], growth)
+        self.assertEqual(
+            [item.course.course_name for item in ranked[:4]],
+            ["中国民歌", "创新创业基础", "智能文明", "揭秘大气污染"],
+        )
+        self.assertEqual(ranked[0].reason, "优先1:中国民歌")
+
+        selected = [
+            self._selected_boya("中国民歌", "艺术鉴赏与审美体验"),
+            self._selected_boya("创新创业基础", "创新与创业"),
+        ]
+        ranked_after = MODULE.rank_auto_candidates(courses, selected, growth)
+        self.assertEqual(ranked_after[0].course.course_name, "揭秘大气污染")
+        self.assertNotIn(
+            "智能文明",
+            [item.course.course_name for item in ranked_after],
+        )
+
+    def test_uncertain_submission_verifies_selected_result_without_resend(self) -> None:
+        course = self._boya_course(
+            "测试课程",
+            "国际视野与文明互鉴",
+            teaching_class_id="tc-uncertain",
+        )
+        context = MODULE.SessionContext(
+            student_code="student",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="XGXK",
+        )
+
+        class FakeApi:
+            def __init__(self) -> None:
+                self.volunteer_calls = 0
+
+            async def post(self, path, params=None, **kwargs):
+                if path == MODULE.VOLUNTEER_PATH:
+                    self.volunteer_calls += 1
+                    raise MODULE.NetworkTransientError("timeout")
+                return {"code": "0"}
+
+            async def get(self, path, params=None, **kwargs):
+                return {
+                    "code": "1",
+                    "dataList": [
+                        {
+                            "teachingClassID": "tc-uncertain",
+                            "courseNumber": "100",
+                            "courseName": "测试课程",
+                            "isTest": "0",
+                            "teachingClassType": "XGXK",
+                        }
+                    ],
+                }
+
+        api = FakeApi()
+        result = asyncio.run(
+            MODULE.submit_course(
+                api,
+                context,
+                course,
+                need_book=None,
+                test_teaching_class_id=None,
+                yes=True,
+            )
+        )
+        self.assertEqual(result, 0)
+        self.assertEqual(api.volunteer_calls, 1)
+
+    def test_manual_confirmation_cancel_is_not_reported_as_success(self) -> None:
+        course = self._boya_course(
+            "测试课程",
+            "国际视野与文明互鉴",
+            teaching_class_id="tc-cancel",
+        )
+        context = MODULE.SessionContext(
+            student_code="student",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="XGXK",
+        )
+
+        class FakeApi:
+            async def post(self, path, params=None, **kwargs):
+                raise AssertionError("cancelled confirmation must not call API")
+
+        with patch("builtins.input", return_value="wrong-id"):
+            result = asyncio.run(
+                MODULE.submit_course(
+                    FakeApi(),
+                    context,
+                    course,
+                    need_book=None,
+                    test_teaching_class_id=None,
+                    yes=False,
+                )
+            )
+        self.assertEqual(result, 6)
+
+    def test_auto_candidate_reserves_last_slot_for_offline_chinese_folk(self) -> None:
+        selected = [
+            self._selected_boya("课程A", "创新与创业"),
+            self._selected_boya("课程B", "身心健康与生命关怀"),
+            self._selected_boya("课程C", "国际视野与文明互鉴"),
+            self._selected_boya("课程D", "人文经典与社会研究"),
+        ]
+        fallback = self._boya_course("网络热门课", "数理基础与科学技术")
+        innovation = self._boya_course("创新创业基础", "创新与创业")
+        self.assertEqual(
+            MODULE.rank_auto_candidates([fallback, innovation], selected, {}),
+            [],
+        )
+
+        chinese_folk = self._boya_course(
+            "中国民歌",
+            "艺术鉴赏与审美体验",
+            network=False,
+            selected=59,
+            capacity=60,
+        )
+        ranked = MODULE.rank_auto_candidates(
+            [fallback, chinese_folk],
+            selected,
+            {},
+        )
+        self.assertEqual(
+            [item.course.course_name for item in ranked],
+            ["中国民歌"],
+        )
+
+    def test_network_growth_and_hot_fallback_are_bounded_and_ranked(self) -> None:
+        fast = self._boya_course(
+            "快速上升",
+            "国际视野与文明互鉴",
+            selected=35,
+            capacity=100,
+        )
+        crowded = self._boya_course(
+            "高拥挤",
+            "数理基础与科学技术",
+            selected=90,
+            capacity=100,
+        )
+        growth, snapshot = MODULE.network_demand_growth(
+            [fast, crowded],
+            {
+                fast.teaching_class_id: 25,
+                crowded.teaching_class_id: 89,
+                "stale-id": 999,
+            },
+        )
+        self.assertEqual(growth[fast.teaching_class_id], 10)
+        self.assertNotIn("stale-id", snapshot)
+        ranked = MODULE.rank_auto_candidates(
+            [fast, crowded],
+            [],
+            growth,
+        )
+        self.assertEqual(ranked[0].course.course_name, "快速上升")
+        self.assertIn("网络热度兜底", ranked[0].reason)
+        self.assertEqual(
+            MODULE.rank_auto_candidates(
+                [fast, crowded],
+                [],
+                growth,
+                allow_network_fallback=False,
+            ),
+            [],
+        )
+
+    def test_auto_selection_goal_requires_chinese_folk_and_unique_modules(self) -> None:
+        valid = [
+            self._selected_boya("中国民歌", "艺术鉴赏与审美体验"),
+            self._selected_boya("创新创业基础", "创新与创业"),
+            self._selected_boya("揭秘大气污染", "身心健康与生命关怀"),
+            self._selected_boya("网络热门课", "国际视野与文明互鉴"),
+        ]
+        self.assertTrue(MODULE.auto_selection_goal_met(valid))
+        self.assertEqual(MODULE.selected_boya_credit_total(valid), 8.0)
+        self.assertFalse(MODULE.auto_selection_goal_met(valid[:-1]))
+        duplicate = valid[:-1] + [
+            self._selected_boya("智能文明", "创新与创业")
+        ]
+        self.assertFalse(MODULE.auto_selection_goal_met(duplicate))
+
+        insufficient_credits = valid[:-1] + [
+            self._selected_boya(
+                "低学分课程",
+                "人文经典与社会研究",
+                credit="1",
+            )
+        ]
+        self.assertEqual(
+            MODULE.selected_boya_credit_total(insufficient_credits),
+            7.0,
+        )
+        self.assertTrue(MODULE.auto_selection_goal_met(insufficient_credits))
+
+        unknown_credits = valid[:-1] + [
+            self._selected_boya(
+                "学分字段缺失课程",
+                "人文经典与社会研究",
+                credit=None,
+            )
+        ]
+        self.assertIsNone(MODULE.selected_boya_credit_total(unknown_credits))
+        self.assertTrue(MODULE.auto_selection_goal_met(unknown_credits))
+
+    def test_selected_module_uses_2024_field_or_current_course_lookup(self) -> None:
+        record = MODULE.SelectedCourse.from_api(
+            {
+                "teachingClassID": "tc-module-lookup",
+                "courseNumber": "100",
+                "courseName": "模块回填测试",
+                "courseIndex": "01",
+                "isTest": "0",
+                "teachingClassType": "XGXK",
+                "publicCourseTypeName": "旧版分类不能用于互斥",
+            }
+        )
+        self.assertIsNotNone(record)
+        self.assertEqual(record.module_key(), "")
+        course = self._boya_course(
+            "模块回填测试",
+            "国际视野与文明互鉴",
+            teaching_class_id="tc-module-lookup",
+        )
+        MODULE.hydrate_selected_modules([record], [course])
+        self.assertEqual(record.module_key(), "国际视野与文明互鉴")
+
     def test_course_match_and_log_redaction(self) -> None:
         item = {
             "teachingClassID": "tc-1",
@@ -494,13 +900,13 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             ["--watch", "--auto-select", "--yes", "--need-book", "0"]
         )
         MODULE.validate_args(parser, args)
-        self.assertEqual(args.interval, 1.0)
+        self.assertEqual(args.interval, 0.1)
 
-        one_second = parser.parse_args(["--watch", "--interval", "1"])
-        MODULE.validate_args(parser, one_second)
+        tenth_second = parser.parse_args(["--watch", "--interval", "0.1"])
+        MODULE.validate_args(parser, tenth_second)
 
         with self.assertRaises(SystemExit):
-            too_fast = parser.parse_args(["--watch", "--interval", "0.9"])
+            too_fast = parser.parse_args(["--watch", "--interval", "0.09"])
             MODULE.validate_args(parser, too_fast)
 
         with self.assertRaises(SystemExit):
@@ -513,7 +919,7 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             ui.event(f"event-{index}", render=False)
         self.assertEqual(len(ui.events), 7)
 
-        ui.selected(2, render=False)
+        ui.selected(2, credits=4.0, render=False)
         ui.cycle(
             [
                 MODULE.QueryResult(
@@ -531,6 +937,7 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         screen = ui.render_text()
         self.assertIn("UPTIME", screen)
         self.assertIn("BOYA THEORY", screen)
+        self.assertIn("CREDITS 4", screen)
         self.assertIn("courseResult", screen)
         self.assertIn("events=7/7", screen)
 
@@ -563,8 +970,8 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         )
         screen = ui.render_text()
         self.assertIn("request-campus=仙林校区(2), 仙林新北(4)", screen)
-        self.assertIn("AUTO: first safe Boya course", screen)
-        self.assertIn("conflict=0 full=0 not-chosen=1", screen)
+        self.assertIn("AUTO: 中国民歌", screen)
+        self.assertIn("unique-2024-module", screen)
         self.assertIn("need-book=0 confirm=YES", screen)
         self.assertIn("interval=1.0s delay=0.5s page=50 max-pages=3", screen)
         self.assertIn("login=credential-fill", screen)
@@ -590,7 +997,7 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertIn("模式 A   [*] 自动选课", screen)
         self.assertIn("模式 W   [ ] 只监控", screen)
         self.assertIn("完整预设", screen)
-        self.assertIn("说明  自动：", screen)
+        self.assertIn("说明  优先：", screen)
         self.assertIn("校区 4", screen)
         self.assertIn("[ 应用并启动 ]", screen)
         self.assertIn("book", ui._config_regions)
@@ -749,6 +1156,41 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertEqual(courses, [])
         self.assertEqual(len(api.calls), 1)
         self.assertIn('"campus":"2"', api.calls[0][1]["querySetting"])
+
+    def test_auto_monitor_query_can_include_full_and_conflicting_rows(self) -> None:
+        class FakeApi:
+            def __init__(self) -> None:
+                self.payload = None
+
+            async def post(self, path, payload):
+                self.payload = payload
+                return {"code": "1", "totalCount": 0, "dataList": []}
+
+        api = FakeApi()
+        context = MODULE.SessionContext(
+            student_code="student",
+            batch_code="batch",
+            batch_name="batch name",
+            current_campus_code="2",
+            current_campus_name="仙林校区",
+            can_select_book="0",
+            teaching_class_type="XGXK",
+        )
+        asyncio.run(
+            MODULE.run_query_cycle(
+                api,
+                context,
+                page_size=50,
+                max_pages=2,
+                request_delay=0.5,
+                campus_codes=("2",),
+                check_conflict="",
+                check_capacity="",
+            )
+        )
+        query = json.loads(api.payload["querySetting"])
+        self.assertEqual(query["data"]["checkConflict"], "")
+        self.assertEqual(query["data"]["checkCapacity"], "")
 
     def test_selected_course_count_excludes_test_courses(self) -> None:
         class FakeApi:
