@@ -769,6 +769,29 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             ["中国民歌"],
         )
 
+    def test_aerospace_concept_is_fourth_priority_before_hot_fallback(self) -> None:
+        selected = [
+            self._selected_boya("中国民歌", "艺术鉴赏与审美体验"),
+            self._selected_boya("创新创业基础", "创新与创业"),
+            self._selected_boya("揭秘大气污染", "身心健康与生命关怀"),
+        ]
+        aerospace = self._boya_course(
+            "航空航天概论",
+            "数理基础与科学技术",
+        )
+        hot = self._boya_course(
+            "网络热门课",
+            "国际视野与文明互鉴",
+            selected=99,
+        )
+        ranked = MODULE.rank_auto_candidates(
+            [hot, aerospace],
+            selected,
+            {hot.teaching_class_id: 50},
+        )
+        self.assertEqual(ranked[0].course.course_name, "航空航天概论")
+        self.assertEqual(ranked[0].reason, "优先4:航空航天概论")
+
     def test_network_growth_and_hot_fallback_are_bounded_and_ranked(self) -> None:
         fast = self._boya_course(
             "快速上升",

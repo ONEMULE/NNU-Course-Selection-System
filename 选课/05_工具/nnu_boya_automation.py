@@ -80,6 +80,7 @@ PREFERRED_AUTO_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
     (REQUIRED_OFFLINE_MODULE, (REQUIRED_OFFLINE_COURSE,)),
     ("创新与创业", ("创新创业基础", "智能文明")),
     ("身心健康与生命关怀", ("揭秘大气污染",)),
+    ("数理基础与科学技术", ("航空航天概论",)),
 )
 DEFAULT_EXPORT_DIR = Path(__file__).resolve().parent / ".runtime"
 
@@ -501,7 +502,7 @@ class TerminalUI:
         if getattr(args, "auto_select", False):
             self.selector = (
                 "AUTO: 中国民歌 > 创新创业基础|智能文明 > "
-                "揭秘大气污染 > 网络热度兜底"
+                "揭秘大气污染 > 航空航天概论 > 网络热度兜底"
             )
         elif getattr(args, "course_id", ""):
             self.selector = f"teachingClassId={args.course_id}"
@@ -728,7 +729,7 @@ class TerminalUI:
         lines.extend(
             [
                 (
-                    "说明  优先：中国民歌 > 创新创业基础/智能文明 > 揭秘大气污染。"
+                    "说明  优先：中国民歌 > 创新创业基础/智能文明 > 揭秘大气污染 > 航空航天概论。"
                 ),
                 (
                     "说明  严格不同2024模块；每轮监控网络人数增量；热度兜底；认证人工。"
