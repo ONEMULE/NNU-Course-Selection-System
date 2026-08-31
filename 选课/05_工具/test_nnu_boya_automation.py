@@ -59,7 +59,13 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         return course
 
     @staticmethod
-    def _selected_boya(name: str, module: str, *, credit: str | None = "2"):
+    def _selected_boya(
+        name: str,
+        module: str,
+        *,
+        credit: str | None = "2",
+        network: bool = True,
+    ):
         payload = {
             "teachingClassID": f"selected-{name}",
             "courseNumber": f"no-{name}",
@@ -68,6 +74,8 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             "teachingClassType": "XGXK",
             "publicCourseTypeName": module,
             "publicCourseTypeName2": module,
+            "courseFlag": "超星网络博雅" if network else "",
+            "teachingPlace": "-" if network else "星期三 10-11节 学明楼103",
         }
         if credit is not None:
             payload["credit"] = credit
@@ -629,6 +637,18 @@ class NnuBoyaAutomationTests(unittest.TestCase):
                 selected=59,
                 capacity=60,
             ),
+            self._boya_course(
+                "线下备选A",
+                "人文经典与社会研究",
+                network=False,
+                selected=10,
+            ),
+            self._boya_course(
+                "线下备选B",
+                "国际视野与文明互鉴",
+                network=False,
+                selected=1,
+            ),
         ]
         growth = {
             courses[0].teaching_class_id: 20,
@@ -641,11 +661,16 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertEqual(ranked[0].reason, "优先1:中国民歌")
 
         selected = [
-            self._selected_boya("中国民歌", "艺术鉴赏与审美体验"),
+            self._selected_boya(
+                "中国民歌",
+                "艺术鉴赏与审美体验",
+                network=False,
+            ),
             self._selected_boya("创新创业基础", "创新与创业"),
         ]
         ranked_after = MODULE.rank_auto_candidates(courses, selected, growth)
         self.assertEqual(ranked_after[0].course.course_name, "揭秘大气污染")
+        self.assertTrue(ranked_after[0].course.is_network_course())
         self.assertNotIn(
             "智能文明",
             [item.course.course_name for item in ranked_after],
@@ -740,8 +765,12 @@ class NnuBoyaAutomationTests(unittest.TestCase):
 
     def test_auto_candidate_reserves_last_slot_for_offline_chinese_folk(self) -> None:
         selected = [
-            self._selected_boya("课程A", "创新与创业"),
-            self._selected_boya("课程B", "身心健康与生命关怀"),
+            self._selected_boya("课程A", "创新与创业", network=False),
+            self._selected_boya(
+                "课程B",
+                "身心健康与生命关怀",
+                network=False,
+            ),
             self._selected_boya("课程C", "国际视野与文明互鉴"),
             self._selected_boya("课程D", "人文经典与社会研究"),
         ]
@@ -771,9 +800,21 @@ class NnuBoyaAutomationTests(unittest.TestCase):
 
     def test_aerospace_concept_is_fourth_priority_before_hot_fallback(self) -> None:
         selected = [
-            self._selected_boya("中国民歌", "艺术鉴赏与审美体验"),
-            self._selected_boya("创新创业基础", "创新与创业"),
-            self._selected_boya("揭秘大气污染", "身心健康与生命关怀"),
+            self._selected_boya(
+                "中国民歌",
+                "艺术鉴赏与审美体验",
+                network=False,
+            ),
+            self._selected_boya(
+                "创新模块线下",
+                "创新与创业",
+                network=False,
+            ),
+            self._selected_boya(
+                "健康模块线下",
+                "身心健康与生命关怀",
+                network=False,
+            ),
         ]
         aerospace = self._boya_course(
             "航空航天概论",
@@ -791,6 +832,133 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         )
         self.assertEqual(ranked[0].course.course_name, "航空航天概论")
         self.assertEqual(ranked[0].reason, "优先4:航空航天概论")
+
+    def test_delivery_mode_is_conservative_and_budget_is_enforced(self) -> None:
+        network = self._boya_course("网络课", "模块A")
+        offline = self._boya_course(
+            "线下课",
+            "模块B",
+            network=False,
+        )
+        unknown = MODULE.Course.from_api(
+            {
+                "teachingClassID": "tc-unknown-delivery",
+                "courseName": "属性缺失",
+                "publicCourseTypeName2": "模块C",
+                "isConflict": "0",
+                "isFull": "0",
+                "isChoose": "0",
+            },
+            "2",
+            "仙林校区",
+        )
+        self.assertEqual(network.delivery_mode(), "network")
+        self.assertEqual(offline.delivery_mode(), "offline")
+        self.assertIsNotNone(unknown)
+        self.assertIsNone(unknown.delivery_mode())
+
+        selected_with_one_offline = [
+            self._selected_boya("已选线下", "已选模块B", network=False),
+        ]
+        self.assertTrue(
+            MODULE.candidate_fits_delivery_budget(
+                network,
+                selected_with_one_offline,
+            )
+        )
+
+        selected_two_network = [
+            self._selected_boya("已选网络A", "已选模块A"),
+            self._selected_boya("已选网络B", "已选模块B"),
+            self._selected_boya("已选线下A", "已选模块C", network=False),
+            self._selected_boya("已选线下B", "已选模块D", network=False),
+        ]
+        self.assertFalse(
+            MODULE.candidate_fits_delivery_budget(
+                network,
+                selected_two_network,
+            )
+        )
+        self.assertTrue(
+            MODULE.candidate_fits_delivery_budget(
+                offline,
+                selected_two_network,
+            )
+        )
+
+    def test_priority_path_fills_three_offline_courses_after_two_network_courses(self) -> None:
+        courses = [
+            self._boya_course(
+                "中国民歌",
+                "艺术鉴赏与审美体验",
+                network=False,
+            ),
+            self._boya_course("创新创业基础", "创新与创业"),
+            self._boya_course("揭秘大气污染", "身心健康与生命关怀"),
+            self._boya_course("航空航天概论", "数理基础与科学技术"),
+            self._boya_course(
+                "线下备选A",
+                "国际视野与文明互鉴",
+                network=False,
+                selected=10,
+            ),
+            self._boya_course(
+                "线下备选B",
+                "人文经典与社会研究",
+                network=False,
+                selected=1,
+            ),
+        ]
+        selected = []
+        picked = []
+        for _ in range(MODULE.AUTO_TARGET_COUNT):
+            ranked = MODULE.rank_auto_candidates(courses, selected, {})
+            self.assertTrue(ranked)
+            course = ranked[0].course
+            picked.append(course.course_name)
+            selected.append(
+                self._selected_boya(
+                    course.course_name,
+                    course.module_key(),
+                    network=course.is_network_course(),
+                )
+            )
+        self.assertEqual(
+            picked,
+            [
+                "中国民歌",
+                "创新创业基础",
+                "揭秘大气污染",
+                "线下备选A",
+                "线下备选B",
+            ],
+        )
+        self.assertEqual(
+            MODULE.selected_boya_delivery_counts(selected),
+            (2, 3, 0),
+        )
+
+    def test_auto_selection_goal_rejects_more_than_two_network_courses(self) -> None:
+        records = [
+            self._selected_boya(
+                "中国民歌",
+                "艺术鉴赏与审美体验",
+                network=False,
+            ),
+            self._selected_boya("网络A", "创新与创业"),
+            self._selected_boya("网络B", "身心健康与生命关怀"),
+            self._selected_boya("网络C", "数理基础与科学技术"),
+            self._selected_boya(
+                "线下A",
+                "国际视野与文明互鉴",
+                network=False,
+            ),
+        ]
+        self.assertEqual(
+            MODULE.selected_boya_delivery_counts(records),
+            (3, 2, 0),
+        )
+        self.assertFalse(MODULE.auto_selection_goal_met(records))
 
     def test_network_growth_and_hot_fallback_are_bounded_and_ranked(self) -> None:
         fast = self._boya_course(
@@ -834,13 +1002,26 @@ class NnuBoyaAutomationTests(unittest.TestCase):
 
     def test_auto_selection_goal_requires_chinese_folk_and_unique_modules(self) -> None:
         valid = [
-            self._selected_boya("中国民歌", "艺术鉴赏与审美体验"),
+            self._selected_boya(
+                "中国民歌",
+                "艺术鉴赏与审美体验",
+                network=False,
+            ),
             self._selected_boya("创新创业基础", "创新与创业"),
             self._selected_boya("揭秘大气污染", "身心健康与生命关怀"),
-            self._selected_boya("网络热门课", "国际视野与文明互鉴"),
+            self._selected_boya(
+                "线下课程A",
+                "国际视野与文明互鉴",
+                network=False,
+            ),
+            self._selected_boya(
+                "线下课程B",
+                "人文经典与社会研究",
+                network=False,
+            ),
         ]
         self.assertTrue(MODULE.auto_selection_goal_met(valid))
-        self.assertEqual(MODULE.selected_boya_credit_total(valid), 8.0)
+        self.assertEqual(MODULE.selected_boya_credit_total(valid), 10.0)
         self.assertFalse(MODULE.auto_selection_goal_met(valid[:-1]))
         duplicate = valid[:-1] + [
             self._selected_boya("智能文明", "创新与创业")
@@ -852,11 +1033,12 @@ class NnuBoyaAutomationTests(unittest.TestCase):
                 "低学分课程",
                 "人文经典与社会研究",
                 credit="1",
+                network=False,
             )
         ]
         self.assertEqual(
             MODULE.selected_boya_credit_total(insufficient_credits),
-            7.0,
+            9.0,
         )
         self.assertTrue(MODULE.auto_selection_goal_met(insufficient_credits))
 
@@ -865,6 +1047,7 @@ class NnuBoyaAutomationTests(unittest.TestCase):
                 "学分字段缺失课程",
                 "人文经典与社会研究",
                 credit=None,
+                network=False,
             )
         ]
         self.assertIsNone(MODULE.selected_boya_credit_total(unknown_credits))
@@ -942,7 +1125,14 @@ class NnuBoyaAutomationTests(unittest.TestCase):
             ui.event(f"event-{index}", render=False)
         self.assertEqual(len(ui.events), 7)
 
-        ui.selected(2, credits=4.0, render=False)
+        ui.selected(
+            2,
+            credits=4.0,
+            network_count=1,
+            offline_count=1,
+            unknown_count=0,
+            render=False,
+        )
         ui.cycle(
             [
                 MODULE.QueryResult(
@@ -961,6 +1151,8 @@ class NnuBoyaAutomationTests(unittest.TestCase):
         self.assertIn("UPTIME", screen)
         self.assertIn("BOYA THEORY", screen)
         self.assertIn("CREDITS 4", screen)
+        self.assertIn("NET 1/2", screen)
+        self.assertIn("OFF 1/3", screen)
         self.assertIn("courseResult", screen)
         self.assertIn("events=7/7", screen)
 

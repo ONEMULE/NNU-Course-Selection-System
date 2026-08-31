@@ -11,6 +11,7 @@
 * 无参数启动先进入 TUI，默认加载博雅课自动选择预设；点击应用后才运行；
 * 提交前重新查询“不冲突 + 未满”，并刷新课程详情/容量；
 * 自动模式先等待服务端确认选课轮次开放，开放前只保持武装轮询；
+* 自动目标为 5 个不同 2024 模块，网络博雅最多 2 门，至少 3 门线下；
 * 不自动重试 volunteer.do，避免网络不确定时重复提交。
 * watch 模式使用固定屏幕 TUI 展示运行时长、轮询、接口和任务进度；
   事件历史有界，不连续刷屏。
@@ -73,7 +74,9 @@ CAMPUS = {
 
 BOYA_TEACHING_CLASS_TYPE = "XGXK"
 ALL_SCHOOL_TEACHING_CLASS_TYPE = "QXKC"
-AUTO_TARGET_COUNT = 4
+AUTO_TARGET_COUNT = 5
+MAX_NETWORK_COURSES = 2
+MIN_OFFLINE_COURSES = AUTO_TARGET_COUNT - MAX_NETWORK_COURSES
 REQUIRED_OFFLINE_COURSE = "中国民歌"
 REQUIRED_OFFLINE_MODULE = "艺术鉴赏与审美体验"
 PREFERRED_AUTO_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -441,7 +444,10 @@ class TerminalUI:
         self.expected_teaching_class_type = BOYA_TEACHING_CLASS_TYPE
         self.target_campuses = "-"
         self.selector = "-"
-        self.policy = "conflict=0 full=0 not-chosen=1 capacity=checked"
+        self.policy = (
+            "conflict=0 full=0 not-chosen=1 unique-2024-module "
+            "network<=2 offline>=3 capacity=checked"
+        )
         self.need_book = "-"
         self.interval = "-"
         self.request_delay = "-"
@@ -454,6 +460,9 @@ class TerminalUI:
         self.snapshot = "-"
         self.tick = 0
         self.selected_boya = 0
+        self.selected_network = 0
+        self.selected_offline = 0
+        self.selected_delivery_unknown = 0
         self.selected_credits: Optional[float] = None
         self.selected_status = "WAIT"
         self.query_status = "WAIT"
@@ -528,7 +537,8 @@ class TerminalUI:
             "manual" if getattr(args, "no_auto_fill", False) else "credential-fill"
         )
         self.policy = (
-            "safe-only + unique-2024-module + reserve-offline-slot"
+            "safe-only + unique-2024-module + network<=2 + offline>=3 "
+            "+ reserve-offline-slot"
         )
         self.batch_open_status = (
             "CHECK" if getattr(args, "auto_select", False) else "N/A"
@@ -660,7 +670,8 @@ class TerminalUI:
         self._config_row(
             lines,
             "policy",
-            f"安全规则 {locked_mark} 无冲突·未满·未选·不同模块·中国民歌保留位·<{AUTO_TARGET_COUNT}门",
+            f"安全规则 {locked_mark} 无冲突·未满·未选·不同模块·中国民歌保留位·"
+            f"网络≤{MAX_NETWORK_COURSES}·线下≥{MIN_OFFLINE_COURSES}·<{AUTO_TARGET_COUNT}门",
         )
         self._config_row(
             lines,
@@ -732,7 +743,8 @@ class TerminalUI:
                     "说明  优先：中国民歌 > 创新创业基础/智能文明 > 揭秘大气污染 > 航空航天概论。"
                 ),
                 (
-                    "说明  严格不同2024模块；每轮监控网络人数增量；热度兜底；认证人工。"
+                    f"说明  目标{AUTO_TARGET_COUNT}个不同2024模块；网络最多{MAX_NETWORK_COURSES}门、"
+                    f"线下至少{MIN_OFFLINE_COURSES}门；网络人数增量只用于热度兜底；认证人工。"
                 ),
                 (
                     f"提示  {_truncate_display(self.config_notice or '准备就绪', 92)}"
@@ -1211,11 +1223,20 @@ class TerminalUI:
         count: int,
         *,
         credits: Optional[float] = None,
+        network_count: Optional[int] = None,
+        offline_count: Optional[int] = None,
+        unknown_count: Optional[int] = None,
         status: str = "OK",
         render: bool = True,
     ) -> None:
         self.selected_boya = max(0, count)
         self.selected_credits = credits
+        if network_count is not None:
+            self.selected_network = max(0, network_count)
+        if offline_count is not None:
+            self.selected_offline = max(0, offline_count)
+        if unknown_count is not None:
+            self.selected_delivery_unknown = max(0, unknown_count)
         self.selected_status = status
         if render:
             self.render(force=True)
@@ -1391,6 +1412,9 @@ class TerminalUI:
             (
                 f"PROGRESS BOYA THEORY {self._progress_bar()} "
                 f"{self.selected_boya}/{self.target_count}  "
+                f"NET {self.selected_network}/{MAX_NETWORK_COURSES} "
+                f"OFF {self.selected_offline}/{MIN_OFFLINE_COURSES} "
+                f"UNK {self.selected_delivery_unknown}  "
                 f"CREDITS {self._credit_progress()}"
             ),
             (
@@ -1717,6 +1741,35 @@ def _meaningful_classification_value(value: Any) -> Optional[str]:
     if text is None or text.casefold() in {"", "-", "null", "none", "nan"}:
         return None
     return text
+
+
+def delivery_mode_from_fields(
+    course_flag: Any,
+    teaching_place: Any,
+) -> Optional[str]:
+    """从页面字段保守判断课程是网络、线下，还是无法确认。
+
+    当前 NNU 列表中网络课通常在 ``courseFlag`` 显示“超星网络”或
+    “校际联盟网络”，线下课通常有实际教学地点。线上/线下混合标记不做
+    猜测，返回 ``None``，避免把不确定课程计入“网络最多两门”的预算。
+    """
+
+    flag = _meaningful_classification_value(course_flag) or ""
+    place = _meaningful_classification_value(teaching_place) or ""
+    combined = f"{flag} {place}"
+    network_markers = ("网络", "线上", "在线")
+    offline_markers = ("线下", "面授", "实体")
+    has_network_marker = any(marker in combined for marker in network_markers)
+    has_offline_marker = any(marker in combined for marker in offline_markers)
+    if has_network_marker and has_offline_marker:
+        return None
+    if has_network_marker:
+        return "network"
+    if has_offline_marker:
+        return "offline"
+    if place:
+        return "offline"
+    return None
 
 
 def selected_course_is_boya(item: Mapping[str, Any]) -> Optional[bool]:
@@ -2112,14 +2165,17 @@ class Course:
 
         return self.module_2024.strip()
 
+    def delivery_mode(self) -> Optional[str]:
+        return delivery_mode_from_fields(
+            self.course_flag,
+            self.teaching_place,
+        )
+
     def is_network_course(self) -> bool:
-        return "网络" in self.course_flag
+        return self.delivery_mode() == "network"
 
     def is_offline_course(self) -> bool:
-        return not self.is_network_course() and self.teaching_place.strip() not in {
-            "",
-            "-",
-        }
+        return self.delivery_mode() == "offline"
 
     def demand_count(self) -> int:
         values = [
@@ -2145,6 +2201,7 @@ class Course:
             "courseName": self.course_name,
             "courseIndex": self.course_index,
             "courseFlag": self.course_flag,
+            "deliveryMode": self.delivery_mode(),
             "publicCourseTypeName": self.module_legacy,
             "publicCourseTypeName2": self.module_2024,
             "teacher": self.teacher,
@@ -2580,6 +2637,7 @@ class SelectedCourse:
             "publicCourseTypeName": self.public_course_type_name,
             "publicCourseTypeName2": self.public_course_type_name2,
             "courseFlag": self.course_flag,
+            "deliveryMode": self.delivery_mode(),
             "credit": self.credit,
             "hours": self.hours,
             "schoolTerm": self.school_term,
@@ -2603,33 +2661,49 @@ class SelectedCourse:
     def module_key(self) -> str:
         return self.public_course_type_name2.strip()
 
+    def delivery_mode(self) -> Optional[str]:
+        return delivery_mode_from_fields(
+            self.course_flag,
+            self.teaching_place,
+        )
+
+    def is_network_course(self) -> bool:
+        return self.delivery_mode() == "network"
+
+    def is_offline_course(self) -> bool:
+        return self.delivery_mode() == "offline"
+
 
 def hydrate_selected_modules(
     records: Sequence[SelectedCourse],
     courses: Sequence[Course],
 ) -> None:
-    """用同轮 XGXK 清单补齐已选接口可能省略的 2024 模块字段。"""
+    """用同轮 XGXK 清单补齐已选接口可能省略的课程元数据。"""
 
     by_id = {
-        course.teaching_class_id: course.module_key()
+        course.teaching_class_id: course
         for course in courses
-        if course.teaching_class_id and course.module_key()
+        if course.teaching_class_id
     }
     by_identity = {
         (course.course_number, course.course_index, course.course_name):
-        course.module_key()
+        course
         for course in courses
         if course.module_key()
+        and (course.course_number or course.course_index or course.course_name)
     }
     for record in records:
-        if record.public_course_type_name2.strip():
-            continue
-        module = by_id.get(record.teaching_class_id) or by_identity.get(
-            (record.course_number, record.course_index, record.course_name),
-            "",
+        course = by_id.get(record.teaching_class_id) or by_identity.get(
+            (record.course_number, record.course_index, record.course_name)
         )
-        if module:
-            record.public_course_type_name2 = module
+        if course is None:
+            continue
+        if not record.public_course_type_name2.strip() and course.module_key():
+            record.public_course_type_name2 = course.module_key()
+        if not _meaningful_classification_value(record.course_flag):
+            record.course_flag = course.course_flag
+        if not _meaningful_classification_value(record.teaching_place):
+            record.teaching_place = course.teaching_place
 
 
 @dataclass(frozen=True)
@@ -2637,6 +2711,38 @@ class AutoCandidate:
     course: Course
     reason: str
     growth: int
+
+
+def candidate_fits_delivery_budget(
+    course: Course,
+    selected_records: Sequence[SelectedCourse],
+) -> bool:
+    """判断加入一门课程后仍有机会满足线上/线下比例。
+
+    允许当前课程恰好用掉最后一个网络预算，只要剩余名额仍足够填满
+    线下最低数；下一轮会自然屏蔽继续的网络候选。
+    """
+
+    mode = course.delivery_mode()
+    if mode is None:
+        return False
+    selected_boya = selected_boya_theory_courses(selected_records)
+    network_count, offline_count, unknown_count = selected_boya_delivery_counts(
+        selected_records
+    )
+    if unknown_count:
+        return False
+    if mode == "network" and network_count >= MAX_NETWORK_COURSES:
+        return False
+
+    remaining_after = max(
+        0,
+        AUTO_TARGET_COUNT - (len(selected_boya) + 1),
+    )
+    offline_after = offline_count + (1 if mode == "offline" else 0)
+    if offline_after + remaining_after < MIN_OFFLINE_COURSES:
+        return False
+    return True
 
 
 def selected_boya_theory_courses(
@@ -2652,6 +2758,25 @@ def selected_boya_modules(
         record.module_key()
         for record in selected_boya_theory_courses(records)
     ]
+
+
+def selected_boya_delivery_counts(
+    records: Sequence[SelectedCourse],
+) -> tuple[int, int, int]:
+    """返回已选博雅理论课的网络、线下、未知数量。"""
+
+    network_count = 0
+    offline_count = 0
+    unknown_count = 0
+    for record in selected_boya_theory_courses(records):
+        mode = record.delivery_mode()
+        if mode == "network":
+            network_count += 1
+        elif mode == "offline":
+            offline_count += 1
+        else:
+            unknown_count += 1
+    return network_count, offline_count, unknown_count
 
 
 def selected_boya_credit_total(
@@ -2671,12 +2796,19 @@ def auto_selection_goal_met(
 ) -> bool:
     selected = selected_boya_theory_courses(records)
     modules = [record.module_key() for record in selected]
+    network_count, offline_count, unknown_count = selected_boya_delivery_counts(
+        records
+    )
     return (
         len(selected) >= AUTO_TARGET_COUNT
         and all(modules)
         and len(set(modules)) == len(modules)
+        and unknown_count == 0
+        and network_count <= MAX_NETWORK_COURSES
+        and offline_count >= MIN_OFFLINE_COURSES
         and any(
             record.course_name == REQUIRED_OFFLINE_COURSE
+            and record.is_offline_course()
             for record in selected
         )
     )
@@ -2729,7 +2861,7 @@ def rank_auto_candidates(
     *,
     allow_network_fallback: bool = True,
 ) -> list[AutoCandidate]:
-    """严格按用户优先级、2024 博雅模块互斥和网络热度排序。"""
+    """按优先级排序，并硬性执行模块互斥与线上/线下数量预算。"""
 
     selected_boya = selected_boya_theory_courses(selected_records)
     occupied_modules = {
@@ -2737,12 +2869,18 @@ def rank_auto_candidates(
         for record in selected_boya
         if record.module_key()
     }
+    _, _, unknown_delivery_count = selected_boya_delivery_counts(
+        selected_records
+    )
+    if unknown_delivery_count:
+        return []
     safe = [
         course
         for course in courses
         if course.is_safe_candidate()
         and course.module_key()
         and course.module_key() not in occupied_modules
+        and course.delivery_mode() is not None
     ]
     ranked: list[AutoCandidate] = []
     seen_ids: set[str] = set()
@@ -2764,6 +2902,7 @@ def rank_auto_candidates(
                     if name == REQUIRED_OFFLINE_COURSE
                     else course.is_network_course()
                 )
+                and candidate_fits_delivery_budget(course, selected_records)
             ]
             for course in sorted(
                 matches,
@@ -2797,18 +2936,50 @@ def rank_auto_candidates(
             and decision.course.is_offline_course()
         ]
 
+    # 线下兜底用于满足“5 门中至少 3 门线下”；它不依赖网络人数基线。
+    offline_fallback = [
+        course
+        for course in safe
+        if course.teaching_class_id not in seen_ids
+        and course.is_offline_course()
+        and course.module_key() != REQUIRED_OFFLINE_MODULE
+    ]
+    offline_fallback.sort(
+        key=lambda course: (
+            course.occupancy_ratio(),
+            course.demand_count(),
+            course.course_name,
+        ),
+        reverse=True,
+    )
+    for course in offline_fallback:
+        if not candidate_fits_delivery_budget(course, selected_records):
+            continue
+        ranked.append(
+            AutoCandidate(
+                course=course,
+                reason=(
+                    "线下兜底:"
+                    f"{course.module_key()} "
+                    f"{course.demand_count()}/"
+                    f"{course.class_capacity if course.class_capacity is not None else '-'}"
+                ),
+                growth=growth.get(course.teaching_class_id, 0),
+            )
+        )
+
     # 第一轮只建立人数基线；没有前后两个样本时不能判断“上升最快”。
     if not allow_network_fallback:
         return ranked
 
-    fallback = [
+    network_fallback = [
         course
         for course in safe
         if course.teaching_class_id not in seen_ids
         and course.is_network_course()
         and course.module_key() != REQUIRED_OFFLINE_MODULE
     ]
-    fallback.sort(
+    network_fallback.sort(
         key=lambda course: (
             growth.get(course.teaching_class_id, 0),
             course.occupancy_ratio(),
@@ -2817,7 +2988,9 @@ def rank_auto_candidates(
         ),
         reverse=True,
     )
-    for course in fallback:
+    for course in network_fallback:
+        if not candidate_fits_delivery_budget(course, selected_records):
+            continue
         ranked.append(
             AutoCandidate(
                 course=course,
@@ -4050,6 +4223,7 @@ SELECTED_COURSE_CSV_FIELDS = (
     "publicCourseTypeName",
     "publicCourseTypeName2",
     "courseFlag",
+    "deliveryMode",
     "credit",
     "hours",
     "schoolTerm",
@@ -4900,6 +5074,11 @@ async def async_main(args: argparse.Namespace) -> int:
                 selected_boya = selected_boya_theory_courses(selected_records)
                 selected_count = len(selected_boya)
                 selected_modules = selected_boya_modules(selected_records)
+                (
+                    selected_network_count,
+                    selected_offline_count,
+                    selected_delivery_unknown,
+                ) = selected_boya_delivery_counts(selected_records)
                 selected_credit_total = selected_boya_credit_total(selected_records)
                 if all(selected_modules) and (
                     len(set(selected_modules)) != len(selected_modules)
@@ -4908,15 +5087,28 @@ async def async_main(args: argparse.Namespace) -> int:
                         "当前已选博雅课存在 2024 模块重复，"
                         "为避免违反不同模块要求，自动模式已停止"
                     )
+                if (
+                    selected_delivery_unknown == 0
+                    and selected_network_count > MAX_NETWORK_COURSES
+                ):
+                    raise UnsafeSelectionError(
+                        f"当前已选博雅网络课程为 {selected_network_count} 门，"
+                        f"超过最多 {MAX_NETWORK_COURSES} 门限制；自动模式已停止"
+                    )
                 if active_ui is not None:
                     active_ui.selected(
                         selected_count,
                         credits=selected_credit_total,
+                        network_count=selected_network_count,
+                        offline_count=selected_offline_count,
+                        unknown_count=selected_delivery_unknown,
                         status="OK",
                         render=False,
                     )
                     active_ui.event(
                         f"selected Boya theory={selected_count}/{AUTO_TARGET_COUNT} "
+                        f"net={selected_network_count}/{MAX_NETWORK_COURSES} "
+                        f"off={selected_offline_count}/{MIN_OFFLINE_COURSES} "
                         f"credits={selected_credit_total if selected_credit_total is not None else '?'}",
                         "STAT",
                         render=False,
@@ -4929,13 +5121,20 @@ async def async_main(args: argparse.Namespace) -> int:
                     )
                     print(
                         f"[进度] 当前已选博雅理论课：{selected_count}/"
-                        f"{AUTO_TARGET_COUNT}；学分：{credit_label}"
+                        f"{AUTO_TARGET_COUNT}；网络：{selected_network_count}/"
+                        f"{MAX_NETWORK_COURSES}；线下：{selected_offline_count}/"
+                        f"{MIN_OFFLINE_COURSES}；学分：{credit_label}"
                     )
-                if selected_count >= AUTO_TARGET_COUNT and all(selected_modules):
+                if (
+                    selected_count >= AUTO_TARGET_COUNT
+                    and all(selected_modules)
+                    and selected_delivery_unknown == 0
+                ):
                     if not auto_selection_goal_met(selected_records):
                         raise UnsafeSelectionError(
                             f"已选博雅课已达到 {AUTO_TARGET_COUNT} 门，但未同时满足"
-                            "中国民歌必选和 2024 模块互异，"
+                            f"中国民歌必选、2024 模块互异、网络不超过 {MAX_NETWORK_COURSES} 门、"
+                            f"线下至少 {MIN_OFFLINE_COURSES} 门，"
                             "不能再自动追加课程"
                         )
                     if active_ui is not None:
@@ -5010,6 +5209,11 @@ async def async_main(args: argparse.Namespace) -> int:
             if args.auto_select:
                 hydrate_selected_modules(selected_records, courses)
                 selected_modules = selected_boya_modules(selected_records)
+                (
+                    selected_network_count,
+                    selected_offline_count,
+                    selected_delivery_unknown,
+                ) = selected_boya_delivery_counts(selected_records)
                 if (
                     any(not module for module in selected_modules)
                     or len(set(selected_modules)) != len(selected_modules)
@@ -5018,11 +5222,32 @@ async def async_main(args: argparse.Namespace) -> int:
                         "无法确认全部已选博雅课的 2024 模块，或检测到模块重复；"
                         "为避免误选，自动模式已停止"
                     )
+                if selected_delivery_unknown:
+                    raise UnsafeSelectionError(
+                        "无法确认全部已选博雅课的线上/线下属性；"
+                        "为避免突破网络最多两门限制，自动模式已停止"
+                    )
+                if selected_network_count > MAX_NETWORK_COURSES:
+                    raise UnsafeSelectionError(
+                        f"已选博雅网络课程为 {selected_network_count} 门，"
+                        f"超过最多 {MAX_NETWORK_COURSES} 门限制；自动模式已停止"
+                    )
+                if active_ui is not None:
+                    active_ui.selected(
+                        selected_count,
+                        credits=selected_credit_total,
+                        network_count=selected_network_count,
+                        offline_count=selected_offline_count,
+                        unknown_count=selected_delivery_unknown,
+                        status="OK",
+                        render=False,
+                    )
                 if selected_count >= AUTO_TARGET_COUNT:
                     if not auto_selection_goal_met(selected_records):
                         raise UnsafeSelectionError(
                             f"已选博雅课已达到 {AUTO_TARGET_COUNT} 门，但未同时满足"
-                            "中国民歌必选和 2024 模块互异，"
+                            f"中国民歌必选、2024 模块互异、网络不超过 {MAX_NETWORK_COURSES} 门、"
+                            f"线下至少 {MIN_OFFLINE_COURSES} 门，"
                             "不能再自动追加课程"
                         )
                     if active_ui is not None:
@@ -5182,17 +5407,24 @@ async def async_main(args: argparse.Namespace) -> int:
                         continue
 
                     fresh_module = fresh_course.module_key()
+                    fresh_delivery_mode = fresh_course.delivery_mode()
                     if (
                         not fresh_module
                         or fresh_module != candidate.module_key()
                         or fresh_module in occupied_modules
+                        or fresh_delivery_mode is None
+                        or fresh_delivery_mode != candidate.delivery_mode()
+                        or not candidate_fits_delivery_budget(
+                            fresh_course,
+                            selected_records,
+                        )
                         or (
                             candidate.course_name == REQUIRED_OFFLINE_COURSE
                             and not fresh_course.is_offline_course()
                         )
                     ):
                         message = (
-                            f"skip {candidate.course_name}: module/offline "
+                            f"skip {candidate.course_name}: module/delivery-budget "
                             "constraint changed during preflight"
                         )
                         if active_ui is not None:
@@ -5245,6 +5477,11 @@ async def async_main(args: argparse.Namespace) -> int:
                     selected_boya = selected_boya_theory_courses(selected_records)
                     selected_count = len(selected_boya)
                     selected_modules = selected_boya_modules(selected_records)
+                    (
+                        selected_network_count,
+                        selected_offline_count,
+                        selected_delivery_unknown,
+                    ) = selected_boya_delivery_counts(selected_records)
                     selected_credit_total = selected_boya_credit_total(selected_records)
                     if (
                         any(not module for module in selected_modules)
@@ -5253,15 +5490,30 @@ async def async_main(args: argparse.Namespace) -> int:
                         raise UnsafeSelectionError(
                             "提交后检测到模块缺失或重复，自动模式已停止"
                         )
+                    if selected_delivery_unknown:
+                        raise UnsafeSelectionError(
+                            "提交后无法确认全部已选博雅课的线上/线下属性；"
+                            "自动模式已停止"
+                        )
+                    if selected_network_count > MAX_NETWORK_COURSES:
+                        raise UnsafeSelectionError(
+                            f"提交后网络博雅课为 {selected_network_count} 门，"
+                            f"超过最多 {MAX_NETWORK_COURSES} 门限制；自动模式已停止"
+                        )
                     if active_ui is not None:
                         active_ui.selected(
                             selected_count,
                             credits=selected_credit_total,
+                            network_count=selected_network_count,
+                            offline_count=selected_offline_count,
+                            unknown_count=selected_delivery_unknown,
                             status="OK",
                             render=False,
                         )
                         active_ui.event(
                             f"after submit Boya theory={selected_count}/{AUTO_TARGET_COUNT} "
+                            f"net={selected_network_count}/{MAX_NETWORK_COURSES} "
+                            f"off={selected_offline_count}/{MIN_OFFLINE_COURSES} "
                             f"credits={selected_credit_total if selected_credit_total is not None else '?'} "
                             f"modules={','.join(selected_modules)}",
                             "STAT",
@@ -5275,14 +5527,17 @@ async def async_main(args: argparse.Namespace) -> int:
                         )
                         print(
                             f"[进度] 本次操作后已选博雅理论课：{selected_count}/"
-                            f"{AUTO_TARGET_COUNT}；学分：{credit_label}；"
+                            f"{AUTO_TARGET_COUNT}；网络：{selected_network_count}/"
+                            f"{MAX_NETWORK_COURSES}；线下：{selected_offline_count}/"
+                            f"{MIN_OFFLINE_COURSES}；学分：{credit_label}；"
                             f"模块：{','.join(selected_modules)}"
                         )
                     if selected_count >= AUTO_TARGET_COUNT:
                         if not auto_selection_goal_met(selected_records):
                             raise UnsafeSelectionError(
                                 f"达到 {AUTO_TARGET_COUNT} 门后仍未满足"
-                                "中国民歌必选和模块互异，已停止"
+                                f"中国民歌必选、模块互异、网络不超过 {MAX_NETWORK_COURSES} 门、"
+                                f"线下至少 {MIN_OFFLINE_COURSES} 门，已停止"
                             )
                         if active_ui is not None:
                             active_ui.set_phase("DONE", render=False)
